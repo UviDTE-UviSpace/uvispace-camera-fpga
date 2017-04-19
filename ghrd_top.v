@@ -214,6 +214,7 @@ integer vga_col;
 
 // CCD peripheral signal
 wire	[11:0]	CCD_DATA;
+reg	[1:0]		rClk;
 
 // CCD_Capture signals
 wire	[11:0]	ccd_data_captured;		//output data from CCD_Capture
@@ -345,7 +346,7 @@ vga_controller vga_component(
 	
 hw_image_generator diplay_component(
 		  .disp_ena                        	( vga_enable ),                    
-        .row                        		( vga_row rCCD_LVAL),  	
+        .row                        		( vga_row ),  	
  		  .column                    			( vga_col ),                      
         .red                         		( VGA_R ),  	
 		  .green                        		( VGA_G ),                    
@@ -373,7 +374,6 @@ assign	CCD_LVAL	   =	GPIO_1[21];		//line valid
 assign	ccd_pixel_clk	=	GPIO_1[0];
 assign	GPIO_1[19]	=	1'b1;  // tRIGGER
 assign	GPIO_1[17]	=	hps_fpga_reset_n;
-reg	[1:0]		rClk;
 
 always@(posedge CLOCK_50)	rClk	<=	rClk+1;
 
