@@ -202,12 +202,32 @@ module ghrd_top(
 //=======================================================
 //  REG/WIRE declarations
 //=======================================================
+
 wire  hps_fpga_reset_n;
 wire clk_25;
 wire clk_193;
+
+// VGA signals
 wire vga_enable;
 integer vga_row;
 integer vga_col;
+
+// CCD peripheral signal
+wire	[11:0]	CCD_DATA;
+
+// CCD_Capture signals
+wire	[11:0]	ccd_data_captured;		//output data from CCD_Capture
+wire				ccd_dval;
+wire	[15:0]	X_Cont;
+wire	[15:0]	Y_Cont;
+reg	[11:0]	ccd_data_raw;		//input raw data to CCD_Capture
+reg				ccd_fval_raw;		//frame valid
+reg				ccd_lval_raw;		//line valid
+wire				ccd_pixel_clk;
+wire				ccd_reset;
+wire	[31:0]	Frame_Cont;
+
+
 
 //=======================================================
 //  Structural coding
@@ -308,6 +328,7 @@ soc_system u0 (
        .pll_vga_clks_191_clk                  ( clk_193 )
     );
 
+assign 	VGA_CLK = clk_25;
 
 vga_controller vga_component(
 		  .pixel_clk                        	( clk_25 ),
@@ -324,7 +345,7 @@ vga_controller vga_component(
 	
 hw_image_generator diplay_component(
 		  .disp_ena                        	( vga_enable ),                    
-        .row                        		( vga_row ),  	
+        .row                        		( vga_row rCCD_LVAL),  	
  		  .column                    			( vga_col ),                      
         .red                         		( VGA_R ),  	
 		  .green                        		( VGA_G ),                    
@@ -332,8 +353,87 @@ hw_image_generator diplay_component(
 		  
 	);
 
-assign VGA_CLK = clk_25;
+// CCD_Capture component circuit
+	
+assign	CCD_DATA[0]	=	GPIO_1[13];
+assign	CCD_DATA[1]	=	GPIO_1[12];
+assign	CCD_DATA[2]	=	GPIO_1[11];
+assign	CCD_DATA[3]	=	GPIO_1[10];
+assign	CCD_DATA[4]	=	GPIO_1[9];
+assign	CCD_DATA[5]	=	GPIO_1[8];
+assign	CCD_DATA[6]	=	GPIO_1[7];
+assign	CCD_DATA[7]	=	GPIO_1[6];
+assign	CCD_DATA[8]	=	GPIO_1[5];
+assign	CCD_DATA[9]	=	GPIO_1[4];
+assign	CCD_DATA[10]=	GPIO_1[3];
+assign	CCD_DATA[11]=	GPIO_1[1];
+assign	GPIO_1[16]	=	rClk[0];
+assign	CCD_FVAL	   =	GPIO_1[22];		//frame valid
+assign	CCD_LVAL	   =	GPIO_1[21];		//line valid
+assign	ccd_pixel_clk	=	GPIO_1[0];
+assign	GPIO_1[19]	=	1'b1;  // tRIGGER
+assign	GPIO_1[17]	=	hps_fpga_reset_n;
+reg	[1:0]		rClk;
 
+always@(posedge CLOCK_50)	rClk	<=	rClk+1;
+
+always@(posedge ccd_pixel_clk)
+begin
+	ccd_data_raw	<=	CCD_DATA;
+	ccd_lval_raw	<=	CCD_LVAL;
+	ccd_fval_raw	<=	CCD_FVAL;
+end
+
+CCD_Capture			u3	(	
+							.oDATA      (ccd_data_captured),	// component output data
+							.oDVAL      (ccd_dval),				// data valid signal
+							.oX_Cont    (X_Cont),
+							.oY_Cont    (Y_Cont),
+							.oFrame_Cont(Frame_Cont),			// Frames counter
+							.iDATA      (ccd_data_raw),
+							.iFVAL      (ccd_fval_raw),		//Frame valid signal
+							.iLVAL      (ccd_lval_raw),		//Line valid signal
+							.iSTART     (!KEY[3]),
+							.iEND       (!KEY[2]),
+							.iCLK       (ccd_pixel_clk),
+							.iRST       (hps_fpga_reset_n)		//negative logic reset
+						);
+
+RAW2RGB				u4	(	
+						   .iCLK   (ccd_pixel_clk),
+							.iRST   (hps_fpga_reset_n),		//negative logic reset
+							.iDATA  (ccd_data_captured),		//component input data
+							.iDVAL  (ccd_dval),					// data valid signal
+							.oRed   (),				//output red component
+							.oGreen (),				//output green component
+							.oBlue  (),				//output blue component
+							.oDVAL  (),
+							.iX_Cont(X_Cont),
+							.iY_Cont(Y_Cont)
+						);
+						
+SEG7_LUT_8 			u5	(	
+							.oSEG0(HEX0),
+							.oSEG1(HEX1),
+							.oSEG2(HEX2),
+							.oSEG3(HEX3),
+							.oSEG4(HEX4),
+							.oSEG5(HEX5),
+							.oSEG6(),
+							.oSEG7(),
+							.iDIG (Frame_Cont[31:0])
+						);
+
+I2C_CCD_Config 		u8	(	//	Host Side
+							 .iCLK			  (CLOCK_50),
+							 .iRST_N         (hps_fpga_reset_n),
+							 .iZOOM_MODE_SW  (SW[8]),
+							 .iEXPOSURE_ADJ  (KEY[1]),
+							 .iEXPOSURE_DEC_p(SW[0]),
+							  //	I2C Side
+							 .I2C_SCLK		  (GPIO_1[24]),
+							 .I2C_SDAT		  (GPIO_1[23])
+									);
 endmodule
 
 
