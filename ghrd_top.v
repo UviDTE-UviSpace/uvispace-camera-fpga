@@ -476,6 +476,7 @@ Sdram_Control_4Port u7  (
    .DQM          ({DRAM_UDQM,DRAM_LDQM})
    );
 
+assign DRAM_ADDR[12] = 1'b0;
 
 SEG7_LUT_8 u5(	
   .oSEG0        (HEX0),
