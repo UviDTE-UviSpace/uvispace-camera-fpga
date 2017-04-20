@@ -256,6 +256,7 @@ soc_system u0 (
   .memory_mem_reset_n                    ( HPS_DDR3_RESET_N) ,
   .memory_mem_dq                         ( HPS_DDR3_DQ ),
   .memory_mem_dqs_n                      ( HPS_DDR3_DQS_N ),
+  .memory_mem_dqs                        ( HPS_DDR3_DQS_P ),     
   .memory_mem_odt                        ( HPS_DDR3_ODT ),
   .memory_mem_dm                         ( HPS_DDR3_DM ),
   .memory_oct_rzqin                      ( HPS_DDR3_RZQ ),
@@ -281,18 +282,19 @@ soc_system u0 (
   .hps_0_hps_io_hps_io_qspi_inst_IO3     ( HPS_FLASH_DATA[3] ),
   .hps_0_hps_io_hps_io_qspi_inst_SS0     ( HPS_FLASH_NCSO ),
   .hps_0_hps_io_hps_io_qspi_inst_CLK     ( HPS_FLASH_DCLK ),
-  //HPS SD card 
+  //HPS SD card
   .hps_0_hps_io_hps_io_sdio_inst_CMD     ( HPS_SD_CMD ),
   .hps_0_hps_io_hps_io_sdio_inst_D0      ( HPS_SD_DATA[0] ),
   .hps_0_hps_io_hps_io_sdio_inst_D1      ( HPS_SD_DATA[1] ),
   .hps_0_hps_io_hps_io_sdio_inst_CLK     ( HPS_SD_CLK ),
   .hps_0_hps_io_hps_io_sdio_inst_D2      ( HPS_SD_DATA[2] ),
   .hps_0_hps_io_hps_io_sdio_inst_D3      ( HPS_SD_DATA[3] ),
-  //HPS USB 		  
+  //HPS USB     
   .hps_0_hps_io_hps_io_usb1_inst_D0      ( HPS_USB_DATA[0] ),
   .hps_0_hps_io_hps_io_usb1_inst_D1      ( HPS_USB_DATA[1] ),
   .hps_0_hps_io_hps_io_usb1_inst_D2      ( HPS_USB_DATA[2] ),
   .hps_0_hps_io_hps_io_usb1_inst_D3      ( HPS_USB_DATA[3] ),
+  .hps_0_hps_io_hps_io_usb1_inst_D4      ( HPS_USB_DATA[4] ), 
   .hps_0_hps_io_hps_io_usb1_inst_D5      ( HPS_USB_DATA[5] ),
   .hps_0_hps_io_hps_io_usb1_inst_D6      ( HPS_USB_DATA[6] ),
   .hps_0_hps_io_hps_io_usb1_inst_D7      ( HPS_USB_DATA[7] ),
@@ -300,12 +302,12 @@ soc_system u0 (
   .hps_0_hps_io_hps_io_usb1_inst_STP     ( HPS_USB_STP ),
   .hps_0_hps_io_hps_io_usb1_inst_DIR     ( HPS_USB_DIR ),
   .hps_0_hps_io_hps_io_usb1_inst_NXT     ( HPS_USB_NXT ),
-  //HPS SPI 		  
+  //HPS SPI
   .hps_0_hps_io_hps_io_spim1_inst_CLK    ( HPS_SPIM_CLK ),
   .hps_0_hps_io_hps_io_spim1_inst_MOSI   ( HPS_SPIM_MOSI ),
   .hps_0_hps_io_hps_io_spim1_inst_MISO   ( HPS_SPIM_MISO ),
   .hps_0_hps_io_hps_io_spim1_inst_SS0    ( HPS_SPIM_SS ),
-  //HPS UART		  
+  //HPS UART
   .hps_0_hps_io_hps_io_uart0_inst_RX     ( HPS_UART_RX ),
   .hps_0_hps_io_hps_io_uart0_inst_TX     ( HPS_UART_TX ),
   //HPS I2C1
@@ -314,7 +316,7 @@ soc_system u0 (
   //HPS I2C2
   .hps_0_hps_io_hps_io_i2c1_inst_SDA     ( HPS_I2C2_SDAT ),
   .hps_0_hps_io_hps_io_i2c1_inst_SCL     ( HPS_I2C2_SCLK ),
-  //HPS GPIO      
+  //HPS GPIO
   .hps_0_hps_io_hps_io_gpio_inst_GPIO09  ( HPS_CONV_USB_N ),
   .hps_0_hps_io_hps_io_gpio_inst_GPIO35  ( HPS_ENET_INT_N ),
   .hps_0_hps_io_hps_io_gpio_inst_GPIO40  ( HPS_LTC_GPIO ),
@@ -330,7 +332,7 @@ soc_system u0 (
   //HPS reset output 
   .hps_0_h2f_reset_reset_n               (hps_fpga_reset_n ),
   //HPS PLL clock outputs
-  .pll_sdram_clk_120_clk                 ( clk_120 ),
+  .pll_sdram_clk_100_clk                 ( clk_100 ),
   .pll_vga_clks_25_clk                   ( clk_25 ),
   .pll_vga_clks_191_clk                  ( clk_193 )
   );
@@ -425,7 +427,7 @@ Sdram_Control_4Port u7  (
   //  HOST Side           
   .REF_CLK      (CLOCK_50),
   .RESET_N      (1'b1),
-  .CLK          (clk_120), 
+  .CLK          (clk_100), 
 
   //  FIFO Write Side 1
   .WR1_DATA     ({1'b0, raw_rgb_green[11:7], raw_rgb_blue[11:2]}),
