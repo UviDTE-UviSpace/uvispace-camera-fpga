@@ -237,6 +237,9 @@ wire           raw_rgb_dval;        //valid output data
 wire    [15:0] fifo1_data;
 wire    [15:0] fifo2_data;
 
+
+
+
 //=======================================================
 //  Structural coding
 //=======================================================
@@ -349,7 +352,8 @@ vga_controller vga_component(
   .column     (),
   .row        (),
   .n_blank    ( VGA_BLANK_N ),
-  .n_sync     ( VGA_SYNC_N )
+  .n_sync     ( VGA_SYNC_N ),
+  .data_req   ( vga_request )
 	);
 
 // The output values are set to corresponding data only when vga_enable is True
@@ -423,64 +427,123 @@ RAW2RGB u4(
   .iY_Cont      (Y_Cont)
   );
 
-Sdram_Control_4Port u7  (
-  //  HOST Side           
-  .REF_CLK      (CLOCK_50),
-  .RESET_N      (1'b1),
-  .CLK          (clk_100), 
+/////////////////////////////
+////// Testing code /////////
+/////////////////////////////
 
-  //  FIFO Write Side 1
-  // .WR1_DATA     ({1'b0, raw_rgb_green[11:7], raw_rgb_blue[11:2]}),
-  .WR1_DATA     (16'hFFFF),
-  .WR1          (raw_rgb_dval),
-  .WR1_ADDR     (0),
-  .WR1_MAX_ADDR (640*480),
-  .WR1_LENGTH   (9'h100),
-  .WR1_LOAD     (!hps_fpga_reset_n),
-  .WR1_CLK      (~ccd_pixel_clk),
+//  SDRAM frame buffer
+Sdram_Control u1  ( //  HOST Side
+      .REF_CLK(CLOCK_50),
+      .RESET_N(1'b1),
+      //  FIFO Write Side 1
+      .WR1_DATA(writedata),
+      .WR1(write),
+      .WR1_ADDR(0),
+      .WR1_MAX_ADDR (640*480),
+      .WR1_LENGTH   (9'h100),         //Each position has a length of 16 bits
+      .WR1_LOAD(!hps_fpga_reset_n),
+      .WR1_CLK(~clk_100),
+      //  FIFO Read Side 1
+      .RD1_DATA(fifo1_data),
+      .RD1(vga_request),               //Read enable
+      .RD1_ADDR(0),     
+      .RD1_MAX_ADDR(640*480),
+      .RD1_LENGTH(9'h100),
+      .RD1_LOAD(!hps_fpga_reset_n),
+      .RD1_CLK(~clk_25),
+      //  SDRAM Side
+      .SA(DRAM_ADDR),
+      .BA(DRAM_BA),
+      .CS_N(DRAM_CS_N),
+      .CKE(DRAM_CKE),
+      .RAS_N(DRAM_RAS_N),
+      .CAS_N(DRAM_CAS_N),
+      .WE_N(DRAM_WE_N),
+      .DQ(DRAM_DQ),
+      .DQM({DRAM_UDQM,DRAM_LDQM}),
+      .SDR_CLK(DRAM_CLK)  
+      );
 
-  //  FIFO Write Side 2
-  // .WR2_DATA     ({1'b0, raw_rgb_green[6:2], raw_rgb_red[11:2]}),
-  .WR2_DATA     (16'hFFFF),  
-  .WR2          (raw_rgb_dval),
-  .WR2_ADDR     (22'h100000),
-  .WR2_MAX_ADDR (22'h100000+640*480),
-  .WR2_LENGTH   (9'h100),
-  .WR2_LOAD     (!hps_fpga_reset_n),
-  .WR2_CLK      (~ccd_pixel_clk),
+
+reg  [15:0]  writedata;
+reg          write;
+
+// reg     [15:0]  test_signal;
+// reg     [15:0]  test_signal2;
+
+assign fifo2_data = 16'd0;
+
+always @(posedge clk_100) begin
+  if (!hps_fpga_reset_n) begin
+    // reset
+    write <= 1'b0;   
+  end
+  else begin
+    write <= 1'b1;
+    writedata <= 16'hEFFF ;
+  end
+end
+  
 
 
-  //  FIFO Read Side 1
-  .RD1_DATA     (fifo1_data),
-  .RD1          (disp_ena),
-  .RD1_ADDR     (0),
-  .RD1_MAX_ADDR (640*480),
-  .RD1_LENGTH   (9'h100),
-  .RD1_LOAD     (!hps_fpga_reset_n),
-  .RD1_CLK      (~clk_25),
+// Sdram_Control_4Port u7  (
+//   //  HOST Side           
+//   .REF_CLK      (CLOCK_50),
+//   .RESET_N      (1'b1),
+//   .CLK          (clk_100), 
 
-  //  FIFO Read Side 2
-  .RD2_DATA     (fifo2_data),
-  .RD2          (disp_ena),
-  .RD2_ADDR     (22'h100000),
-  .RD2_MAX_ADDR (22'h100000+640*480),
-  .RD2_LENGTH   (9'h100),
-  .RD2_LOAD     (!hps_fpga_reset_n),
-  .RD2_CLK      (~clk_25),
+//   //  FIFO Write Side 1
+//   // .WR1_DATA     ({1'b0, raw_rgb_green[11:7], raw_rgb_blue[11:2]}),
+//   .WR1_DATA     (16'hFFFF),
+//   .WR1          (raw_rgb_dval),
+//   .WR1_ADDR     (0),
+//   .WR1_MAX_ADDR (640*480),
+//   .WR1_LENGTH   (9'h100),
+//   .WR1_LOAD     (!hps_fpga_reset_n),
+//   .WR1_CLK      (~ccd_pixel_clk),
 
-  //  SDRAM Side
-   .SA           (DRAM_ADDR[11:0]),
-   .BA           (DRAM_BA),
-   .CS_N         (DRAM_CS_N),
-   .CKE          (DRAM_CKE),
-   .RAS_N        (DRAM_RAS_N),
-   .CAS_N        (DRAM_CAS_N),
-   .WE_N         (DRAM_WE_N),
-   .DQ           (DRAM_DQ),
-   .DQM          ({DRAM_UDQM,DRAM_LDQM})
-   );
+//   //  FIFO Write Side 2
+//   // .WR2_DATA     ({1'b0, raw_rgb_green[6:2], raw_rgb_red[11:2]}),
+//   .WR2_DATA     (16'hFFFF),  
+//   .WR2          (raw_rgb_dval),
+//   .WR2_ADDR     (22'h100000),
+//   .WR2_MAX_ADDR (22'h100000+640*480),
+//   .WR2_LENGTH   (9'h100),
+//   .WR2_LOAD     (!hps_fpga_reset_n),
+//   .WR2_CLK      (~ccd_pixel_clk),
 
-assign DRAM_ADDR[12] = 1'b0;
+
+//   //  FIFO Read Side 1
+//   .RD1_DATA     (fifo1_data),
+//   .RD1          (disp_ena),
+//   .RD1_ADDR     (0),
+//   .RD1_MAX_ADDR (640*480),
+//   .RD1_LENGTH   (9'h100),
+//   .RD1_LOAD     (!hps_fpga_reset_n),
+//   .RD1_CLK      (~clk_25),
+
+//   //  FIFO Read Side 2
+//   .RD2_DATA     (fifo2_data),
+//   .RD2          (disp_ena),
+//   .RD2_ADDR     (22'h100000),
+//   .RD2_MAX_ADDR (22'h100000+640*480),
+//   .RD2_LENGTH   (9'h100),
+//   .RD2_LOAD     (!hps_fpga_reset_n),
+//   .RD2_CLK      (~clk_25),
+
+//   //  SDRAM Side
+//    .SA           (DRAM_ADDR[11:0]),
+//    .BA           (DRAM_BA),
+//    .CS_N         (DRAM_CS_N),
+//    .CKE          (DRAM_CKE),
+//    .RAS_N        (DRAM_RAS_N),
+//    .CAS_N        (DRAM_CAS_N),
+//    .WE_N         (DRAM_WE_N),
+//    .DQ           (DRAM_DQ),
+//    .DQM          ({DRAM_UDQM,DRAM_LDQM})
+//    );
+
+// assign DRAM_ADDR[12] = 1'b0;
 
 SEG7_LUT_8 u5(	
   .oSEG0        (HEX0),

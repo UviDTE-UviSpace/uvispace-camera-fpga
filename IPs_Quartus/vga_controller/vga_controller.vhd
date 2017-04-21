@@ -43,7 +43,8 @@ entity vga_controller is
     column    :  OUT  INTEGER;    --horizontal pixel coordinate
     row       :  OUT  INTEGER;    --vertical pixel coordinate
     n_blank   :  OUT  STD_LOGIC;  --direct blacking output to DAC
-    n_sync    :  OUT  STD_LOGIC); --sync-on-green output to DAC
+    n_sync    :  OUT  STD_LOGIC; --sync-on-green output to DAC
+    data_req  :  OUT  STD_LOGIC);
 end vga_controller;
 
 
@@ -68,6 +69,7 @@ begin
       h_sync <= NOT h_pol;  --deassert horizontal sync
       v_sync <= NOT v_pol;  --deassert vertical sync
       disp_ena <= '0';      --disable display
+      data_req <= '0';      --disable request
       column <= 0;          --reset column pixel coordinate
       row <= 0;             --reset row pixel coordinate
 
@@ -113,6 +115,15 @@ begin
         disp_ena <= '1';                                  --enable display
       else                                                --blanking time
         disp_ena <= '0';                                  --disable display
+      end if;
+
+      --set data request value
+      if (h_count >= (h_pulse+h_bp-2) AND h_count < (h_pulse+h_bp+h_pixels-2))
+      AND (v_count >= (v_pulse+v_bp) AND v_count < (v_pulse+v_bp+v_pixels))
+        then  
+        data_req <= '1';                                  
+      else                                                
+        data_req <= '0';                                  
       end if;
 
     end if;

@@ -940,7 +940,15 @@ set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
-set_global_assignment -name QIP_FILE IPs_Quartus/SDRAM_control_4port/Sdram_Control_4Port.qip
+set_global_assignment -name VERILOG_FILE IPs_Quartus/RW_Test/RW_Test.v
+set_global_assignment -name VERILOG_FILE IPs_Quartus/Sdram_Control/command.v
+set_global_assignment -name VERILOG_FILE IPs_Quartus/Sdram_Control/control_interface.v
+set_global_assignment -name VERILOG_FILE IPs_Quartus/Sdram_Control/sdr_data_path.v
+set_global_assignment -name VERILOG_FILE IPs_Quartus/Sdram_Control/Sdram_Control.v
+set_global_assignment -name SOURCE_FILE IPs_Quartus/Sdram_Control/Sdram_Params.h
+set_global_assignment -name QIP_FILE IPs_Quartus/Sdram_Control/sdram_pll0.qip
+set_global_assignment -name QIP_FILE IPs_Quartus/Sdram_Control/Sdram_RD_FIFO.qip
+set_global_assignment -name QIP_FILE IPs_Quartus/Sdram_Control/Sdram_WR_FIFO.qip
 set_global_assignment -name QIP_FILE soc_system/synthesis/soc_system.qip
 set_global_assignment -name VHDL_FILE IPs_Quartus/vga_controller/vga_controller.vhd
 set_global_assignment -name VHDL_FILE IPs_Quartus/hw_image_generator/hw_image_generator.vhd
