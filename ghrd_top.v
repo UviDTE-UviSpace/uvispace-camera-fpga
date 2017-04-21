@@ -353,9 +353,9 @@ vga_controller vga_component(
 	);
 
 // The output values are set to corresponding data only when vga_enable is True
-assign VGA_R = vga_enable ? fifo2_data[9:0] : 0;
-assign VGA_G = vga_enable ? {fifo1_data[14:10], fifo2_data[14:10]} : 0;
-assign VGA_B = vga_enable ? fifo1_data[9:0] : 0;
+assign VGA_R = vga_enable ? fifo2_data[9:2] : 0;
+assign VGA_G = vga_enable ? {fifo1_data[14:11], fifo2_data[14:11]} : 0;
+assign VGA_B = vga_enable ? fifo1_data[9:2] : 0;
 
 // hw_image_generator diplay_component(
 //   .disp_ena   ( vga_enable ),                    
@@ -430,7 +430,8 @@ Sdram_Control_4Port u7  (
   .CLK          (clk_100), 
 
   //  FIFO Write Side 1
-  .WR1_DATA     ({1'b0, raw_rgb_green[11:7], raw_rgb_blue[11:2]}),
+  // .WR1_DATA     ({1'b0, raw_rgb_green[11:7], raw_rgb_blue[11:2]}),
+  .WR1_DATA     (16'hFFFF),
   .WR1          (raw_rgb_dval),
   .WR1_ADDR     (0),
   .WR1_MAX_ADDR (640*480),
@@ -439,7 +440,8 @@ Sdram_Control_4Port u7  (
   .WR1_CLK      (~ccd_pixel_clk),
 
   //  FIFO Write Side 2
-  .WR2_DATA     ({1'b0, raw_rgb_green[6:2], raw_rgb_red[11:2]}),
+  // .WR2_DATA     ({1'b0, raw_rgb_green[6:2], raw_rgb_red[11:2]}),
+  .WR2_DATA     (16'hFFFF),  
   .WR2          (raw_rgb_dval),
   .WR2_ADDR     (22'h100000),
   .WR2_MAX_ADDR (22'h100000+640*480),
