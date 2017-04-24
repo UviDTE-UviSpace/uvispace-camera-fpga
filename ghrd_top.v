@@ -361,15 +361,6 @@ assign VGA_R = vga_enable ? fifo2_data[9:2] : 0;
 assign VGA_G = vga_enable ? {fifo1_data[14:11], fifo2_data[14:11]} : 0;
 assign VGA_B = vga_enable ? fifo1_data[9:2] : 0;
 
-// hw_image_generator diplay_component(
-//   .disp_ena   ( vga_enable ),                    
-//   .row        ( vga_row ),  	
-//   .column     ( vga_col ),                      
-//   .red        ( VGA_R ),  	
-//   .green      ( VGA_G ),                    
-//   .blue       ( VGA_B ),  		
-// 	);
-
 // CCD_Capture component circuit
 assign	CCD_DATA[0]  =	GPIO_1[13]; //Pixel data Bit 0
 assign	CCD_DATA[1]	 =	GPIO_1[12]; //Pixel data Bit 1
@@ -431,24 +422,24 @@ RAW2RGB u4(
 ////// Testing code /////////
 /////////////////////////////
 
-//  SDRAM frame buffer
+//  SDRAM based on DE1-SOC demonstration
 Sdram_Control u1  ( //  HOST Side
       .REF_CLK(CLOCK_50),
       .RESET_N(1'b1),
       //  FIFO Write Side 1
-      .WR1_DATA(writedata),
+      .WR1_DATA(writedata),         //data bus size: 16 bits
       .WR1(write),
       .WR1_ADDR(0),
-      .WR1_MAX_ADDR (640*480),
-      .WR1_LENGTH   (9'h100),         //Each position has a length of 16 bits
+      .WR1_MAX_ADDR (640*480),       //address bus size: 25 bits
+      .WR1_LENGTH   (9'h80),         //Max allowed size: 8 bits
       .WR1_LOAD(!hps_fpga_reset_n),
       .WR1_CLK(~clk_100),
       //  FIFO Read Side 1
-      .RD1_DATA(fifo1_data),
-      .RD1(vga_request),               //Read enable
+      .RD1_DATA(readdata),            //data bus size: 16 bits
+      .RD1(vga_enable),               //Read enable
       .RD1_ADDR(0),     
-      .RD1_MAX_ADDR(640*480),
-      .RD1_LENGTH(9'h100),
+      .RD1_MAX_ADDR(640*480),         //address bus size: 25 bits
+      .RD1_LENGTH(9'h80),             //Max allowed size: 8 bits
       .RD1_LOAD(!hps_fpga_reset_n),
       .RD1_CLK(~clk_25),
       //  SDRAM Side
@@ -467,7 +458,9 @@ Sdram_Control u1  ( //  HOST Side
 
 reg  [15:0]  writedata;
 reg          write;
+wire [7:0]   readdata;
 
+assign fifo1_data[15:0] = {writedata[7:0], writedata[7:0]};
 // reg     [15:0]  test_signal;
 // reg     [15:0]  test_signal2;
 
@@ -476,16 +469,16 @@ assign fifo2_data = 16'd0;
 always @(posedge clk_100) begin
   if (!hps_fpga_reset_n) begin
     // reset
-    write <= 1'b0;   
+    write <= 1'b0;
   end
   else begin
-    write <= 1'b1;
-    writedata <= 16'hEFFF ;
+    write <= ~write;
+    writedata <= 8'hEF;
   end
 end
   
 
-
+//  SDRAM based on DE1 demonstration
 // Sdram_Control_4Port u7  (
 //   //  HOST Side           
 //   .REF_CLK      (CLOCK_50),
