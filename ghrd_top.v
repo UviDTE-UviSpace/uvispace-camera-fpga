@@ -1,22 +1,50 @@
-// ============================================================================
-// Copyright (c) 2013 by Terasic Technologies Inc.
-// ============================================================================
-//
-// Permission:
-//
-//   Terasic grants permission to use and modify this code for use
-//   in synthesis for all Terasic Development Boards and Altera Development 
-//   Kits made by Terasic.  Other use of this code, including the selling 
-//   ,duplication, or modification of any portion is strictly prohibited.
-//
-// Disclaimer:
-//
-//   This VHDL/Verilog or C/C++ source code is intended as a design reference
-//   which illustrates how these types of functions can be implemented.
-//   It is the user's responsibility to verify their design for
-//   consistency and functionality through the use of formal
-//   verification methods.  Terasic provides no warranty regarding the use 
-//   or functionality of this code.
+/*
+This is the top level design for the DE1-SoC boards of UviSpace project.
+
+The ghrd_top() module; hps processor instantiation and connection; and
+the connection of the module's input/output signals to the corresponding
+pins were obtained from the Terasic DE1-SoC Golden Hardware Reference
+Design (GHRD) project. For more information about this basic project and
+the board, you can visit their website (http://www.terasic.com/).
+
+Some of the remaining modules are based on demonstrations provided by 
+Terasic for the DE1-Soc and the DM5 Camera.
+
+The purpose of the design is to provide an FPGA circuit for configuring
+and acquiring images from a camera attached to the GPIO1 port. Hence,
+the following modules are used:
+
+- soc_system_u0: This module provides an interface with the Qsys design.
+The main component is the interface with the HPS processor and its main
+peripherals. Moreover, there are the following Qsys components: led_pio,
+dipsw_pio (for the switches), button_pio, clk_0, and pll_vga_clks.
+- CCD_Capture: This module serves as an interface with the attached
+camera. It reads pixels values and control inputs. Besides, it allows to
+decide when to start and stop acquiring images. The clock input is fed
+by the pixel clock.
+- RAW2RGB: It formats the raw data obtained from the camera peripheral
+to RGB values. Each pixel contains 3 components (Red, Green and Blue),
+defined by 12 bits each one.
+- Sdram_Control: This module is used for connecting to the external DRAM
+memory and use it as a buffer between the camera input and the VGA
+output, as both are run with different clock rates. For this purpose,
+FIFO memories allowing simultaneous read and write operations are used.
+- vga_controller: Module for sending control bits to the VGA peripheral.
+The module has a set of parameters that defines the output resolution,
+being by default 640x480.
+- SEG7_LUT_8: This componet is used for showing the fram rate on the
+hexadecimal 8-segments peripherals.
+- I2C_CCD_Config: This module sends the default configuration to the
+camera using the I2C standard.
+
+NOTE: The desired design should have 2 FIFOs, in order to send 8 bits
+per component to the VGA controller. However, there is a synchronization
+error, and the values obtained in the second FIFO have an offset
+relative to the first one i.e. The component sent by the second FIFO
+corresponds to the one that was sent by the first one several iterations
+ago, resulting on an horizontal shift.
+*/
+// 
 //
 // ============================================================================
 //           
@@ -31,8 +59,12 @@
 //Date:  Mon Jun 17 20:35:29 2013
 // ============================================================================
 
+
+
+
 `define ENABLE_HPS
 
+//Top level entity. Contains the inputs and outputs wired to external pins.
 module ghrd_top(
   ///////// ADC /////////
   inout              ADC_CS_N,
@@ -213,7 +245,6 @@ integer vga_col;
 
 //CCD peripheral signal
 wire	  [11:0] CCD_DATA;
-reg     [1:0]  rClk;
 
 //CCD_Capture signals
 wire    [11:0] ccd_data_captured;		//output data from CCD_Capture
@@ -234,10 +265,10 @@ wire    [11:0] raw_rgb_blue;
 wire           raw_rgb_dval;        //valid output data
 
 //SDRAM FIFOs data
-wire    [15:0] fifo1_data;
-wire    [15:0] fifo2_data;
-
-
+reg     [15:0] fifo1_writedata;
+reg     [15:0] fifo2_writedata;
+wire    [15:0] fifo1_readdata;
+wire    [15:0] fifo2_readdata;
 
 
 //=======================================================
@@ -335,61 +366,12 @@ soc_system u0 (
   //HPS reset output 
   .hps_0_h2f_reset_reset_n               (hps_fpga_reset_n ),
   //HPS PLL clock outputs
-  .pll_sdram_clk_100_clk                 ( clk_100 ),
   .pll_vga_clks_25_clk                   ( clk_25 ),
   .pll_vga_clks_191_clk                  ( clk_193 )
   );
 
-// VGA controller component and a test image generator
-assign 	VGA_CLK = clk_25;
 
-vga_controller vga_component(
-  .pixel_clk  ( clk_25 ),
-  .reset_n    ( hps_fpga_reset_n ),
-  .h_sync     ( VGA_HS ),
-  .v_sync     ( VGA_VS ),
-  .disp_ena   ( vga_enable ),
-  .column     (),
-  .row        (),
-  .n_blank    ( VGA_BLANK_N ),
-  .n_sync     ( VGA_SYNC_N ),
-  .data_req   ( vga_request )
-	);
-
-// The output values are set to corresponding data only when vga_enable is True
-assign VGA_R = vga_enable ? fifo2_data[9:2] : 0;
-assign VGA_G = vga_enable ? {fifo1_data[14:11], fifo2_data[14:11]} : 0;
-assign VGA_B = vga_enable ? fifo1_data[9:2] : 0;
-
-// CCD_Capture component circuit
-assign	CCD_DATA[0]  =	GPIO_1[13]; //Pixel data Bit 0
-assign	CCD_DATA[1]	 =	GPIO_1[12]; //Pixel data Bit 1
-assign	CCD_DATA[2]	 =	GPIO_1[11]; //Pixel data Bit 2
-assign	CCD_DATA[3]	 =	GPIO_1[10]; //Pixel data Bit 3
-assign	CCD_DATA[4]	 =	GPIO_1[9];  //Pixel data Bit 4
-assign	CCD_DATA[5]	 =	GPIO_1[8];  //Pixel data Bit 5
-assign	CCD_DATA[6]	 =	GPIO_1[7];  //Pixel data Bit 6
-assign	CCD_DATA[7]	 =	GPIO_1[6];  //Pixel data Bit 7
-assign	CCD_DATA[8]	 =	GPIO_1[5];  //Pixel data Bit 8
-assign	CCD_DATA[9]	 =	GPIO_1[4];  //Pixel data Bit 9
-assign	CCD_DATA[10] =	GPIO_1[3];  //Pixel data Bit 10
-assign	CCD_DATA[11] =	GPIO_1[1];  //Pixel data Bit 11
-assign	GPIO_1[16]   =	rClk[0];    //External input clock
-assign	CCD_FVAL     =	GPIO_1[22]; //frame valid
-assign	CCD_LVAL     =	GPIO_1[21]; //line valid
-assign	ccd_pixel_clk=	GPIO_1[0];  //Pixel clock
-assign	GPIO_1[19]   =	1'b1;       //trigger
-assign	GPIO_1[17]   =	hps_fpga_reset_n;
-
-always@(posedge CLOCK_50)	rClk	<=	rClk+1;
-
-always@(posedge ccd_pixel_clk)
-  begin
-  ccd_data_raw	<=	CCD_DATA;
-  ccd_lval_raw	<=	CCD_LVAL;
-  ccd_fval_raw	<=	CCD_FVAL;
-end
-
+// This component extracts the data obtained in the associated GPIO.
 CCD_Capture u3(	
   .oDATA        (ccd_data_captured),  // component output data
   .oDVAL        (ccd_dval),           // data valid signal
@@ -405,6 +387,36 @@ CCD_Capture u3(
   .iRST         (hps_fpga_reset_n)    //negative logic reset
   );
 
+  // CCD_Capture external pinout conections.
+  assign  CCD_DATA[0]  =  GPIO_1[13]; //Pixel data Bit 0
+  assign  CCD_DATA[1]  =  GPIO_1[12]; //Pixel data Bit 1
+  assign  CCD_DATA[2]  =  GPIO_1[11]; //Pixel data Bit 2
+  assign  CCD_DATA[3]  =  GPIO_1[10]; //Pixel data Bit 3
+  assign  CCD_DATA[4]  =  GPIO_1[9];  //Pixel data Bit 4
+  assign  CCD_DATA[5]  =  GPIO_1[8];  //Pixel data Bit 5
+  assign  CCD_DATA[6]  =  GPIO_1[7];  //Pixel data Bit 6
+  assign  CCD_DATA[7]  =  GPIO_1[6];  //Pixel data Bit 7
+  assign  CCD_DATA[8]  =  GPIO_1[5];  //Pixel data Bit 8
+  assign  CCD_DATA[9]  =  GPIO_1[4];  //Pixel data Bit 9
+  assign  CCD_DATA[10] =  GPIO_1[3];  //Pixel data Bit 10
+  assign  CCD_DATA[11] =  GPIO_1[1];  //Pixel data Bit 11
+  assign  GPIO_1[16]   =  clk_25;    //External input clock
+  assign  CCD_FVAL     =  GPIO_1[22]; //frame valid
+  assign  CCD_LVAL     =  GPIO_1[21]; //line valid
+  assign  ccd_pixel_clk=  GPIO_1[0];  //Pixel clock
+  assign  GPIO_1[19]   =  1'b1;       //trigger
+  assign  GPIO_1[17]   =  hps_fpga_reset_n;
+
+  // Refreshes the data on the CCD camera on every pixel clock pulse.
+  always@(posedge ccd_pixel_clk)
+    begin
+    ccd_data_raw  <=  CCD_DATA;
+    ccd_lval_raw  <=  CCD_LVAL;
+    ccd_fval_raw  <=  CCD_FVAL;
+  end
+
+
+// This component converts 'raw' data obtained in the CCD to RGB data.
 RAW2RGB u4(	
   .iCLK         (ccd_pixel_clk),
   .iRST         (hps_fpga_reset_n),   //negative logic reset
@@ -417,32 +429,61 @@ RAW2RGB u4(
   .iX_Cont      (X_Cont),
   .iY_Cont      (Y_Cont)
   );
+  // On each camera cycle (defined by the pixel clock), the 3 components (RGB)
+  // of a pixel are written to 2 FIFOs on the SDRAM memory. As the VGA controller
+  // can take only 1 byte per component, only the 8 most significative bits of 
+  // each 'raw' component are sent to the 2 FIFOs created in the SDRAM.
+  // In case that only one FIFO memory is used, only the 5 most significative 
+  // bits of each component are sent to the SDRAM.
+  always @(posedge ccd_pixel_clk) begin
+    if (!hps_fpga_reset_n) begin
+      // if reset, do nothing.
+    end
+    else begin
+      fifo1_writedata <= {1'b0, raw_rgb_red[11:7], raw_rgb_green[11:7], 
+          raw_rgb_blue[11:7]};
+    end
+  end
 
-/////////////////////////////
-////// Testing code /////////
-/////////////////////////////
 
-//  SDRAM based on DE1-SOC demonstration
-Sdram_Control u1  ( //  HOST Side
+//  SDRAM memory based on DE1-SOC demonstration
+Sdram_Control u1( 
+      // HOST Side
       .REF_CLK(CLOCK_50),
       .RESET_N(1'b1),
-      //  FIFO Write Side 1
-      .WR1_DATA(writedata),         //data bus size: 16 bits
-      .WR1(write),
+      // FIFO Write Side 1
+      .WR1_DATA(fifo1_writedata),         //data bus size: 16 bits
+      .WR1(raw_rgb_dval),
       .WR1_ADDR(0),
-      .WR1_MAX_ADDR (640*480),       //address bus size: 25 bits
-      .WR1_LENGTH   (9'h80),         //Max allowed size: 8 bits
+      .WR1_MAX_ADDR(640*480),             //address bus size: 25 bits
+      .WR1_LENGTH(9'h80),                 //Max allowed size: 8 bits
       .WR1_LOAD(!hps_fpga_reset_n),
-      .WR1_CLK(~clk_100),
-      //  FIFO Read Side 1
-      .RD1_DATA(readdata),            //data bus size: 16 bits
-      .RD1(vga_enable),               //Read enable
+      .WR1_CLK(~ccd_pixel_clk),
+      // // FIFO Write Side 2 (Unused. Needed if 8 bits per pixel are used)
+      // .WR2_DATA(fifo2_writedata),         //data bus size: 16 bits
+      // .WR2(raw_rgb_dval),
+      // .WR2_ADDR(22'h100000),
+      // .WR2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
+      // .WR2_LENGTH(9'h80),                 //Max allowed size: 8 bits
+      // .WR2_LOAD(!hps_fpga_reset_n),
+      // .WR2_CLK(~ccd_pixel_clk),
+      // FIFO Read Side 1
+      .RD1_DATA(fifo1_readdata),          //data bus size: 16 bits
+      .RD1(vga_enable),                   //Read enable
       .RD1_ADDR(0),     
-      .RD1_MAX_ADDR(640*480),         //address bus size: 25 bits
-      .RD1_LENGTH(9'h80),             //Max allowed size: 8 bits
+      .RD1_MAX_ADDR(640*480),             //address bus size: 25 bits
+      .RD1_LENGTH(9'h80),                 //Max allowed size: 8 bits
       .RD1_LOAD(!hps_fpga_reset_n),
       .RD1_CLK(~clk_25),
-      //  SDRAM Side
+      // // FIFO Read Side 2 (Unused. Needed if 8 bits per pixel are used)
+      // .RD2_DATA(fifo2_readdata),          //data bus size: 16 bits
+      // .RD2(vga_enable),                   //Read enable
+      // .RD2_ADDR(22'h100000),     
+      // .RD2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
+      // .RD2_LENGTH(9'h80),                 //Max allowed size: 8 bits
+      // .RD2_LOAD(!hps_fpga_reset_n),
+      // .RD2_CLK(~clk_25),
+      // SDRAM Side
       .SA(DRAM_ADDR),
       .BA(DRAM_BA),
       .CS_N(DRAM_CS_N),
@@ -456,88 +497,29 @@ Sdram_Control u1  ( //  HOST Side
       );
 
 
-reg  [15:0]  writedata;
-reg          write;
-wire [7:0]   readdata;
+// VGA controller component.
+vga_controller vga_component(
+  .pixel_clk  ( clk_25 ),
+  .reset_n    ( hps_fpga_reset_n ),
+  .h_sync     ( VGA_HS ),
+  .v_sync     ( VGA_VS ),
+  .disp_ena   ( vga_enable ),
+  .column     (),
+  .row        (),
+  .n_blank    ( VGA_BLANK_N ),
+  .n_sync     ( VGA_SYNC_N ),
+  .data_req   ( vga_request )
+  );
 
-assign fifo1_data[15:0] = {writedata[7:0], writedata[7:0]};
-// reg     [15:0]  test_signal;
-// reg     [15:0]  test_signal2;
-
-assign fifo2_data = 16'd0;
-
-always @(posedge clk_100) begin
-  if (!hps_fpga_reset_n) begin
-    // reset
-    write <= 1'b0;
-  end
-  else begin
-    write <= ~write;
-    writedata <= 8'hEF;
-  end
-end
-  
-
-//  SDRAM based on DE1 demonstration
-// Sdram_Control_4Port u7  (
-//   //  HOST Side           
-//   .REF_CLK      (CLOCK_50),
-//   .RESET_N      (1'b1),
-//   .CLK          (clk_100), 
-
-//   //  FIFO Write Side 1
-//   // .WR1_DATA     ({1'b0, raw_rgb_green[11:7], raw_rgb_blue[11:2]}),
-//   .WR1_DATA     (16'hFFFF),
-//   .WR1          (raw_rgb_dval),
-//   .WR1_ADDR     (0),
-//   .WR1_MAX_ADDR (640*480),
-//   .WR1_LENGTH   (9'h100),
-//   .WR1_LOAD     (!hps_fpga_reset_n),
-//   .WR1_CLK      (~ccd_pixel_clk),
-
-//   //  FIFO Write Side 2
-//   // .WR2_DATA     ({1'b0, raw_rgb_green[6:2], raw_rgb_red[11:2]}),
-//   .WR2_DATA     (16'hFFFF),  
-//   .WR2          (raw_rgb_dval),
-//   .WR2_ADDR     (22'h100000),
-//   .WR2_MAX_ADDR (22'h100000+640*480),
-//   .WR2_LENGTH   (9'h100),
-//   .WR2_LOAD     (!hps_fpga_reset_n),
-//   .WR2_CLK      (~ccd_pixel_clk),
+  // Send the data on the FIFO memories to the VGA outputs.
+  assign VGA_R = (vga_enable && SW[2]) ? {fifo1_readdata[14:10], 3'd0} : 0;
+  assign VGA_G = (vga_enable && SW[3]) ? {fifo1_readdata[9:5], 3'd0} : 0;
+  assign VGA_B = (vga_enable && SW[4]) ? {fifo1_readdata[4:0], 3'd0} : 0;
+  // Set the VGA clock to 25 MHz.
+  assign  VGA_CLK = clk_25;
 
 
-//   //  FIFO Read Side 1
-//   .RD1_DATA     (fifo1_data),
-//   .RD1          (disp_ena),
-//   .RD1_ADDR     (0),
-//   .RD1_MAX_ADDR (640*480),
-//   .RD1_LENGTH   (9'h100),
-//   .RD1_LOAD     (!hps_fpga_reset_n),
-//   .RD1_CLK      (~clk_25),
-
-//   //  FIFO Read Side 2
-//   .RD2_DATA     (fifo2_data),
-//   .RD2          (disp_ena),
-//   .RD2_ADDR     (22'h100000),
-//   .RD2_MAX_ADDR (22'h100000+640*480),
-//   .RD2_LENGTH   (9'h100),
-//   .RD2_LOAD     (!hps_fpga_reset_n),
-//   .RD2_CLK      (~clk_25),
-
-//   //  SDRAM Side
-//    .SA           (DRAM_ADDR[11:0]),
-//    .BA           (DRAM_BA),
-//    .CS_N         (DRAM_CS_N),
-//    .CKE          (DRAM_CKE),
-//    .RAS_N        (DRAM_RAS_N),
-//    .CAS_N        (DRAM_CAS_N),
-//    .WE_N         (DRAM_WE_N),
-//    .DQ           (DRAM_DQ),
-//    .DQM          ({DRAM_UDQM,DRAM_LDQM})
-//    );
-
-// assign DRAM_ADDR[12] = 1'b0;
-
+// The frame count is displayed using the 8-segments LEDs.
 SEG7_LUT_8 u5(	
   .oSEG0        (HEX0),
   .oSEG1        (HEX1),
@@ -550,6 +532,8 @@ SEG7_LUT_8 u5(
   .iDIG         (Frame_Cont[31:0])
   );
 
+
+// Component for writing configuration to the camera peripheral.
 I2C_CCD_Config u8(	//	Host Side
   .iCLK             (CLOCK_50),
   .iRST_N           (hps_fpga_reset_n),
@@ -560,5 +544,6 @@ I2C_CCD_Config u8(	//	Host Side
   .I2C_SCLK         (GPIO_1[24]),
   .I2C_SDAT         (GPIO_1[23])
   );
+
 
 endmodule
