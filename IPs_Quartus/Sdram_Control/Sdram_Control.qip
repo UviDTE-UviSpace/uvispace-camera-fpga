@@ -1,0 +1,11 @@
+set_global_assignment -name IP_TOOL_VERSION "16.0"
+set_global_assignment -name IP_TOOL_NAME "Sdram_Control"
+set_global_assignment -name IP_GENERATED_DEVICE_FAMILY "{Cyclone V}"
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "command.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "control_interface.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "Sdram_Control.v"]
+set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) "Sdram_Params.h"]
+set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "sdram_pll0.qip"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "Sdram_RD_FIFO.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "Sdram_WR_FIFO.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "sdr_data_path.v"]
