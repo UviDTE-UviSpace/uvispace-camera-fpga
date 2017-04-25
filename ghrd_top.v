@@ -44,23 +44,6 @@ relative to the first one i.e. The component sent by the second FIFO
 corresponds to the one that was sent by the first one several iterations
 ago, resulting on an horizontal shift.
 */
-// 
-//
-// ============================================================================
-//           
-//  Terasic Technologies Inc
-//  9F., No.176, Sec.2, Gongdao 5th Rd, East Dist, Hsinchu City, 30070. Taiwan
-//  
-//  
-//                     web: http://www.terasic.com/  
-//                     email: support@terasic.com
-//
-// ============================================================================
-//Date:  Mon Jun 17 20:35:29 2013
-// ============================================================================
-
-
-
 
 `define ENABLE_HPS
 
