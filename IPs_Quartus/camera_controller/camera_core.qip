@@ -1,7 +1,7 @@
 set_global_assignment -name IP_TOOL_NAME "Camera core"
 set_global_assignment -name IP_TOOL_VERSION "16.0"
 set_global_assignment -name IP_GENERATED_DEVICE_FAMILY "{Cyclone V}"
-set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "CCD_Capture.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "camera_capture.v"]
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "I2C_CCD_Config.v"]
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "I2C_Controller.v"]
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "Line_Buffer.v"]

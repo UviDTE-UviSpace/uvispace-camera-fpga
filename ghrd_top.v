@@ -54,7 +54,6 @@ module ghrd_top(
   output             ADC_DIN,
   input              ADC_DOUT,
   output             ADC_SCLK,
-
   ///////// AUD /////////
   input              AUD_ADCDAT,
   inout              AUD_ADCLRCK,
@@ -62,19 +61,14 @@ module ghrd_top(
   output             AUD_DACDAT,
   inout              AUD_DACLRCK,
   output             AUD_XCK,
-
   ///////// CLOCK2 /////////
   input              CLOCK2_50,
-
   ///////// CLOCK3 /////////
   input              CLOCK3_50,
-
   ///////// CLOCK4 /////////
   input              CLOCK4_50,
-
   ///////// CLOCK /////////
   input              CLOCK_50,
-
   ///////// DRAM /////////
   output      [12:0] DRAM_ADDR,   //Address Bus
   output      [1:0]  DRAM_BA,     //Bank address
@@ -87,119 +81,96 @@ module ghrd_top(
   output             DRAM_RAS_N,  //Row adress strobe
   output             DRAM_UDQM,   //High-byte data mask
   output             DRAM_WE_N,   //Write enable
-
   ///////// FAN /////////
   output             FAN_CTRL,
-
   ///////// FPGA /////////
   output             FPGA_I2C_SCLK,
   inout              FPGA_I2C_SDAT,
-
   ///////// GPIO /////////
   inout       [35:0] GPIO_0,
   inout       [35:0] GPIO_1,
-
-
-  ///////// HEX0 /////////
+  ///////// HEX /////////
   output      [6:0]  HEX0,
-
-  ///////// HEX1 /////////
   output      [6:0]  HEX1,
-
-  ///////// HEX2 /////////
   output      [6:0]  HEX2,
-
-  ///////// HEX3 /////////
   output      [6:0]  HEX3,
-
-  ///////// HEX4 /////////
   output      [6:0]  HEX4,
-
-  ///////// HEX5 /////////
   output      [6:0]  HEX5,
-  `ifdef ENABLE_HPS
   ///////// HPS /////////
-  inout              HPS_CONV_USB_N,
-  output      [14:0] HPS_DDR3_ADDR,
-  output      [2:0]  HPS_DDR3_BA,
-  output             HPS_DDR3_CAS_N,
-  output             HPS_DDR3_CKE,
-  output             HPS_DDR3_CK_N,
-  output             HPS_DDR3_CK_P,
-  output             HPS_DDR3_CS_N,
-  output      [3:0]  HPS_DDR3_DM,
-  inout       [31:0] HPS_DDR3_DQ,
-  inout       [3:0]  HPS_DDR3_DQS_N,
-  inout       [3:0]  HPS_DDR3_DQS_P,
-  output             HPS_DDR3_ODT,
-  output             HPS_DDR3_RAS_N,
-  output             HPS_DDR3_RESET_N,
-  input              HPS_DDR3_RZQ,
-  output             HPS_DDR3_WE_N,
-  output             HPS_ENET_GTX_CLK,
-  inout              HPS_ENET_INT_N,
-  output             HPS_ENET_MDC,
-  inout              HPS_ENET_MDIO,
-  input              HPS_ENET_RX_CLK,
-  input       [3:0]  HPS_ENET_RX_DATA,
-  input              HPS_ENET_RX_DV,
-  output      [3:0]  HPS_ENET_TX_DATA,
-  output             HPS_ENET_TX_EN,
-  inout       [3:0]  HPS_FLASH_DATA,
-  output             HPS_FLASH_DCLK,
-  output             HPS_FLASH_NCSO,
-  inout              HPS_GSENSOR_INT,
-  inout              HPS_I2C1_SCLK,
-  inout              HPS_I2C1_SDAT,
-  inout              HPS_I2C2_SCLK,
-  inout              HPS_I2C2_SDAT,
-  inout              HPS_I2C_CONTROL,
-  inout              HPS_KEY,
-  inout              HPS_LED,
-  inout              HPS_LTC_GPIO,
-  output             HPS_SD_CLK,
-  inout              HPS_SD_CMD,
-  inout       [3:0]  HPS_SD_DATA,
-  output             HPS_SPIM_CLK,
-  input              HPS_SPIM_MISO,
-  output             HPS_SPIM_MOSI,
-  inout              HPS_SPIM_SS,
-  input              HPS_UART_RX,
-  output             HPS_UART_TX,
-  input              HPS_USB_CLKOUT,
-  inout       [7:0]  HPS_USB_DATA,
-  input              HPS_USB_DIR,
-  input              HPS_USB_NXT,
-  output             HPS_USB_STP,
+  `ifdef ENABLE_HPS
+    inout              HPS_CONV_USB_N,
+    output      [14:0] HPS_DDR3_ADDR,
+    output      [2:0]  HPS_DDR3_BA,
+    output             HPS_DDR3_CAS_N,
+    output             HPS_DDR3_CKE,
+    output             HPS_DDR3_CK_N,
+    output             HPS_DDR3_CK_P,
+    output             HPS_DDR3_CS_N,
+    output      [3:0]  HPS_DDR3_DM,
+    inout       [31:0] HPS_DDR3_DQ,
+    inout       [3:0]  HPS_DDR3_DQS_N,
+    inout       [3:0]  HPS_DDR3_DQS_P,
+    output             HPS_DDR3_ODT,
+    output             HPS_DDR3_RAS_N,
+    output             HPS_DDR3_RESET_N,
+    input              HPS_DDR3_RZQ,
+    output             HPS_DDR3_WE_N,
+    output             HPS_ENET_GTX_CLK,
+    inout              HPS_ENET_INT_N,
+    output             HPS_ENET_MDC,
+    inout              HPS_ENET_MDIO,
+    input              HPS_ENET_RX_CLK,
+    input       [3:0]  HPS_ENET_RX_DATA,
+    input              HPS_ENET_RX_DV,
+    output      [3:0]  HPS_ENET_TX_DATA,
+    output             HPS_ENET_TX_EN,
+    inout       [3:0]  HPS_FLASH_DATA,
+    output             HPS_FLASH_DCLK,
+    output             HPS_FLASH_NCSO,
+    inout              HPS_GSENSOR_INT,
+    inout              HPS_I2C1_SCLK,
+    inout              HPS_I2C1_SDAT,
+    inout              HPS_I2C2_SCLK,
+    inout              HPS_I2C2_SDAT,
+    inout              HPS_I2C_CONTROL,
+    inout              HPS_KEY,
+    inout              HPS_LED,
+    inout              HPS_LTC_GPIO,
+    output             HPS_SD_CLK,
+    inout              HPS_SD_CMD,
+    inout       [3:0]  HPS_SD_DATA,
+    output             HPS_SPIM_CLK,
+    input              HPS_SPIM_MISO,
+    output             HPS_SPIM_MOSI,
+    inout              HPS_SPIM_SS,
+    input              HPS_UART_RX,
+    output             HPS_UART_TX,
+    input              HPS_USB_CLKOUT,
+    inout       [7:0]  HPS_USB_DATA,
+    input              HPS_USB_DIR,
+    input              HPS_USB_NXT,
+    output             HPS_USB_STP,
   `endif /*ENABLE_HPS*/
-
   ///////// IRDA /////////
   input              IRDA_RXD,
   output             IRDA_TXD,
-
   ///////// KEY /////////
   input       [3:0]  KEY,
-
   ///////// LEDR /////////
   output      [9:0]  LEDR,
-
   ///////// PS2 /////////
   inout              PS2_CLK,
   inout              PS2_CLK2,
   inout              PS2_DAT,
   inout              PS2_DAT2,
-
   ///////// SW /////////
   input       [9:0]  SW,
-
   ///////// TD /////////
   input              TD_CLK27,
   input       [7:0]  TD_DATA,
   input              TD_HS,
   output             TD_RESET_N,
   input              TD_VS,
-
-
   ///////// VGA /////////
   output      [7:0]  VGA_B,
   output             VGA_BLANK_N,
@@ -220,15 +191,12 @@ wire    hps_fpga_reset_n;
 wire    clk_25;
 wire    clk_193;
 wire    clk_120;
-
 //VGA signals
 wire    vga_enable;
 integer vga_row;
 integer vga_col;
-
 //CCD peripheral signal
 wire	  [11:0] CCD_DATA;
-
 //CCD_Capture signals
 wire    [11:0] ccd_data_captured;		//output data from CCD_Capture
 wire				   ccd_dval;            //valid output data
@@ -240,13 +208,11 @@ reg            ccd_lval_raw;		    //line valid
 wire           ccd_pixel_clk;
 wire           ccd_reset;
 wire    [31:0] Frame_Cont;
-
 //RAW2RGB signals
 wire    [11:0] raw_rgb_red;
 wire    [11:0] raw_rgb_green;
 wire    [11:0] raw_rgb_blue;
 wire           raw_rgb_dval;        //valid output data
-
 //SDRAM FIFOs data
 reg     [15:0] fifo1_writedata;
 reg     [15:0] fifo2_writedata;
@@ -355,20 +321,43 @@ soc_system u0 (
 
 
 // This component extracts the data obtained in the associated GPIO.
-CCD_Capture u3(	
-  .oDATA        (ccd_data_captured),  // component output data
-  .oDVAL        (ccd_dval),           // data valid signal
-  .oX_Cont      (X_Cont),
-  .oY_Cont      (Y_Cont),
+// CCD_Capture u3(	
+//   .oDATA        (ccd_data_captured),  // component output data
+//   .oDVAL        (ccd_dval),           // data valid signal
+//   .oX_Cont      (X_Cont),
+//   .oY_Cont      (Y_Cont),
+//   .oFrame_Cont  (Frame_Cont),         // Frames counter
+//   .iDATA        (ccd_data_raw),       // 12-bit data
+//   .iFVAL        (ccd_fval_raw),       // Frame valid signal
+//   .iLVAL        (ccd_lval_raw),       // Line valid signal
+//   .iSTART       (!KEY[3]),
+//   .iEND         (!KEY[2]),
+//   .iCLK         (ccd_pixel_clk),
+//   .iRST         (hps_fpga_reset_n)    // negative logic reset
+//   );
+camera_capture u3( 
+  .out_data     (ccd_data_captured),  // component output data
+  .out_valid    (ccd_dval),           // data valid signal
+  .out_count_x  (X_Cont_raw),
+  .out_count_y  (Y_Cont_raw),
   .oFrame_Cont  (Frame_Cont),         // Frames counter
-  .iDATA        (ccd_data_raw),
-  .iFVAL        (ccd_fval_raw),       //Frame valid signal
-  .iLVAL        (ccd_lval_raw),       //Line valid signal
-  .iSTART       (!KEY[3]),
-  .iEND         (!KEY[2]),
-  .iCLK         (ccd_pixel_clk),
-  .iRST         (hps_fpga_reset_n)    //negative logic reset
+  .in_data      (ccd_data_raw),       // 12-bit data
+  .in_frame_valid (ccd_fval_raw),       // Frame valid signal
+  .in_line_valid  (ccd_lval_raw),       // Line valid signal
+  .in_start     (SW[9]),
+  .clock        (ccd_pixel_clk),
+  .reset_n      (hps_fpga_reset_n),    // negative logic reset
+  .in_width     (in_width),
+  .in_height    (in_height)
   );
+wire    [11:0] in_width;
+wire    [11:0] in_height;
+wire    [11:0] X_Cont_raw;
+wire    [11:0] Y_Cont_raw;
+assign in_width = 11'd1280;
+assign in_height = 11'd960;
+assign X_Cont = {4'd0, X_Cont_raw};
+assign Y_Cont = {4'd0, Y_Cont_raw};
 
   // CCD_Capture external pinout conections.
   assign  CCD_DATA[0]  =  GPIO_1[13]; //Pixel data Bit 0
@@ -399,7 +388,13 @@ CCD_Capture u3(
   end
 
 
-// This component converts 'raw' data obtained in the CCD to RGB data.
+/* This component converts 'raw' data obtained in the CCD to RGB data.
+
+The output width  and height are half of the input ones, as, each pixel consists
+in 4 components(RGBG): The number of rows and columns are reduced to the half.
+One from every 2 rows are stored on a buffer for getting the components of the
+corresponding pixel afterwards.
+*/
 RAW2RGB u4(	
   .iCLK         (ccd_pixel_clk),
   .iRST         (hps_fpga_reset_n),   //negative logic reset
