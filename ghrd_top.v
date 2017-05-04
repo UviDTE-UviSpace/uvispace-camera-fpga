@@ -309,7 +309,7 @@ soc_system u0 (
   .hps_0_hps_io_hps_io_gpio_inst_GPIO54  ( HPS_KEY ),
   .hps_0_hps_io_hps_io_gpio_inst_GPIO61  ( HPS_GSENSOR_INT ),
   //FPGA soft GPIO 
-  .led_pio_external_connection_export    ( LEDR ),
+  .led_pio_external_connection_export    (  ),
   .dipsw_pio_external_connection_export  ( SW ),
   .button_pio_external_connection_export ( KEY ),
   //HPS reset output 
@@ -319,22 +319,6 @@ soc_system u0 (
   .pll_vga_clks_191_clk                  ( clk_193 )
   );
 
-
-// This component extracts the data obtained in the associated GPIO.
-// CCD_Capture u3(	
-//   .oDATA        (ccd_data_captured),  // component output data
-//   .oDVAL        (ccd_dval),           // data valid signal
-//   .oX_Cont      (X_Cont),
-//   .oY_Cont      (Y_Cont),
-//   .oFrame_Cont  (Frame_Cont),         // Frames counter
-//   .iDATA        (ccd_data_raw),       // 12-bit data
-//   .iFVAL        (ccd_fval_raw),       // Frame valid signal
-//   .iLVAL        (ccd_lval_raw),       // Line valid signal
-//   .iSTART       (!KEY[3]),
-//   .iEND         (!KEY[2]),
-//   .iCLK         (ccd_pixel_clk),
-//   .iRST         (hps_fpga_reset_n)    // negative logic reset
-//   );
 camera_capture u3( 
   .out_data     (ccd_data_captured),  // component output data
   .out_valid    (ccd_dval),           // data valid signal
@@ -350,14 +334,14 @@ camera_capture u3(
   .in_width     (in_width),
   .in_height    (in_height)
   );
-wire    [11:0] in_width;
-wire    [11:0] in_height;
-wire    [11:0] X_Cont_raw;
-wire    [11:0] Y_Cont_raw;
-assign in_width = 11'd1280;
-assign in_height = 11'd960;
-assign X_Cont = {4'd0, X_Cont_raw};
-assign Y_Cont = {4'd0, Y_Cont_raw};
+  wire    [11:0] in_width;
+  wire    [11:0] in_height;
+  wire    [11:0] X_Cont_raw;
+  wire    [11:0] Y_Cont_raw;
+  assign in_width = 11'd1280;
+  assign in_height = 11'd960;
+  assign X_Cont = {4'd0, X_Cont_raw};
+  assign Y_Cont = {4'd0, Y_Cont_raw};
 
   // CCD_Capture external pinout conections.
   assign  CCD_DATA[0]  =  GPIO_1[13]; //Pixel data Bit 0
@@ -397,13 +381,13 @@ corresponding pixel afterwards.
 */
 RAW2RGB u4(	
   .iCLK         (ccd_pixel_clk),
-  .iRST         (hps_fpga_reset_n),   //negative logic reset
-  .iDATA        (ccd_data_captured),  //component input data
-  .iDVAL        (ccd_dval),           // data valid signal
-  .oRed         (raw_rgb_red),        //output red component
-  .oGreen       (raw_rgb_green),      //output green component
-  .oBlue        (raw_rgb_blue),       //output blue component
-  .oDVAL        (raw_rgb_dval),
+  .iRST         (hps_fpga_reset_n),   // Negative logic reset
+  .iDATA        (ccd_data_captured),  // Component input data
+  .iDVAL        (ccd_dval),           // Data valid signal
+  .oRed         (raw_rgb_red),        // Output red component
+  .oGreen       (raw_rgb_green),      // Output green component
+  .oBlue        (raw_rgb_blue),       // Output blue component
+  .oDVAL        (raw_rgb_dval),       // Pixel value available
   .iX_Cont      (X_Cont),
   .iY_Cont      (Y_Cont)
   );
@@ -418,61 +402,93 @@ RAW2RGB u4(
       // if reset, do nothing.
     end
     else begin
-      fifo1_writedata <= {1'b0, raw_rgb_red[11:7], raw_rgb_green[11:7], 
-          raw_rgb_blue[11:7]};
+      if (SW[3]) begin
+        fifo1_writedata <= {1'b0, raw_rgb_red[11:7], raw_rgb_green[11:7], 
+                            raw_rgb_blue[11:7]};
+        fifo_write_enable <= raw_rgb_dval;
+      end
+      else begin
+        fifo1_writedata <= {8'h00, hue_hue[7:0]};
+        fifo_write_enable <= out_hue_valid;
+      end
     end
   end
 
+rgb2hue hue(
+  .clock(ccd_pixel_clk),
+  .reset_n(hps_fpga_reset_n),
+  // Data input
+  .in_red(raw_rgb_red[11:4]),
+  .in_green(raw_rgb_green[11:4]),
+  .in_blue(raw_rgb_blue[11:4]),
+  .in_valid(raw_rgb_dval),
+  .in_visual(1'b1),
+  .in_done(1'b1),
+  // Data output
+  .out_red(hue_red),
+  .out_green(hue_green),
+  .out_blue(hue_blue),
+  .out_hue(hue_hue),
+  .out_valid(out_hue_valid),
+  .out_visual(),
+  .out_done()
+  );
+  wire  [7:0] hue_hue;
+  wire  [7:0] hue_red;
+  wire  [7:0] hue_green;
+  wire  [7:0] hue_blue;
+  wire        out_hue_valid;
 
 //  SDRAM memory based on DE1-SOC demonstration
 Sdram_Control u1( 
-      // HOST Side
-      .REF_CLK(CLOCK_50),
-      .RESET_N(1'b1),
-      // FIFO Write Side 1
-      .WR1_DATA(fifo1_writedata),         //data bus size: 16 bits
-      .WR1(raw_rgb_dval),
-      .WR1_ADDR(0),
-      .WR1_MAX_ADDR(640*480),             //address bus size: 25 bits
-      .WR1_LENGTH(9'h80),                 //Max allowed size: 8 bits
-      .WR1_LOAD(!hps_fpga_reset_n),
-      .WR1_CLK(~ccd_pixel_clk),
-      // // FIFO Write Side 2 (Unused. Needed if 8 bits per pixel are used)
-      // .WR2_DATA(fifo2_writedata),         //data bus size: 16 bits
-      // .WR2(raw_rgb_dval),
-      // .WR2_ADDR(22'h100000),
-      // .WR2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
-      // .WR2_LENGTH(9'h80),                 //Max allowed size: 8 bits
-      // .WR2_LOAD(!hps_fpga_reset_n),
-      // .WR2_CLK(~ccd_pixel_clk),
-      // FIFO Read Side 1
-      .RD1_DATA(fifo1_readdata),          //data bus size: 16 bits
-      .RD1(vga_enable),                   //Read enable
-      .RD1_ADDR(0),     
-      .RD1_MAX_ADDR(640*480),             //address bus size: 25 bits
-      .RD1_LENGTH(9'h80),                 //Max allowed size: 8 bits
-      .RD1_LOAD(!hps_fpga_reset_n),
-      .RD1_CLK(~clk_25),
-      // // FIFO Read Side 2 (Unused. Needed if 8 bits per pixel are used)
-      // .RD2_DATA(fifo2_readdata),          //data bus size: 16 bits
-      // .RD2(vga_enable),                   //Read enable
-      // .RD2_ADDR(22'h100000),     
-      // .RD2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
-      // .RD2_LENGTH(9'h80),                 //Max allowed size: 8 bits
-      // .RD2_LOAD(!hps_fpga_reset_n),
-      // .RD2_CLK(~clk_25),
-      // SDRAM Side
-      .SA(DRAM_ADDR),
-      .BA(DRAM_BA),
-      .CS_N(DRAM_CS_N),
-      .CKE(DRAM_CKE),
-      .RAS_N(DRAM_RAS_N),
-      .CAS_N(DRAM_CAS_N),
-      .WE_N(DRAM_WE_N),
-      .DQ(DRAM_DQ),
-      .DQM({DRAM_UDQM,DRAM_LDQM}),
-      .SDR_CLK(DRAM_CLK)  
-      );
+  // HOST Side
+  .REF_CLK(CLOCK_50),
+  .RESET_N(1'b1),
+  // FIFO Write Side 1
+  .WR1_DATA(fifo1_writedata),         //data bus size: 16 bits
+  .WR1(fifo_write_enable),
+  .WR1_ADDR(0),
+  .WR1_MAX_ADDR(640*480),             //address bus size: 25 bits
+  .WR1_LENGTH(9'h80),                 //Max allowed size: 8 bits
+  .WR1_LOAD(!hps_fpga_reset_n),
+  .WR1_CLK(~ccd_pixel_clk),
+  // // FIFO Write Side 2 (Unused. Needed if 8 bits per pixel are used)
+  // .WR2_DATA(fifo2_writedata),         //data bus size: 16 bits
+  // .WR2(raw_rgb_dval),
+  // .WR2_ADDR(22'h100000),
+  // .WR2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
+  // .WR2_LENGTH(9'h80),                 //Max allowed size: 8 bits
+  // .WR2_LOAD(!hps_fpga_reset_n),
+  // .WR2_CLK(~ccd_pixel_clk),
+  // FIFO Read Side 1
+  .RD1_DATA(fifo1_readdata),          //data bus size: 16 bits
+  .RD1(vga_enable),                   //Read enable
+  .RD1_ADDR(0),     
+  .RD1_MAX_ADDR(640*480),             //address bus size: 25 bits
+  .RD1_LENGTH(9'h80),                 //Max allowed size: 8 bits
+  .RD1_LOAD(!hps_fpga_reset_n),
+  .RD1_CLK(~clk_25),
+  // // FIFO Read Side 2 (Unused. Needed if 8 bits per pixel are used)
+  // .RD2_DATA(fifo2_readdata),          //data bus size: 16 bits
+  // .RD2(vga_enable),                   //Read enable
+  // .RD2_ADDR(22'h100000),     
+  // .RD2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
+  // .RD2_LENGTH(9'h80),                 //Max allowed size: 8 bits
+  // .RD2_LOAD(!hps_fpga_reset_n),
+  // .RD2_CLK(~clk_25),
+  // SDRAM Side
+  .SA(DRAM_ADDR),
+  .BA(DRAM_BA),
+  .CS_N(DRAM_CS_N),
+  .CKE(DRAM_CKE),
+  .RAS_N(DRAM_RAS_N),
+  .CAS_N(DRAM_CAS_N),
+  .WE_N(DRAM_WE_N),
+  .DQ(DRAM_DQ),
+  .DQM({DRAM_UDQM,DRAM_LDQM}),
+  .SDR_CLK(DRAM_CLK)  
+  );
+  reg    fifo_write_enable;
 
 
 // VGA controller component.
@@ -489,10 +505,19 @@ vga_controller vga_component(
   .data_req   ( vga_request )
   );
 
-  // Send the data on the FIFO memories to the VGA outputs.
-  assign VGA_R = (vga_enable && SW[2]) ? {fifo1_readdata[14:10], 3'd0} : 0;
-  assign VGA_G = (vga_enable && SW[3]) ? {fifo1_readdata[9:5], 3'd0} : 0;
-  assign VGA_B = (vga_enable && SW[4]) ? {fifo1_readdata[4:0], 3'd0} : 0;
+  // Send the data on the FIFO memory to the VGA outputs.
+  assign VGA_R = (!vga_enable) ? 0 :
+                 (!SW[3])      ? fifo1_readdata[7:0] :
+                 (SW[0])       ? {fifo1_readdata[14:10], 3'd0} :
+                 0;
+  assign VGA_G = (!vga_enable) ? 0 :
+                 (!SW[3])      ? fifo1_readdata[7:0] :
+                 (SW[1])       ? {fifo1_readdata[9:5], 3'd0} :
+                 0;
+  assign VGA_B = (!vga_enable) ? 0 :
+                 (!SW[3])      ? fifo1_readdata[7:0] :
+                 (SW[2])       ? {fifo1_readdata[4:0], 3'd0} :
+                 0;
   // Set the VGA clock to 25 MHz.
   assign  VGA_CLK = clk_25;
 
@@ -507,21 +532,77 @@ SEG7_LUT_8 u5(
   .oSEG5        (HEX5),
   .oSEG6        (),
   .oSEG7        (),
-  .iDIG         (Frame_Cont[31:0])
+  .iDIG         (display)
   );
+  wire  [31:0] display;
+  reg   [31:0] count;
+  reg   [31:0] rate;
+  reg   [31:0] _Frame_Cont;
+  reg          seconds_pulse;
+  reg          pulse;
+  assign LEDR[0] = pulse;
+  assign display = (SW[8]) ? {16'h0, in_exposure} : rate;
+  // Calculate the frame rate.
+  // Seconds counter. The output will be 1 during one pulse after 1 second.
+  always @(posedge CLOCK_50) begin
+    if (count < 50000000) begin
+      count = count + 1;
+      // seconds_pulse = 0;
+    end
+    else begin
+      count = 0;
+      // seconds_pulse = 1;
+      pulse = ~pulse;
+      rate = Frame_Cont - _Frame_Cont;
+      _Frame_Cont = Frame_Cont;
+    end
+  end
+  // Frames counter. Will get the number of frames per second.
+  // always @(posedge CLOCK_50) begin
+  //   if (seconds_pulse == 1) begin
+
+  //   end
+  // end
 
 
 // Component for writing configuration to the camera peripheral.
-I2C_CCD_Config u8(	//	Host Side
-  .iCLK             (CLOCK_50),
-  .iRST_N           (hps_fpga_reset_n),
-  .iZOOM_MODE_SW    (SW[8]),
-  .iEXPOSURE_ADJ    (KEY[1]),
-  .iEXPOSURE_DEC_p  (SW[0]),
-  //	I2C Side
-  .I2C_SCLK         (GPIO_1[24]),
-  .I2C_SDAT         (GPIO_1[23])
+camera_config #(
+  .CLK_FREQ(25000000),  // 25 MHz
+  .I2C_FREQ(20000)      // 20 kHz
+  ) camera_conf(
+  // Host Side
+  .clock(ccd_pixel_clk),
+  .reset_n(hps_fpga_reset_n),
+  // Configuration registers
+  .exposure(in_exposure),
+  .start_row(in_start_row),
+  .start_column(in_start_column),
+  .row_size(in_row_size),
+  .column_size(in_column_size),
+  .row_mode(in_row_mode),
+  .column_mode(in_column_mode),
+  // Ready signal
+  .out_ready(ready),
+  // I2C Side
+  .I2C_SCLK(GPIO_1[24]),
+  .I2C_SDAT(GPIO_1[23])
   );
+  // Camera config (I2C)
+  wire          ready;
+  wire  [15:0]  in_exposure;
+  wire  [15:0]  start_row;
+  wire  [15:0]  start_column;
+  wire  [15:0]  in_row_size;
+  wire  [15:0]  in_column_size;
+  wire  [15:0]  in_row_mode;
+  wire  [15:0]  in_column_mode;
 
+  assign in_exposure = 16'h07C0;
+  assign start_row = 16'h0000;
+  assign start_column = 16'h0000;
+  assign in_row_size = 16'h077F;
+  assign in_column_size = 16'h09FF;
+  assign in_row_mode = 16'h0011;
+  assign in_column_mode = 16'h0011;
 
 endmodule

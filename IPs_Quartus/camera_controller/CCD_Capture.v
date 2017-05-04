@@ -40,6 +40,13 @@
 //   V1.0 :| Johnny FAN        :| 07/07/09  :| Initial Revision
 // --------------------------------------------------------------------
 
+/*
+Module signals:
+- iLVAL: LINE_VALID is HIGH during the shaded region of the figure.
+- iFVAL: FRAME_VALID is HIGH from the first until the last Horizontal
+Blank intervals.
+*/
+
 module CCD_Capture(	oDATA,
 					oDVAL,
 					oX_Cont,
@@ -66,6 +73,7 @@ output	[15:0]	oX_Cont;
 output	[15:0]	oY_Cont;
 output	[31:0]	oFrame_Cont;
 output			oDVAL;
+
 reg				Pre_FVAL;
 reg				mCCD_FVAL;
 reg				mCCD_LVAL;
@@ -96,6 +104,7 @@ begin
 	end
 end
 
+// Update row and column counters, and frame and line valid bits.
 always@(posedge iCLK or negedge iRST)
 begin
 	if(!iRST)
@@ -103,7 +112,6 @@ begin
 		Pre_FVAL	<=	0;
 		mCCD_FVAL	<=	0;
 		mCCD_LVAL	<=	0;
-
 		X_Cont		<=	0;
 		Y_Cont		<=	0;
 	end
@@ -136,6 +144,7 @@ begin
 	end
 end
 
+// Update frame counter.
 always@(posedge iCLK or negedge iRST)
 begin
 	if(!iRST)
@@ -147,6 +156,7 @@ begin
 	end
 end
 
+// Update the output data value.
 always@(posedge iCLK or negedge iRST)
 begin
 	if(!iRST)
@@ -157,8 +167,8 @@ begin
 		mCCD_DATA	<=	0;	
 end			
 
+// The code from here until the end is useless.
 reg	ifval_dealy;
-
 wire ifval_fedge;	
 reg	[15:0]	y_cnt_d;
 
