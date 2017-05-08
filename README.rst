@@ -18,3 +18,16 @@ Compilation instructions
 * Run the **Assembler (Generate programming files)** utility
 
 **NOTE:** The last 3 steps could be run altogether pressing the “Start Compilation” button
+
+====================================
+Generate hardware address map header
+====================================
+
+For generating the header, firstly  the DS-5 *embedded_command_shell* must be executed. Then, the following instruction can be run from the project root directory, and it will generate a header file describing the HPS address map. It can be used by an HPS C/C++ program to get base addresses of the FPGA 
+peripherals.
+
+.. code-block:: bash
+
+    $ sopc-create-header-files --single hps_0.h --module hps_0
+
+After running it, a header named *hps_0.h* will be generated on the current directory.
