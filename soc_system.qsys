@@ -9,6 +9,14 @@
    categories="System" />
  <parameter name="bonusData"><![CDATA[bonusData 
 {
+   element avalon_camera_0
+   {
+      datum _sortIndex
+      {
+         value = "6";
+         type = "int";
+      }
+   }
    element button_pio
    {
       datum _sortIndex
@@ -112,6 +120,14 @@
          type = "int";
       }
    }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
@@ -133,6 +149,11 @@
  <parameter name="timeStamp" value="0" />
  <parameter name="useTestBenchNamingPattern" value="false" />
  <instanceScript></instanceScript>
+ <interface
+   name="avalon_camera_export"
+   internal="avalon_camera_0.export"
+   type="conduit"
+   dir="end" />
  <interface
    name="button_pio_external_connection"
    internal="button_pio.external_connection"
@@ -167,6 +188,17 @@
    type="clock"
    dir="start" />
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
+ <module name="avalon_camera_0" kind="avalon_camera" version="1.0" enabled="1">
+  <parameter name="COLUMN_MODE" value="2" />
+  <parameter name="COLUMN_SIZE" value="1919" />
+  <parameter name="EXPOSURE" value="8" />
+  <parameter name="HEIGHT" value="240" />
+  <parameter name="ROW_MODE" value="2" />
+  <parameter name="ROW_SIZE" value="1439" />
+  <parameter name="START_COLUMN" value="16" />
+  <parameter name="START_ROW" value="54" />
+  <parameter name="WIDTH" value="320" />
+ </module>
  <module name="button_pio" kind="altera_avalon_pio" version="16.0" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="true" />
   <parameter name="bitModifyingOutReg" value="false" />
@@ -952,7 +984,16 @@
  <connection
    kind="avalon"
    version="16.0"
-   start="hps_0.h2f_lw_axi_master"
+   start="hps_0.h2f_axi_master"
+   end="avalon_camera_0.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="16.0"
+   start="hps_0.h2f_axi_master"
    end="led_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x00010040" />
@@ -961,7 +1002,7 @@
  <connection
    kind="avalon"
    version="16.0"
-   start="hps_0.h2f_lw_axi_master"
+   start="hps_0.h2f_axi_master"
    end="dipsw_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x00010080" />
@@ -970,15 +1011,20 @@
  <connection
    kind="avalon"
    version="16.0"
-   start="hps_0.h2f_lw_axi_master"
+   start="hps_0.h2f_axi_master"
    end="button_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x000100c0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
- <connection kind="clock" version="16.0" start="clk_0.clk" end="led_pio.clk" />
  <connection kind="clock" version="16.0" start="clk_0.clk" end="dipsw_pio.clk" />
  <connection kind="clock" version="16.0" start="clk_0.clk" end="button_pio.clk" />
+ <connection kind="clock" version="16.0" start="clk_0.clk" end="led_pio.clk" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="clk_0.clk"
+   end="avalon_camera_0.clock" />
  <connection
    kind="clock"
    version="16.0"
@@ -1013,6 +1059,11 @@
    end="dipsw_pio.irq">
   <parameter name="irqNumber" value="0" />
  </connection>
+ <connection
+   kind="reset"
+   version="16.0"
+   start="clk_0.clk_reset"
+   end="avalon_camera_0.clock_reset" />
  <connection
    kind="reset"
    version="16.0"
