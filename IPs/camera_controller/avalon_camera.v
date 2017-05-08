@@ -83,7 +83,7 @@ module avalon_camera (
     reg [15:0] data_exposure;
     
     reg read;
-        
+
     // Read/Write registers
     always @(posedge csi_clk or negedge csi_reset_n) 
     begin
@@ -144,36 +144,37 @@ module avalon_camera (
             else begin
                 read <= 1'b0;
                 avs_s1_readdata <= 32'd0;
-            end
-            if (avs_s1_write) begin
-                case (avs_s1_address)
-                    `CAPTURE_START:
-                        capture_start <= avs_s1_writedata[0];
-                    `CAPTURE_CONFIGURE:
-                        capture_configure  <= avs_s1_writedata[0];
-                    `CAPTURE_SELECT_VGA:
-                        select_vga <= avs_s1_writedata[0];
-                    `CAPTURE_SELECT_OUTPUT:
-                        select_output <= avs_s1_writedata[7:0];
-                    `ADDR_WIDTH:
-                        data_width[15:0] <= avs_s1_writedata[15:0];
-                    `ADDR_HEIGHT:
-                        data_height[15:0] <= avs_s1_writedata[15:0];
-                    `ADDR_START_ROW:
-                        data_start_row[15:0] <= avs_s1_writedata[15:0];
-                    `ADDR_START_COLUMN:
-                        data_start_column[15:0] <= avs_s1_writedata[15:0];
-                    `ADDR_ROW_SIZE:
-                        data_row_size[15:0] <= avs_s1_writedata[15:0];
-                    `ADDR_COLUMN_SIZE:
-                        data_column_size[15:0] <= avs_s1_writedata[15:0];
-                    `ADDR_ROW_MODE:
-                        data_row_mode[15:0] <= avs_s1_writedata[15:0];
-                    `ADDR_COLUMN_MODE:
-                        data_column_mode[15:0] <= avs_s1_writedata[15:0];
-                    `ADDR_EXPOSURE:
-                        data_exposure[15:0] <= avs_s1_writedata[15:0];
-                endcase
+            
+                if (avs_s1_write) begin
+                    case (avs_s1_address)
+                        `CAPTURE_START:
+                            capture_start <= avs_s1_writedata[0];
+                        `CAPTURE_CONFIGURE:
+                            capture_configure  <= avs_s1_writedata[0];
+                        `CAPTURE_SELECT_VGA:
+                            select_vga <= avs_s1_writedata[0];
+                        `CAPTURE_SELECT_OUTPUT:
+                            select_output <= avs_s1_writedata[7:0];
+                        `ADDR_WIDTH:
+                            data_width[15:0] <= avs_s1_writedata[15:0];
+                        `ADDR_HEIGHT:
+                            data_height[15:0] <= avs_s1_writedata[15:0];
+                        `ADDR_START_ROW:
+                            data_start_row[15:0] <= avs_s1_writedata[15:0];
+                        `ADDR_START_COLUMN:
+                            data_start_column[15:0] <= avs_s1_writedata[15:0];
+                        `ADDR_ROW_SIZE:
+                            data_row_size[15:0] <= avs_s1_writedata[15:0];
+                        `ADDR_COLUMN_SIZE:
+                            data_column_size[15:0] <= avs_s1_writedata[15:0];
+                        `ADDR_ROW_MODE:
+                            data_row_mode[15:0] <= avs_s1_writedata[15:0];
+                        `ADDR_COLUMN_MODE:
+                            data_column_mode[15:0] <= avs_s1_writedata[15:0];
+                        `ADDR_EXPOSURE:
+                            data_exposure[15:0] <= avs_s1_writedata[15:0];
+                    endcase
+                end
             end
         end
     end
