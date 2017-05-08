@@ -219,13 +219,32 @@ reg     [15:0] fifo2_writedata;
 wire    [15:0] fifo1_readdata;
 wire    [15:0] fifo2_readdata;
 
-
 //=======================================================
 //  Structural coding
 //=======================================================
 soc_system u0 (      
+  
   .clk_clk                               ( CLOCK_50 ),
   .reset_reset_n                         ( 1'b1 ),
+  // Avalon camera (Unused ports left unwired)
+  .avalon_camera_export_clk              ( ),
+  .avalon_camera_export_start            (),
+  .avalon_camera_export_done             ( 1'b0 ),
+  .avalon_camera_export_configure        (),
+  .avalon_camera_export_selectvga        (),
+  .avalon_camera_export_selectoutput     (),
+  .avalon_camera_export_read             (),
+  .avalon_camera_export_readdata         ( 32'd0 ),
+  .avalon_camera_export_width            ( in_width ),
+  .avalon_camera_export_height           ( in_height ),
+  .avalon_camera_export_startrow         ( start_row ),
+  .avalon_camera_export_startcol         ( start_column ),
+  .avalon_camera_export_colmode          ( in_column_mode ),
+  .avalon_camera_export_exposure         ( in_exposure ),
+  .avalon_camera_export_ready            ( ready ),
+  .avalon_camera_export_rowsize          ( in_row_size ),
+  .avalon_camera_export_colsize          ( in_column_size ),
+  .avalon_camera_export_rowmode          ( in_row_mode ),
   //HPS ddr3
   .memory_mem_a                          ( HPS_DDR3_ADDR ),
   .memory_mem_ba                         ( HPS_DDR3_BA ),
@@ -313,7 +332,7 @@ soc_system u0 (
   .dipsw_pio_external_connection_export  ( SW ),
   .button_pio_external_connection_export ( KEY ),
   //HPS reset output 
-  .hps_0_h2f_reset_reset_n               (hps_fpga_reset_n ),
+  .hps_0_h2f_reset_reset_n               ( hps_fpga_reset_n ),
   //HPS PLL clock outputs
   .pll_vga_clks_25_clk                   ( clk_25 ),
   .pll_vga_clks_191_clk                  ( clk_193 )
@@ -331,15 +350,15 @@ camera_capture u3(
   .in_start     (SW[9]),
   .clock        (ccd_pixel_clk),
   .reset_n      (hps_fpga_reset_n),    // negative logic reset
-  .in_width     (in_width),
-  .in_height    (in_height)
+  .in_width     (in_width[11:0]),
+  .in_height    (in_height[11:0])
   );
-  wire    [11:0] in_width;
-  wire    [11:0] in_height;
+  wire    [15:0] in_width;
+  wire    [15:0] in_height;
   wire    [11:0] X_Cont_raw;
   wire    [11:0] Y_Cont_raw;
-  assign in_width = 11'd1280;
-  assign in_height = 11'd960;
+  // assign in_width = 11'd1280;
+  // assign in_height = 11'd960;
   assign X_Cont = {4'd0, X_Cont_raw};
   assign Y_Cont = {4'd0, Y_Cont_raw};
 
@@ -557,12 +576,6 @@ SEG7_LUT_8 u5(
       _Frame_Cont = Frame_Cont;
     end
   end
-  // Frames counter. Will get the number of frames per second.
-  // always @(posedge CLOCK_50) begin
-  //   if (seconds_pulse == 1) begin
-
-  //   end
-  // end
 
 
 // Component for writing configuration to the camera peripheral.
@@ -597,12 +610,12 @@ camera_config #(
   wire  [15:0]  in_row_mode;
   wire  [15:0]  in_column_mode;
 
-  assign in_exposure = 16'h07C0;
-  assign start_row = 16'h0000;
-  assign start_column = 16'h0000;
-  assign in_row_size = 16'h077F;
-  assign in_column_size = 16'h09FF;
-  assign in_row_mode = 16'h0011;
-  assign in_column_mode = 16'h0011;
+  // assign in_exposure = 16'h07C0;
+  // assign start_row = 16'h0000;
+  // assign start_column = 16'h0000;
+  // assign in_row_size = 16'h077F;
+  // assign in_column_size = 16'h09FF;
+  // assign in_row_mode = 16'h0011;
+  // assign in_column_mode = 16'h0011;
 
 endmodule
