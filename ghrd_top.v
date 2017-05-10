@@ -234,7 +234,7 @@ soc_system u0 (
   .avalon_camera_export_selectvga        (),
   .avalon_camera_export_selectoutput     (),
   .avalon_camera_export_read             (),
-  .avalon_camera_export_readdata         ( 32'd0 ),
+  .avalon_camera_export_readdata         ( {16'd0, fifo2_readdata} ),
   .avalon_camera_export_width            ( in_width ),
   .avalon_camera_export_height           ( in_height ),
   .avalon_camera_export_startrow         ( start_row ),
@@ -471,14 +471,14 @@ Sdram_Control u1(
   .WR1_LENGTH(9'h80),                 //Max allowed size: 8 bits
   .WR1_LOAD(!hps_fpga_reset_n),
   .WR1_CLK(~ccd_pixel_clk),
-  // // FIFO Write Side 2 (Unused. Needed if 8 bits per pixel are used)
-  // .WR2_DATA(fifo2_writedata),         //data bus size: 16 bits
-  // .WR2(raw_rgb_dval),
-  // .WR2_ADDR(22'h100000),
-  // .WR2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
-  // .WR2_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  // .WR2_LOAD(!hps_fpga_reset_n),
-  // .WR2_CLK(~ccd_pixel_clk),
+  // FIFO Write Side 2 (Unused. Needed if 8 bits per pixel are used)
+  .WR2_DATA(fifo1_writedata),         //data bus size: 16 bits
+  .WR2(fifo_write_enable),
+  .WR2_ADDR(22'h100000),
+  .WR2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
+  .WR2_LENGTH(9'h80),                 //Max allowed size: 8 bits
+  .WR2_LOAD(!hps_fpga_reset_n),
+  .WR2_CLK(~ccd_pixel_clk),
   // FIFO Read Side 1
   .RD1_DATA(fifo1_readdata),          //data bus size: 16 bits
   .RD1(vga_enable),                   //Read enable
@@ -487,14 +487,14 @@ Sdram_Control u1(
   .RD1_LENGTH(9'h80),                 //Max allowed size: 8 bits
   .RD1_LOAD(!hps_fpga_reset_n),
   .RD1_CLK(~clk_25),
-  // // FIFO Read Side 2 (Unused. Needed if 8 bits per pixel are used)
-  // .RD2_DATA(fifo2_readdata),          //data bus size: 16 bits
-  // .RD2(vga_enable),                   //Read enable
-  // .RD2_ADDR(22'h100000),     
-  // .RD2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
-  // .RD2_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  // .RD2_LOAD(!hps_fpga_reset_n),
-  // .RD2_CLK(~clk_25),
+  // FIFO Read Side 2 (Unused. Needed if 8 bits per pixel are used)
+  .RD2_DATA(fifo2_readdata),          //data bus size: 16 bits
+  .RD2(vga_enable),                   //Read enable
+  .RD2_ADDR(22'h100000),     
+  .RD2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
+  .RD2_LENGTH(9'h80),                 //Max allowed size: 8 bits
+  .RD2_LOAD(!hps_fpga_reset_n),
+  .RD2_CLK(~clk_25),
   // SDRAM Side
   .SA(DRAM_ADDR),
   .BA(DRAM_BA),
