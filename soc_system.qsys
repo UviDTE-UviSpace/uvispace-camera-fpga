@@ -189,15 +189,15 @@
    dir="start" />
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
  <module name="avalon_camera_0" kind="avalon_camera" version="1.0" enabled="1">
-  <parameter name="COLUMN_MODE" value="2" />
-  <parameter name="COLUMN_SIZE" value="1919" />
-  <parameter name="EXPOSURE" value="8" />
-  <parameter name="HEIGHT" value="240" />
-  <parameter name="ROW_MODE" value="2" />
-  <parameter name="ROW_SIZE" value="1439" />
-  <parameter name="START_COLUMN" value="16" />
-  <parameter name="START_ROW" value="54" />
-  <parameter name="WIDTH" value="320" />
+  <parameter name="COLUMN_MODE" value="17" />
+  <parameter name="COLUMN_SIZE" value="2559" />
+  <parameter name="EXPOSURE" value="1984" />
+  <parameter name="HEIGHT" value="480" />
+  <parameter name="ROW_MODE" value="17" />
+  <parameter name="ROW_SIZE" value="1919" />
+  <parameter name="START_COLUMN" value="0" />
+  <parameter name="START_ROW" value="0" />
+  <parameter name="WIDTH" value="640" />
  </module>
  <module name="button_pio" kind="altera_avalon_pio" version="16.0" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="true" />
