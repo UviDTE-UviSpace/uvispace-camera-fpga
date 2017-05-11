@@ -25,6 +25,9 @@ by the pixel clock.
 - RAW2RGB: It formats the raw data obtained from the camera peripheral
 to RGB values. Each pixel contains 3 components (Red, Green and Blue),
 defined by 12 bits each one.
+- rgb2hue: Gets the Hue component of the pixels from an RGB input. The
+Hue is a very useful value for evaluating the colour properties of an
+image, and thus for getting a red triangle in the image.
 - Sdram_Control: This module is used for connecting to the external DRAM
 memory and use it as a buffer between the camera input and the VGA
 output, as both are run with different clock rates. For this purpose,
@@ -34,7 +37,7 @@ The module has a set of parameters that defines the output resolution,
 being by default 640x480.
 - SEG7_LUT_8: This componet is used for showing the fram rate on the
 hexadecimal 8-segments peripherals.
-- I2C_CCD_Config: This module sends the default configuration to the
+- camera_config: This module sends the default configuration to the
 camera using the I2C standard.
 
 NOTE: The desired design should have 2 FIFOs, in order to send 8 bits
@@ -42,7 +45,8 @@ per component to the VGA controller. However, there is a synchronization
 error, and the values obtained in the second FIFO have an offset
 relative to the first one i.e. The component sent by the second FIFO
 corresponds to the one that was sent by the first one several iterations
-ago, resulting on an horizontal shift.
+ago, resulting on an horizontal shift. For this reason, the size per
+pixel was reduced to 15 bits (1 zero and 5 bits per colour).
 */
 
 `define ENABLE_HPS
@@ -541,7 +545,16 @@ vga_controller vga_component(
   assign  VGA_CLK = clk_25;
 
 
-// The frame count is displayed using the 8-segments LEDs.
+/*
+Instantiation of the 7-segment displays module.
+
+Depending on the status of the 8th switch (SW[8]), it will display the
+exposure value (if SW[8] = 1) or the frame rate (if SW[8] = 0).
+
+For getting the frame rate, a 1 second temporizer is created, and the
+number of frames between pulses is displayed. Moreover, a seconds pulse
+is wired to the first led of the board (LEDR[0])
+*/
 SEG7_LUT_8 u5(	
   .oSEG0        (HEX0),
   .oSEG1        (HEX1),
