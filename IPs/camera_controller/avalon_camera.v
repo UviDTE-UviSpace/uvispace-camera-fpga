@@ -30,7 +30,8 @@ module avalon_camera (
         output [15:0] avs_export_column_size,
         output [15:0] avs_export_row_mode,
         output [15:0] avs_export_column_mode,
-        output [15:0] avs_export_exposure
+        output [15:0] avs_export_exposure,
+        output avs_export_cam_soft_reset_n
     );
     
     // Slave address constant
@@ -39,6 +40,7 @@ module avalon_camera (
     `define CAPTURE_SELECT_VGA      5'h02
     `define CAPTURE_SELECT_OUTPUT   5'h03
     `define CAPTURE_DATA            5'h04
+    `define SOFT_RESET_N            5'h05
     
     // Registers address
     `define ADDR_WIDTH          5'h08
@@ -81,6 +83,7 @@ module avalon_camera (
     reg [15:0] data_row_mode;
     reg [15:0] data_column_mode;
     reg [15:0] data_exposure;
+    reg cam_soft_reset_n;
     
     reg read;
 
@@ -105,6 +108,7 @@ module avalon_camera (
             data_row_mode[15:0] <= ROW_MODE[15:0];
             data_column_mode[15:0] <= COLUMN_MODE[15:0];
             data_exposure[15:0] <= EXPOSURE[15:0];
+            cam_soft_reset_n <= 1;
         end
         else begin
             if (avs_s1_read) begin
@@ -118,6 +122,8 @@ module avalon_camera (
                         avs_s1_readdata[31:0] <= {31'b0, avs_export_capture_done};
                     `CAPTURE_CONFIGURE:
                         avs_s1_readdata[31:0] <= {31'b0, avs_export_capture_ready};
+                    `SOFT_RESET_N:
+                        avs_s1_readdata[15:0] <= {15'b0, cam_soft_reset_n};
                     `ADDR_WIDTH: 
                         avs_s1_readdata[15:0] <= data_width[15:0];  
                     `ADDR_HEIGHT:
@@ -155,6 +161,8 @@ module avalon_camera (
                             select_vga <= avs_s1_writedata[0];
                         `CAPTURE_SELECT_OUTPUT:
                             select_output <= avs_s1_writedata[7:0];
+                        `SOFT_RESET_N:
+                            cam_soft_reset_n <= avs_s1_writedata[0];
                         `ADDR_WIDTH:
                             data_width[15:0] <= avs_s1_writedata[15:0];
                         `ADDR_HEIGHT:
@@ -184,6 +192,7 @@ module avalon_camera (
     assign avs_export_capture_configure = capture_configure;
     assign avs_export_capture_select_vga = select_vga;
     assign avs_export_capture_select_output[7:0] = select_output[7:0]; 
+    assign avs_export_cam_soft_reset_n = cam_soft_reset_n;
     
     // Configuration signals
     assign avs_export_width[15:0] = data_width[15:0];

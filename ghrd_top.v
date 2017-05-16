@@ -191,10 +191,13 @@ module ghrd_top(
 //=======================================================
 
 //HPS signals
-wire    hps_fpga_reset_n;
+wire    hps2fpga_reset_n;
+wire 	  camera_soft_reset_n;
+wire 	  video_stream_reset_n;
 wire    clk_25;
 wire    clk_193;
 wire    clk_120;
+wire    clk_24;
 //VGA signals
 wire    vga_enable;
 integer vga_row;
@@ -203,7 +206,7 @@ integer vga_col;
 wire	  [11:0] CCD_DATA;
 //CCD_Capture signals
 wire    [11:0] ccd_data_captured;		//output data from CCD_Capture
-wire				   ccd_dval;            //valid output data
+wire				ccd_dval;            //valid output data
 wire    [15:0] X_Cont;
 wire	  [15:0] Y_Cont;
 reg     [11:0] ccd_data_raw;		    //input raw data to CCD_Capture
@@ -227,9 +230,7 @@ wire    [15:0] fifo2_readdata;
 //  Structural coding
 //=======================================================
 soc_system u0 (      
-  
   .clk_clk                               ( CLOCK_50 ),
-  .reset_reset_n                         ( 1'b1 ),
   // Avalon camera (Unused ports left unwired)
   .avalon_camera_export_clk              ( ),
   .avalon_camera_export_start            (),
@@ -249,6 +250,7 @@ soc_system u0 (
   .avalon_camera_export_rowsize          ( in_row_size ),
   .avalon_camera_export_colsize          ( in_column_size ),
   .avalon_camera_export_rowmode          ( in_row_mode ),
+  .avalon_camera_export_soft_reset_n     ( camera_soft_reset_n ),
   //HPS ddr3
   .memory_mem_a                          ( HPS_DDR3_ADDR ),
   .memory_mem_ba                         ( HPS_DDR3_BA ),
@@ -336,10 +338,12 @@ soc_system u0 (
   .dipsw_pio_external_connection_export  ( SW ),
   .button_pio_external_connection_export ( KEY ),
   //HPS reset output 
-  .hps_0_h2f_reset_reset_n               ( hps_fpga_reset_n ),
+  .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
   //HPS PLL clock outputs
   .pll_vga_clks_25_clk                   ( clk_25 ),
-  .pll_vga_clks_191_clk                  ( clk_193 )
+  .pll_vga_clks_191_clk                  ( clk_193 ),
+  .pll_camera_clks_24_clk                ( clk_24 ) 
+  
   );
 
 camera_capture u3( 
@@ -353,7 +357,7 @@ camera_capture u3(
   .in_line_valid  (ccd_lval_raw),       // Line valid signal
   .in_start     (SW[9]),
   .clock        (ccd_pixel_clk),
-  .reset_n      (hps_fpga_reset_n),    // negative logic reset
+  .reset_n      (hps2fpga_reset_n & video_stream_reset_n),    // negative logic reset
   .in_width     (in_width[11:0]),
   .in_height    (in_height[11:0])
   );
@@ -379,12 +383,15 @@ camera_capture u3(
   assign  CCD_DATA[9]  =  GPIO_1[4];  //Pixel data Bit 9
   assign  CCD_DATA[10] =  GPIO_1[3];  //Pixel data Bit 10
   assign  CCD_DATA[11] =  GPIO_1[1];  //Pixel data Bit 11
-  assign  GPIO_1[16]   =  clk_25;    //External input clock
+  assign  GPIO_1[16]   =  clk_24;    //External input clock
   assign  CCD_FVAL     =  GPIO_1[22]; //frame valid
   assign  CCD_LVAL     =  GPIO_1[21]; //line valid
   assign  ccd_pixel_clk=  GPIO_1[0];  //Pixel clock
   assign  GPIO_1[19]   =  1'b1;       //trigger
-  assign  GPIO_1[17]   =  hps_fpga_reset_n;
+  assign  GPIO_1[17]   =  hps2fpga_reset_n & video_stream_reset_n;
+  
+  assign  GPIO_0[0]   =  hps2fpga_reset_n & video_stream_reset_n;
+  assign  GPIO_0[1]   =  ccd_pixel_clk;
 
   // Refreshes the data on the CCD camera on every pixel clock pulse.
   always@(posedge ccd_pixel_clk)
@@ -404,7 +411,7 @@ corresponding pixel afterwards.
 */
 RAW2RGB u4(	
   .iCLK         (ccd_pixel_clk),
-  .iRST         (hps_fpga_reset_n),   // Negative logic reset
+  .iRST         (hps2fpga_reset_n & video_stream_reset_n),   // Negative logic reset
   .iDATA        (ccd_data_captured),  // Component input data
   .iDVAL        (ccd_dval),           // Data valid signal
   .oRed         (raw_rgb_red),        // Output red component
@@ -421,7 +428,7 @@ RAW2RGB u4(
   // In case that only one FIFO memory is used, only the 5 most significative 
   // bits of each component are sent to the SDRAM.
   always @(posedge ccd_pixel_clk) begin
-    if (!hps_fpga_reset_n) begin
+    if (!hps2fpga_reset_n & video_stream_reset_n) begin
       // if reset, do nothing.
     end
     else begin
@@ -439,7 +446,7 @@ RAW2RGB u4(
 
 rgb2hue hue(
   .clock(ccd_pixel_clk),
-  .reset_n(hps_fpga_reset_n),
+  .reset_n(hps2fpga_reset_n & video_stream_reset_n),
   // Data input
   .in_red(raw_rgb_red[11:4]),
   .in_green(raw_rgb_green[11:4]),
@@ -473,7 +480,7 @@ Sdram_Control u1(
   .WR1_ADDR(0),
   .WR1_MAX_ADDR(640*480),             //address bus size: 25 bits
   .WR1_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  .WR1_LOAD(!hps_fpga_reset_n),
+  .WR1_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
   .WR1_CLK(~ccd_pixel_clk),
   // FIFO Write Side 2 (Unused. Needed if 8 bits per pixel are used)
   .WR2_DATA(fifo1_writedata),         //data bus size: 16 bits
@@ -481,7 +488,7 @@ Sdram_Control u1(
   .WR2_ADDR(22'h100000),
   .WR2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
   .WR2_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  .WR2_LOAD(!hps_fpga_reset_n),
+  .WR2_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
   .WR2_CLK(~ccd_pixel_clk),
   // FIFO Read Side 1
   .RD1_DATA(fifo1_readdata),          //data bus size: 16 bits
@@ -489,7 +496,7 @@ Sdram_Control u1(
   .RD1_ADDR(0),     
   .RD1_MAX_ADDR(640*480),             //address bus size: 25 bits
   .RD1_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  .RD1_LOAD(!hps_fpga_reset_n),
+  .RD1_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
   .RD1_CLK(~clk_25),
   // FIFO Read Side 2 (Unused. Needed if 8 bits per pixel are used)
   .RD2_DATA(fifo2_readdata),          //data bus size: 16 bits
@@ -497,7 +504,7 @@ Sdram_Control u1(
   .RD2_ADDR(22'h100000),     
   .RD2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
   .RD2_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  .RD2_LOAD(!hps_fpga_reset_n),
+  .RD2_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
   .RD2_CLK(~clk_25),
   // SDRAM Side
   .SA(DRAM_ADDR),
@@ -517,7 +524,7 @@ Sdram_Control u1(
 // VGA controller component.
 vga_controller vga_component(
   .pixel_clk  ( clk_25 ),
-  .reset_n    ( hps_fpga_reset_n ),
+  .reset_n    ( hps2fpga_reset_n & video_stream_reset_n ),
   .h_sync     ( VGA_HS ),
   .v_sync     ( VGA_VS ),
   .disp_ena   ( vga_enable ),
@@ -598,7 +605,7 @@ camera_config #(
   ) camera_conf(
   // Host Side
   .clock(ccd_pixel_clk),
-  .reset_n(hps_fpga_reset_n),
+  .reset_n(hps2fpga_reset_n & video_stream_reset_n),
   // Configuration registers
   .exposure(in_exposure),
   .start_row(in_start_row),
@@ -630,5 +637,8 @@ camera_config #(
   // assign in_column_size = 16'h09FF;
   // assign in_row_mode = 16'h0011;
   // assign in_column_mode = 16'h0011;
+  
+// Reset logic
+	assign video_stream_reset_n = (camera_soft_reset_n & KEY[0]);
 
 endmodule

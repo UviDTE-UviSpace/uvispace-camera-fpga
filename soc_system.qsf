@@ -948,4 +948,311 @@ set_global_assignment -name VHDL_FILE IPs/vga_controller/vga_controller.vhd
 set_global_assignment -name QIP_FILE IPs/Sdram_Control/Sdram_Control.qip
 set_global_assignment -name QIP_FILE soc_system/synthesis/soc_system.qip
 set_global_assignment -name VERILOG_FILE ghrd_top.v
+set_global_assignment -name ENABLE_SIGNALTAP ON
+set_global_assignment -name USE_SIGNALTAP_FILE signal_taps.stp
+set_global_assignment -name SIGNALTAP_FILE signal_tap_fifo_sdram.stp
+set_global_assignment -name SIGNALTAP_FILE signal_taps.stp
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to ccd_pixel_clk -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "RAW2RGB:u4|iDATA[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "RAW2RGB:u4|iDATA[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "RAW2RGB:u4|iDATA[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "RAW2RGB:u4|iDATA[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "RAW2RGB:u4|iDATA[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "RAW2RGB:u4|iDATA[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "RAW2RGB:u4|iDATA[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "RAW2RGB:u4|iDATA[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "RAW2RGB:u4|iDATA[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "RAW2RGB:u4|iDATA[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "RAW2RGB:u4|iDATA[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "RAW2RGB:u4|iDATA[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "RAW2RGB:u4|iDVAL" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "RAW2RGB:u4|iX_Cont[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "RAW2RGB:u4|iX_Cont[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "RAW2RGB:u4|iX_Cont[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "RAW2RGB:u4|iX_Cont[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "RAW2RGB:u4|iX_Cont[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "RAW2RGB:u4|iX_Cont[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "RAW2RGB:u4|iX_Cont[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "RAW2RGB:u4|iX_Cont[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "RAW2RGB:u4|iX_Cont[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "RAW2RGB:u4|iX_Cont[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "RAW2RGB:u4|iX_Cont[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "RAW2RGB:u4|iY_Cont[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "RAW2RGB:u4|iY_Cont[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "RAW2RGB:u4|iY_Cont[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "RAW2RGB:u4|iY_Cont[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "RAW2RGB:u4|iY_Cont[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "RAW2RGB:u4|iY_Cont[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "RAW2RGB:u4|iY_Cont[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "RAW2RGB:u4|iY_Cont[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "RAW2RGB:u4|iY_Cont[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "RAW2RGB:u4|iY_Cont[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "RAW2RGB:u4|iY_Cont[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "RAW2RGB:u4|iDATA[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "RAW2RGB:u4|iDATA[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "RAW2RGB:u4|iDATA[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "RAW2RGB:u4|iDATA[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "RAW2RGB:u4|iDATA[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "RAW2RGB:u4|iDATA[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "RAW2RGB:u4|iDATA[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "RAW2RGB:u4|iDATA[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "RAW2RGB:u4|iDATA[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "RAW2RGB:u4|iDATA[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "RAW2RGB:u4|iDATA[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "RAW2RGB:u4|iDATA[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "RAW2RGB:u4|iDVAL" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "RAW2RGB:u4|iX_Cont[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "RAW2RGB:u4|iX_Cont[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "RAW2RGB:u4|iX_Cont[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "RAW2RGB:u4|iX_Cont[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "RAW2RGB:u4|iX_Cont[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "RAW2RGB:u4|iX_Cont[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "RAW2RGB:u4|iX_Cont[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "RAW2RGB:u4|iX_Cont[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "RAW2RGB:u4|iX_Cont[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "RAW2RGB:u4|iX_Cont[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "RAW2RGB:u4|iX_Cont[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "RAW2RGB:u4|iY_Cont[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "RAW2RGB:u4|iY_Cont[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "RAW2RGB:u4|iY_Cont[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "RAW2RGB:u4|iY_Cont[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "RAW2RGB:u4|iY_Cont[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "RAW2RGB:u4|iY_Cont[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "RAW2RGB:u4|iY_Cont[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "RAW2RGB:u4|iY_Cont[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "RAW2RGB:u4|iY_Cont[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "RAW2RGB:u4|iY_Cont[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "RAW2RGB:u4|iY_Cont[9]" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334530" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=8192" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=8192" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=000000000000000000000000000" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=27" -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=1" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "RAW2RGB:u4|mCCD_B[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "RAW2RGB:u4|mCCD_B[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "RAW2RGB:u4|mCCD_B[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "RAW2RGB:u4|mCCD_B[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "RAW2RGB:u4|mCCD_B[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "RAW2RGB:u4|mCCD_B[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "RAW2RGB:u4|mCCD_B[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "RAW2RGB:u4|mCCD_B[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "RAW2RGB:u4|mCCD_B[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "RAW2RGB:u4|mCCD_B[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "RAW2RGB:u4|mCCD_B[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "RAW2RGB:u4|mCCD_B[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "RAW2RGB:u4|mCCD_R[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "RAW2RGB:u4|mCCD_R[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "RAW2RGB:u4|mCCD_R[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "RAW2RGB:u4|mCCD_R[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "RAW2RGB:u4|mCCD_R[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "RAW2RGB:u4|mCCD_R[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "RAW2RGB:u4|mCCD_R[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "RAW2RGB:u4|mCCD_R[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "RAW2RGB:u4|mCCD_R[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to "RAW2RGB:u4|mCCD_R[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to "RAW2RGB:u4|mCCD_R[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to "RAW2RGB:u4|mCCD_R[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to "RAW2RGB:u4|mDATAd_0[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to "RAW2RGB:u4|mDATAd_0[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to "RAW2RGB:u4|mDATAd_0[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to "RAW2RGB:u4|mDATAd_0[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to "RAW2RGB:u4|mDATAd_0[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to "RAW2RGB:u4|mDATAd_0[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to "RAW2RGB:u4|mDATAd_0[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to "RAW2RGB:u4|mDATAd_0[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to "RAW2RGB:u4|mDATAd_0[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to "RAW2RGB:u4|mDATAd_0[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to "RAW2RGB:u4|mDATAd_0[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to "RAW2RGB:u4|mDATAd_0[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to "RAW2RGB:u4|mDATAd_1[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to "RAW2RGB:u4|mDATAd_1[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to "RAW2RGB:u4|mDATAd_1[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to "RAW2RGB:u4|mDATAd_1[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to "RAW2RGB:u4|mDATAd_1[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to "RAW2RGB:u4|mDATAd_1[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to "RAW2RGB:u4|mDATAd_1[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to "RAW2RGB:u4|mDATAd_1[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to "RAW2RGB:u4|mDATAd_1[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to "RAW2RGB:u4|mDATAd_1[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to "RAW2RGB:u4|mDATAd_1[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to "RAW2RGB:u4|mDATAd_1[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to "RAW2RGB:u4|oBlue[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to "RAW2RGB:u4|oBlue[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to "RAW2RGB:u4|oBlue[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[86] -to "RAW2RGB:u4|oBlue[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[87] -to "RAW2RGB:u4|oBlue[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[88] -to "RAW2RGB:u4|oBlue[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[89] -to "RAW2RGB:u4|oBlue[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[90] -to "RAW2RGB:u4|oBlue[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[91] -to "RAW2RGB:u4|oBlue[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[92] -to "RAW2RGB:u4|oBlue[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[93] -to "RAW2RGB:u4|oBlue[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[94] -to "RAW2RGB:u4|oBlue[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[95] -to "RAW2RGB:u4|oDVAL" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[96] -to "RAW2RGB:u4|oGreen[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[97] -to "RAW2RGB:u4|oGreen[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[98] -to "RAW2RGB:u4|oGreen[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[99] -to "RAW2RGB:u4|oGreen[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[100] -to "RAW2RGB:u4|oGreen[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[101] -to "RAW2RGB:u4|oGreen[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[102] -to "RAW2RGB:u4|oGreen[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[103] -to "RAW2RGB:u4|oGreen[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[104] -to "RAW2RGB:u4|oGreen[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[105] -to "RAW2RGB:u4|oGreen[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[106] -to "RAW2RGB:u4|oGreen[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[107] -to "RAW2RGB:u4|oGreen[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[108] -to "RAW2RGB:u4|oRed[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[109] -to "RAW2RGB:u4|oRed[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[110] -to "RAW2RGB:u4|oRed[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[111] -to "RAW2RGB:u4|oRed[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[112] -to "RAW2RGB:u4|oRed[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[113] -to "RAW2RGB:u4|oRed[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[114] -to "RAW2RGB:u4|oRed[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[115] -to "RAW2RGB:u4|oRed[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[116] -to "RAW2RGB:u4|oRed[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[117] -to "RAW2RGB:u4|oRed[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[118] -to "RAW2RGB:u4|oRed[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[119] -to "RAW2RGB:u4|oRed[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[120] -to video_stream_reset_n -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "RAW2RGB:u4|mCCD_B[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "RAW2RGB:u4|mCCD_B[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "RAW2RGB:u4|mCCD_B[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "RAW2RGB:u4|mCCD_B[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "RAW2RGB:u4|mCCD_B[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "RAW2RGB:u4|mCCD_B[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "RAW2RGB:u4|mCCD_B[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "RAW2RGB:u4|mCCD_B[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "RAW2RGB:u4|mCCD_B[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "RAW2RGB:u4|mCCD_B[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "RAW2RGB:u4|mCCD_B[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "RAW2RGB:u4|mCCD_B[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "RAW2RGB:u4|mCCD_R[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "RAW2RGB:u4|mCCD_R[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "RAW2RGB:u4|mCCD_R[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "RAW2RGB:u4|mCCD_R[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "RAW2RGB:u4|mCCD_R[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "RAW2RGB:u4|mCCD_R[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "RAW2RGB:u4|mCCD_R[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "RAW2RGB:u4|mCCD_R[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "RAW2RGB:u4|mCCD_R[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to "RAW2RGB:u4|mCCD_R[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to "RAW2RGB:u4|mCCD_R[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to "RAW2RGB:u4|mCCD_R[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to "RAW2RGB:u4|mDATAd_0[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to "RAW2RGB:u4|mDATAd_0[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to "RAW2RGB:u4|mDATAd_0[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to "RAW2RGB:u4|mDATAd_0[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to "RAW2RGB:u4|mDATAd_0[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to "RAW2RGB:u4|mDATAd_0[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to "RAW2RGB:u4|mDATAd_0[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to "RAW2RGB:u4|mDATAd_0[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to "RAW2RGB:u4|mDATAd_0[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to "RAW2RGB:u4|mDATAd_0[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to "RAW2RGB:u4|mDATAd_0[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to "RAW2RGB:u4|mDATAd_0[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to "RAW2RGB:u4|mDATAd_1[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to "RAW2RGB:u4|mDATAd_1[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to "RAW2RGB:u4|mDATAd_1[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to "RAW2RGB:u4|mDATAd_1[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to "RAW2RGB:u4|mDATAd_1[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to "RAW2RGB:u4|mDATAd_1[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to "RAW2RGB:u4|mDATAd_1[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to "RAW2RGB:u4|mDATAd_1[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to "RAW2RGB:u4|mDATAd_1[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to "RAW2RGB:u4|mDATAd_1[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to "RAW2RGB:u4|mDATAd_1[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to "RAW2RGB:u4|mDATAd_1[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to "RAW2RGB:u4|oBlue[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to "RAW2RGB:u4|oBlue[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to "RAW2RGB:u4|oBlue[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[86] -to "RAW2RGB:u4|oBlue[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[87] -to "RAW2RGB:u4|oBlue[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[88] -to "RAW2RGB:u4|oBlue[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[89] -to "RAW2RGB:u4|oBlue[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[90] -to "RAW2RGB:u4|oBlue[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[91] -to "RAW2RGB:u4|oBlue[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[92] -to "RAW2RGB:u4|oBlue[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[93] -to "RAW2RGB:u4|oBlue[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[94] -to "RAW2RGB:u4|oBlue[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[95] -to "RAW2RGB:u4|oDVAL" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[96] -to "RAW2RGB:u4|oGreen[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[97] -to "RAW2RGB:u4|oGreen[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[98] -to "RAW2RGB:u4|oGreen[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[99] -to "RAW2RGB:u4|oGreen[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[100] -to "RAW2RGB:u4|oGreen[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[101] -to "RAW2RGB:u4|oGreen[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[102] -to "RAW2RGB:u4|oGreen[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[103] -to "RAW2RGB:u4|oGreen[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[104] -to "RAW2RGB:u4|oGreen[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[105] -to "RAW2RGB:u4|oGreen[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[106] -to "RAW2RGB:u4|oGreen[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[107] -to "RAW2RGB:u4|oGreen[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[108] -to "RAW2RGB:u4|oRed[0]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[109] -to "RAW2RGB:u4|oRed[10]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[110] -to "RAW2RGB:u4|oRed[11]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[111] -to "RAW2RGB:u4|oRed[1]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[112] -to "RAW2RGB:u4|oRed[2]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[113] -to "RAW2RGB:u4|oRed[3]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[114] -to "RAW2RGB:u4|oRed[4]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[115] -to "RAW2RGB:u4|oRed[5]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[116] -to "RAW2RGB:u4|oRed[6]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[117] -to "RAW2RGB:u4|oRed[7]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[118] -to "RAW2RGB:u4|oRed[8]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[119] -to "RAW2RGB:u4|oRed[9]" -section_id signal_tap_raw2rgb
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[120] -to video_stream_reset_n -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=121" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=121" -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=121" -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to signal_tap_raw2rgb|vcc -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to signal_tap_raw2rgb|gnd -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=sld_reserved_soc_system_signal_tap_raw2rgb_1_304," -section_id signal_tap_raw2rgb
+set_global_assignment -name SLD_FILE db/signal_taps_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
