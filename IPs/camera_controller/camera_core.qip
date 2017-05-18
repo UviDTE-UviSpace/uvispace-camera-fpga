@@ -9,3 +9,4 @@ set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "RAW2RG
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "rgb2hue.v"]
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "SEG7_LUT.v"]
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "SEG7_LUT_8.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "image_capture.vhd"]
