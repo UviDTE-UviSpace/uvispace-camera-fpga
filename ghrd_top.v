@@ -230,27 +230,35 @@ wire    [15:0] fifo2_readdata;
 //  Structural coding
 //=======================================================
 soc_system u0 (      
-  .clk_clk                               ( CLOCK_50 ),
+  //Input clocks
+  .clk_50_clk                            ( CLOCK_50 ),
+  .ccd_pixel_clock_bridge_clk				  ( ccd_pixel_clk ),
+  //Output clocks
+  .pll_vga_clks_25_clk                   ( clk_25 ),
+  .pll_vga_clks_191_clk                  ( clk_193 ),
+  .pll_camera_clks_24_clk                ( clk_24 ), 
+	//HPS reset output 
+  .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
   // Avalon camera (Unused ports left unwired)
-  .avalon_camera_export_clk              ( ),
-  .avalon_camera_export_start            (),
-  .avalon_camera_export_done             ( 1'b0 ),
-  .avalon_camera_export_configure        (),
-  .avalon_camera_export_selectvga        (),
-  .avalon_camera_export_selectoutput     (),
-  .avalon_camera_export_read             (),
-  .avalon_camera_export_readdata         ( {16'd0, fifo2_readdata} ),
+  .avalon_camera_export_start_capture    ( start_capture ),  
+  .avalon_camera_export_buff0            ( buff0 ), 
+  .avalon_camera_export_buff1            ( buff1 ), 
+  .avalon_camera_export_buff0full        ( buff0full ),
+  .avalon_camera_export_buff1full        ( buff1full ),       
   .avalon_camera_export_width            ( in_width ),
   .avalon_camera_export_height           ( in_height ),
   .avalon_camera_export_startrow         ( start_row ),
   .avalon_camera_export_startcol         ( start_column ),
   .avalon_camera_export_colmode          ( in_column_mode ),
   .avalon_camera_export_exposure         ( in_exposure ),
-  .avalon_camera_export_ready            ( ready ),
   .avalon_camera_export_rowsize          ( in_row_size ),
   .avalon_camera_export_colsize          ( in_column_size ),
   .avalon_camera_export_rowmode          ( in_row_mode ),
   .avalon_camera_export_soft_reset_n     ( camera_soft_reset_n ),
+  // Bus for the image_capture component to write images in HPS-OCR
+  .captured_image_writedata                     ( image_capture_Dout ),
+  .captured_image_address                       ( image_capture_AB ), 
+  .captured_image_write                         ( image_capture_WR), 
   //HPS ddr3
   .memory_mem_a                          ( HPS_DDR3_ADDR ),
   .memory_mem_ba                         ( HPS_DDR3_BA ),
@@ -336,14 +344,7 @@ soc_system u0 (
   //FPGA soft GPIO 
   .led_pio_external_connection_export    (  ),
   .dipsw_pio_external_connection_export  ( SW ),
-  .button_pio_external_connection_export ( KEY ),
-  //HPS reset output 
-  .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
-  //HPS PLL clock outputs
-  .pll_vga_clks_25_clk                   ( clk_25 ),
-  .pll_vga_clks_191_clk                  ( clk_193 ),
-  .pll_camera_clks_24_clk                ( clk_24 ) 
-  
+  .button_pio_external_connection_export ( KEY )
   );
 
 camera_capture u3( 
@@ -469,6 +470,48 @@ rgb2hue hue(
   wire  [7:0] hue_blue;
   wire        out_hue_valid;
 
+  
+//	 image_capture: save RGB and Hue into HPS memory
+image_capture imgcap1 (
+
+	//Clock and reset
+	.clk ( ccd_pixel_clk ),
+	.reset_n (hps2fpga_reset_n & video_stream_reset_n),
+	
+	//Signals from the video strem
+	.R( hue_red ),
+	.G( hue_green ),
+	.B( hue_blue ),
+	.Gray( hue_hue ),
+	.frame_valid( ccd_fval_raw ),
+	.data_valid( out_hue_valid ),
+	
+	//Signals to control this component
+	.start_capture( start_capture ),
+	.image_width( in_width ),
+	.image_height( in_height ),
+	.buff0( buff0 ),
+	.buff1( buff1 ),
+	.buff0full( buff0full ),
+	.buff1full( buff1full ),
+	
+	//Avalon MM Master port to save data into a memory
+	.AB ( image_capture_AB ),
+	.Dout ( image_capture_Dout ),
+	.WR ( image_capture_WR )
+	);
+	//image_capture control signals
+	wire  start_capture; //start a new image capture
+	wire 	[31:0] buff0; //address of the buffer to save odd line
+	wire 	[31:0] buff1; //address of the buffer to save even line
+	wire  buff0full; //buff0 is full 
+	wire  buff1full; //buff1 is full 
+	//Avalon signals to write the pixels into memory
+	wire  [31:0]image_capture_AB; //Adress Bus
+	wire  [31:0]image_capture_Dout; //Write Data Bus
+	wire  image_capture_WR; //Write signal
+	
+  
 //  SDRAM memory based on DE1-SOC demonstration
 Sdram_Control u1( 
   // HOST Side
