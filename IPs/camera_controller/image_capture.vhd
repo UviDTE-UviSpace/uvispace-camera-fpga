@@ -96,6 +96,7 @@ ARCHITECTURE arch OF image_capture IS
     SIGNAL start_capture_reg: STD_LOGIC;
 
 BEGIN
+
     -- FSM (Finite State Machine) clocking and reset.
     fsm_mem: PROCESS (clk,reset_n)
     BEGIN
@@ -106,7 +107,8 @@ BEGIN
             END IF;
         END IF;
     END PROCESS fsm_mem;
-    -- Evolution of FSM
+
+    -- Evolution of FSM.
     comb_fsm: PROCESS (current_state, state_condition, condition_5_to_4,
                        condition_5_to_5, condition_6_to_1)
     BEGIN
@@ -139,6 +141,7 @@ BEGIN
                 next_state <= 0;
         END CASE;
     END PROCESS comb_fsm;
+
     -- Conditions of FSM.
     state_condition(0) <= '1';
     state_condition(1) <= start_capture_reg;
@@ -150,7 +153,8 @@ BEGIN
     condition_5_to_5   <= data_valid and not(line_end_reached);
     condition_6_to_1   <= image_end_reached;
     condition_6_to_4   <= not(image_end_reached);
-    -- Update counters.
+
+    -- Evaluation and Update pix_counter.
     pix_counter_proc:process (clk, current_state)
     begin
         if rising_edge(clk) then
@@ -166,6 +170,7 @@ BEGIN
             line_end_reached <= '0';
         end if;
     end process;
+
     -- Evaluation and update of line_counter.
     line_counter_proc:process (clk, current_state)
     begin
@@ -182,6 +187,7 @@ BEGIN
             image_end_reached <= '0';
         end if;
     end process;
+
     -- Generate output signals using the states of the FSM
     -- Signals that are stable during the whole state: buff0full
     bufffull_proc:process(clk, current_state)
@@ -222,6 +228,7 @@ BEGIN
             end if;
         end if;
     end process;
+
     -- Detection of a flank in start_capture. This signal is coming from the
     -- processor and could have different clock. That's why flank is detected
     -- instead of level.
@@ -234,4 +241,3 @@ BEGIN
         end if;
     end process;
 END arch;
-
