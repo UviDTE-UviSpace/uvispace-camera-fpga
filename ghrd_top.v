@@ -239,12 +239,15 @@ soc_system u0 (
   .pll_camera_clks_24_clk                ( clk_24 ), 
 	//HPS reset output 
   .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
-  // Avalon camera (Unused ports left unwired)
-  .avalon_camera_export_start_capture    ( start_capture ),  
-  .avalon_camera_export_buff0            ( buff0 ), 
-  .avalon_camera_export_buff1            ( buff1 ), 
-  .avalon_camera_export_buff0full        ( buff0full ),
-  .avalon_camera_export_buff1full        ( buff1full ),       
+  // Avalon camera capture_image signals
+  .avalon_camera_export_start_capture    ( start_capture ),
+  .avalon_camera_export_capture_width    ( capture_width ),    //                               .capture_width
+  .avalon_camera_export_capture_height   ( capture_height ),   
+  .avalon_camera_export_buff0            ( capture_buff0 ), 
+  .avalon_camera_export_buff1            ( capture_buff1 ), 
+  .avalon_camera_export_buff0full        ( capture_buff0full ),
+  .avalon_camera_export_buff1full        ( capture_buff1full ), 
+	// Avalon camera camera_config signals  
   .avalon_camera_export_width            ( in_width ),
   .avalon_camera_export_height           ( in_height ),
   .avalon_camera_export_startrow         ( start_row ),
@@ -487,12 +490,12 @@ image_capture imgcap1 (
 	.data_valid( out_hue_valid ),
 	// Signals to control this component.
 	.start_capture( start_capture ),
-	.image_width( in_width ),
-	.image_height( in_height ),
-	.buff0( buff0 ),
-	.buff1( buff1 ),
-	.buff0full( buff0full ),
-	.buff1full( buff1full ),
+	.image_width( capture_width ),
+	.image_height( capture_height ),
+	.buff0( capture_buff0 ),
+	.buff1( capture_buff1 ),
+	.buff0full( capture_buff0full ),
+	.buff1full( capture_buff1full ),
 	// Avalon MM Master port to save data into a memory.
 	.AB ( image_capture_AB ),
 	.Dout ( image_capture_Dout ),
@@ -500,10 +503,12 @@ image_capture imgcap1 (
 	);
 	// image_capture control signals
 	wire  start_capture; // Start a new image capture
-	wire 	[31:0] buff0; // Address of the buffer to save odd line
-	wire 	[31:0] buff1; // Address of the buffer to save even line
-	wire  buff0full; // buff0 is full 
-	wire  buff1full; // buff1 is full 
+	wire  [15:0] capture_width; //with of the image (in dots or RGB pixels)
+	wire  [15:0] capture_height; //height of the image (in dots or RGB pixels)
+	wire 	[31:0] capture_buff0; // Address of the buffer to save odd line
+	wire 	[31:0] capture_buff1; // Address of the buffer to save even line
+	wire  capture_buff0full; // buff0 is full 
+	wire  capture_buff1full; // buff1 is full 
 	// Avalon signals to write the pixels into memory
 	wire  [31:0]image_capture_AB; // Adress Bus
 	wire  [31:0]image_capture_Dout; // Write Data Bus
