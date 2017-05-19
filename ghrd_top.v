@@ -232,7 +232,7 @@ wire    [15:0] fifo2_readdata;
 soc_system u0 (      
   //Input clocks
   .clk_50_clk                            ( CLOCK_50 ),
-  .ccd_pixel_clock_bridge_clk				  ( ccd_pixel_clk ),
+  .ccd_pixel_clock_bridge_clk				     ( ccd_pixel_clk ),
   //Output clocks
   .pll_vga_clks_25_clk                   ( clk_25 ),
   .pll_vga_clks_191_clk                  ( clk_193 ),
@@ -256,9 +256,9 @@ soc_system u0 (
   .avalon_camera_export_rowmode          ( in_row_mode ),
   .avalon_camera_export_soft_reset_n     ( camera_soft_reset_n ),
   // Bus for the image_capture component to write images in HPS-OCR
-  .captured_image_writedata                     ( image_capture_Dout ),
-  .captured_image_address                       ( image_capture_AB ), 
-  .captured_image_write                         ( image_capture_WR), 
+  .captured_image_writedata              ( image_capture_Dout ),
+  .captured_image_address                ( image_capture_AB ), 
+  .captured_image_write                  ( image_capture_WR), 
   //HPS ddr3
   .memory_mem_a                          ( HPS_DDR3_ADDR ),
   .memory_mem_ba                         ( HPS_DDR3_BA ),
@@ -348,17 +348,18 @@ soc_system u0 (
   );
 
 camera_capture u3( 
-  .out_data     (ccd_data_captured),  // component output data
-  .out_valid    (ccd_dval),           // data valid signal
+  .out_data     (ccd_data_captured),    // component output data
+  .out_valid    (ccd_dval),             // data valid signal
   .out_count_x  (X_Cont_raw),
   .out_count_y  (Y_Cont_raw),
-  .oFrame_Cont  (Frame_Cont),         // Frames counter
-  .in_data      (ccd_data_raw),       // 12-bit data
+  .oFrame_Cont  (Frame_Cont),           // Frames counter
+  .in_data      (ccd_data_raw),         // 12-bit data
   .in_frame_valid (ccd_fval_raw),       // Frame valid signal
   .in_line_valid  (ccd_lval_raw),       // Line valid signal
   .in_start     (SW[9]),
   .clock        (ccd_pixel_clk),
-  .reset_n      (hps2fpga_reset_n & video_stream_reset_n),    // negative logic reset
+  // Negative logic reset
+  .reset_n      (hps2fpga_reset_n & video_stream_reset_n),
   .in_width     (in_width[11:0]),
   .in_height    (in_height[11:0])
   );
@@ -412,7 +413,8 @@ corresponding pixel afterwards.
 */
 RAW2RGB u4(	
   .iCLK         (ccd_pixel_clk),
-  .iRST         (hps2fpga_reset_n & video_stream_reset_n),   // Negative logic reset
+  // Negative logic reset
+  .iRST         (hps2fpga_reset_n & video_stream_reset_n),
   .iDATA        (ccd_data_captured),  // Component input data
   .iDVAL        (ccd_dval),           // Data valid signal
   .oRed         (raw_rgb_red),        // Output red component
@@ -471,22 +473,19 @@ rgb2hue hue(
   wire        out_hue_valid;
 
   
-//	 image_capture: save RGB and Hue into HPS memory
+// image_capture: save RGB and Hue into HPS memory
 image_capture imgcap1 (
-
-	//Clock and reset
+	// Clock and reset
 	.clk ( ccd_pixel_clk ),
 	.reset_n (hps2fpga_reset_n & video_stream_reset_n),
-	
-	//Signals from the video strem
+	// Signals from the video stream
 	.R( hue_red ),
 	.G( hue_green ),
 	.B( hue_blue ),
 	.Gray( hue_hue ),
 	.frame_valid( ccd_fval_raw ),
 	.data_valid( out_hue_valid ),
-	
-	//Signals to control this component
+	// Signals to control this component.
 	.start_capture( start_capture ),
 	.image_width( in_width ),
 	.image_height( in_height ),
@@ -494,25 +493,24 @@ image_capture imgcap1 (
 	.buff1( buff1 ),
 	.buff0full( buff0full ),
 	.buff1full( buff1full ),
-	
-	//Avalon MM Master port to save data into a memory
+	// Avalon MM Master port to save data into a memory.
 	.AB ( image_capture_AB ),
 	.Dout ( image_capture_Dout ),
 	.WR ( image_capture_WR )
 	);
-	//image_capture control signals
-	wire  start_capture; //start a new image capture
-	wire 	[31:0] buff0; //address of the buffer to save odd line
-	wire 	[31:0] buff1; //address of the buffer to save even line
-	wire  buff0full; //buff0 is full 
-	wire  buff1full; //buff1 is full 
-	//Avalon signals to write the pixels into memory
-	wire  [31:0]image_capture_AB; //Adress Bus
-	wire  [31:0]image_capture_Dout; //Write Data Bus
-	wire  image_capture_WR; //Write signal
+	// image_capture control signals
+	wire  start_capture; // Start a new image capture
+	wire 	[31:0] buff0; // Address of the buffer to save odd line
+	wire 	[31:0] buff1; // Address of the buffer to save even line
+	wire  buff0full; // buff0 is full 
+	wire  buff1full; // buff1 is full 
+	// Avalon signals to write the pixels into memory
+	wire  [31:0]image_capture_AB; // Adress Bus
+	wire  [31:0]image_capture_Dout; // Write Data Bus
+	wire  image_capture_WR; // Write signal
 	
   
-//  SDRAM memory based on DE1-SOC demonstration
+// SDRAM memory based on DE1-SOC demonstration
 Sdram_Control u1( 
   // HOST Side
   .REF_CLK(CLOCK_50),
@@ -682,6 +680,6 @@ camera_config #(
   // assign in_column_mode = 16'h0011;
   
 // Reset logic
-	assign video_stream_reset_n = (camera_soft_reset_n & KEY[0]);
+assign video_stream_reset_n = (camera_soft_reset_n & KEY[0]);
 
 endmodule
