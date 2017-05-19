@@ -162,14 +162,14 @@ module camera_config #(
             3: LUT_DATA <= 24'h050000; // H_Blanking
             4: LUT_DATA <= 24'h060019; // V_Blanking
             5: LUT_DATA <= 24'h0A8000; // Change latch
-            6: LUT_DATA <= 24'h2B000b; // Green 1 Gain
-            7: LUT_DATA <= 24'h2C000f; // Blue Gain
-            8: LUT_DATA <= 24'h2D000f; // Red Gain
-            9: LUT_DATA <= 24'h2E000b; // Green 2 Gain
+            6: LUT_DATA <= 24'h2B0013; // Green 1 Gain
+            7: LUT_DATA <= 24'h2C009A; // Blue Gain
+            8: LUT_DATA <= 24'h2D019C; // Red Gain
+            9: LUT_DATA <= 24'h2E0013; // Green 2 Gain
             10: LUT_DATA <= 24'h100051; // Set up PLL power on
             // PLL_m_Factor << 8 + PLL_n_Divider. Default = h111807
-            11: LUT_DATA <= 24'h114805; 
-            12: LUT_DATA <= 24'h120002; // PLL_p1_Divider
+            11: LUT_DATA <= 24'h111f04; 
+            12: LUT_DATA <= 24'h120001; // PLL_p1_Divider
             13: LUT_DATA <= 24'h100053; // Set USE PLL
             14: LUT_DATA <= 24'h980000; // Disable calibration
         `ifdef ENABLE_TEST_PATTERN
