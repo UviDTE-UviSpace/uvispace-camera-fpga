@@ -62,6 +62,10 @@ ENTITY image_capture IS
         -- Signals indicating that buffers are full (Active 1 clock cycle only).
         buff0full       : OUT STD_LOGIC;
         buff1full       : OUT STD_LOGIC;
+        -- Signal indicating standby state 
+        --(outside of reset, waiting for flank in start_capture)
+        standby         : OUT STD_LOGIC;
+        
         -- Avalon MM Master port to save data into a memory.
         -- Byte adresses are multiples of 4 when accessing 32-bit data.
         AB              : OUT STD_LOGIC_VECTOR(31 downto 0);
@@ -203,6 +207,10 @@ BEGIN
             buff1full <= '0';
         end if;
     end process;
+    --standby signal
+    WITH current_state SELECT standby <=
+        '1' WHEN 1,
+        '0' WHEN OTHERS;
     -- AB
     AB <= write_buff;
     -- DB
@@ -211,6 +219,7 @@ BEGIN
     WITH current_state SELECT WR <=
         '1' WHEN 5,
         '0' WHEN OTHERS;
+        
     -- Write_buff update. 
     write_buff_proc:process (clk, current_state)
     begin

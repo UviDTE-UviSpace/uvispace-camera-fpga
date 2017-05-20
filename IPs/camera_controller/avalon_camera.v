@@ -11,7 +11,7 @@ module avalon_camera (
         output reg [31:0] avs_s1_readdata,
         input avs_s1_write,
         input [31:0] avs_s1_writedata,
-        // Control signals to export to the image capture
+        // Control signals to export to the image_capture
 		output avs_export_start_capture,
         output [15:0] avs_export_capture_width,
         output [15:0] avs_export_capture_height,
@@ -19,6 +19,7 @@ module avalon_camera (
 		output [31:0] avs_export_buff1,
 		input avs_export_buff0full,
 		input avs_export_buff1full,
+        input avs_export_capture_standby,
         // Registers to export to the camera_config
         output [15:0] avs_export_width,
         output [15:0] avs_export_height,
@@ -41,6 +42,7 @@ module avalon_camera (
     `define ADDR_BUFF1            	5'h04
 	`define ADDR_BUFF0FULL        	5'h05
 	`define ADDR_BUFF1FULL        	5'h06
+    `define ADDR_CAPTURE_STANDBY    5'h07
     
     // Addresses of the registers to control camera_config
     `define ADDR_WIDTH          	5'h09
@@ -75,6 +77,7 @@ module avalon_camera (
 	reg [31:0] buff1;
     reg buff0full;
 	reg buff1full;
+    wire standby;
     // camera_config regs   
     reg [15:0] data_width;
     reg [15:0] data_height;
@@ -127,6 +130,8 @@ module avalon_camera (
                         avs_s1_readdata[31:0] <= {31'b0, buff0full};
 						`ADDR_BUFF1FULL:
                         avs_s1_readdata[31:0] <= {31'b0, buff1full};
+                        `ADDR_CAPTURE_STANDBY:
+                        avs_s1_readdata[31:0] <= {31'b0, standby};
                         //camera_config
                         `ADDR_WIDTH: 
                         avs_s1_readdata[15:0] <= data_width[15:0];  
@@ -168,6 +173,7 @@ module avalon_camera (
                         buff0 <= avs_s1_writedata[31:0];
 						`ADDR_BUFF1:
                         buff1 <= avs_s1_writedata[31:0];
+                        //`ADDR_CAPTURE_STANDBY://not writable
                         `ADDR_WIDTH:
                         data_width[15:0] <= avs_s1_writedata[15:0];
                         `ADDR_HEIGHT:
@@ -231,6 +237,7 @@ module avalon_camera (
     assign avs_export_start_capture = start_capture;
 	assign avs_export_buff0 = buff0;
 	assign avs_export_buff1 = buff1;
+    assign standby = avs_export_capture_standby;
     // Registers to export to the camera_config
     assign avs_export_start_row[15:0] = data_start_row[15:0];
     assign avs_export_start_column[15:0] = data_start_column[15:0];

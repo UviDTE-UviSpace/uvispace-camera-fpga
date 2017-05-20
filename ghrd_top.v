@@ -241,12 +241,13 @@ soc_system u0 (
   .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
   // Avalon camera capture_image signals
   .avalon_camera_export_start_capture    ( start_capture ),
-  .avalon_camera_export_capture_width    ( capture_width ),    //                               .capture_width
+  .avalon_camera_export_capture_width    ( capture_width ), 
   .avalon_camera_export_capture_height   ( capture_height ),   
   .avalon_camera_export_buff0            ( capture_buff0 ), 
   .avalon_camera_export_buff1            ( capture_buff1 ), 
   .avalon_camera_export_buff0full        ( capture_buff0full ),
   .avalon_camera_export_buff1full        ( capture_buff1full ), 
+  .avalon_camera_export_capture_standby  ( capture_standby ), 
 	// Avalon camera camera_config signals  
   .avalon_camera_export_width            ( in_width ),
   .avalon_camera_export_height           ( in_height ),
@@ -496,6 +497,7 @@ image_capture imgcap1 (
 	.buff1( capture_buff1 ),
 	.buff0full( capture_buff0full ),
 	.buff1full( capture_buff1full ),
+	.standby ( capture_standby ),
 	// Avalon MM Master port to save data into a memory.
 	.AB ( image_capture_AB ),
 	.Dout ( image_capture_Dout ),
@@ -509,6 +511,7 @@ image_capture imgcap1 (
 	wire 	[31:0] capture_buff1; // Address of the buffer to save even line
 	wire  capture_buff0full; // buff0 is full 
 	wire  capture_buff1full; // buff1 is full 
+	wire  capture_standby; // buff1 is full 
 	// Avalon signals to write the pixels into memory
 	wire  [31:0]image_capture_AB; // Adress Bus
 	wire  [31:0]image_capture_Dout; // Write Data Bus
