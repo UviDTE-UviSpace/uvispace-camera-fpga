@@ -415,7 +415,7 @@ in 4 components(RGBG): The number of rows and columns are reduced to the half.
 One from every 2 rows are stored on a buffer for getting the components of the
 corresponding pixel afterwards.
 */
-RAW2RGB u4(	
+raw2rgb u4(	
   .iCLK         (ccd_pixel_clk),
   // Negative logic reset
   .iRST         (hps2fpga_reset_n & video_stream_reset_n),
