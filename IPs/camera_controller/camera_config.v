@@ -168,7 +168,7 @@ module camera_config #(
             9: LUT_DATA <= 24'h2E0013; // Green 2 Gain
             10: LUT_DATA <= 24'h100051; // Set up PLL power on
             // PLL_m_Factor << 8 + PLL_n_Divider. Default = h111807
-            11: LUT_DATA <= 24'h111f04; 
+            11: LUT_DATA <= 24'h112003; 
             12: LUT_DATA <= 24'h120001; // PLL_p1_Divider
             13: LUT_DATA <= 24'h100053; // Set USE PLL
             14: LUT_DATA <= 24'h980000; // Disable calibration
