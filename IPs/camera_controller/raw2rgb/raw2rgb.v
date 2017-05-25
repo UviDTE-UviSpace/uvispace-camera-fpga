@@ -85,8 +85,10 @@ begin
         mCCD_R  <=  0;
         mCCD_G  <=  0;
         mCCD_B  <=  0;
-        mDATAd_0<=  0;
-        mDATAd_1<=  0;
+        upper_row_pixel_delayed <= 0;
+        upper_row_pixel         <= 0;
+        lower_row_pixel_delayed <= 0;
+        lower_row_pixel         <= 0;
         mDVAL   <=  0;
     end
     else
