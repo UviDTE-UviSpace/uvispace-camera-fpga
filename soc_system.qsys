@@ -276,11 +276,11 @@
    type="clock"
    dir="start" />
  <module name="avalon_camera_0" kind="avalon_camera" version="1.0" enabled="1">
-  <parameter name="COLUMN_MODE" value="17" />
+  <parameter name="COLUMN_MODE" value="18" />
   <parameter name="COLUMN_SIZE" value="2559" />
   <parameter name="EXPOSURE" value="1023" />
   <parameter name="HEIGHT" value="480" />
-  <parameter name="ROW_MODE" value="17" />
+  <parameter name="ROW_MODE" value="1" />
   <parameter name="ROW_SIZE" value="1919" />
   <parameter name="START_COLUMN" value="0" />
   <parameter name="START_ROW" value="0" />
