@@ -73,8 +73,8 @@ ENTITY image_capture IS
         -- Byte adresses are multiples of 4 when accessing 32-bit data.
         address         : OUT STD_LOGIC_VECTOR(31 downto 0);
         write           : OUT STD_LOGIC;
-        byteenable      :OUT STD_LOGIC_VECTOR(7 downto 0);
-        writedata      : OUT STD_LOGIC_VECTOR(63 downto 0);
+        byteenable      :OUT STD_LOGIC_VECTOR((COMPONENT_SIZE/2-1) downto 0);
+        writedata      : OUT STD_LOGIC_VECTOR((COMPONENT_SIZE*4-1) downto 0);
         waitrequest     : IN STD_LOGIC;
         burstcount      : OUT STD_LOGIC_VECTOR(6 downto 0)
     );
@@ -193,34 +193,14 @@ BEGIN
         '0' WHEN OTHERS;
         
     -- Generate Avalon bus signals
-    -- address
     address <= write_buff;
-    -- byteenable and writedata
---    component_size_proc: process (clk)
---    begin
---        if COMPONENT_SIZE = 8 then
---            byteenable <= "00001111"; --just write lower 32-bit of the bus
---            writedata <= (31 downto 0 => Gray & B & G & R, others => '0');
---        else --COMPONENT_SIZE = 16
---            byteenable <= "11111111"; -- write all 64-bit
---            writedata <=  Gray & B & G & R;
---		  end if;
---    end process;
-	 comp_size8: if COMPONENT_SIZE = 8 generate
-      byteenable <= "11111111"; --just write lower 32-bit of the bus
-      writedata <= X"01000010" & Gray & B & G & R;
-    end generate;
-	 comp_size16: if COMPONENT_SIZE = 16 generate
-      byteenable <= "11111111"; -- write all 64-bit
-      writedata <=  Gray & B & G & R;
-    end generate;
-    -- write
+	 writedata <= Gray & B & G & R;
+	 byteenable <= (others => '1'); 
 	 write_proc: process (current_state, data_valid)
 	 begin
 		if (current_state = 4) and (data_valid = '1') then write <= '1';
 		else write <= '0'; end if;
 	end process;
-    -- burstcount
 	burstcount <= "0000001"; --always single transactions (no burst)
         
     -- Write_buff, current_buff, buff0full and buff1full generation 
@@ -246,7 +226,7 @@ BEGIN
                 buff0full <= '0';
                 buff1full <= '0';
                 if data_valid = '1' then
-                    write_buff <= write_buff + (COMPONENT_SIZE);
+                    write_buff <= write_buff + (COMPONENT_SIZE/2);
                 end if;
             end if;
         end if;

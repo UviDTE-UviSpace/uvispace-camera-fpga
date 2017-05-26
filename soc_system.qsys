@@ -296,7 +296,7 @@
    enabled="1">
   <parameter name="ADDRESS_SIZE" value="32" />
   <parameter name="BURSCOUNT_SIZE" value="7" />
-  <parameter name="DATA_SIZE" value="64" />
+  <parameter name="DATA_SIZE" value="32" />
  </module>
  <module name="button_pio" kind="altera_avalon_pio" version="16.0" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="true" />
