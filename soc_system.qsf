@@ -942,16 +942,6 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name ENABLE_SIGNALTAP ON
 set_global_assignment -name USE_SIGNALTAP_FILE signal_taps.stp
-set_global_assignment -name QIP_FILE ip/camera_controller/camera_core.qip
-set_global_assignment -name VERILOG_FILE ip/GHRD_IPs/edge_detect/altera_edge_detector.v
-set_global_assignment -name VERILOG_FILE ip/GHRD_IPs/debounce/debounce.v
-set_global_assignment -name QIP_FILE ip/GHRD_IPs/altsource_probe/hps_reset.qip
-set_global_assignment -name VHDL_FILE ip/vga_controller/vga_controller.vhd
-set_global_assignment -name QIP_FILE ip/Sdram_Control/Sdram_Control.qip
-set_global_assignment -name QIP_FILE soc_system/synthesis/soc_system.qip
-set_global_assignment -name VERILOG_FILE ghrd_top.v
-set_global_assignment -name SIGNALTAP_FILE signal_tap_fifo_sdram.stp
-set_global_assignment -name SIGNALTAP_FILE signal_taps.stp
 set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id signal_tap_image_capture
 set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id signal_tap_image_capture
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to ccd_pixel_clk -section_id signal_tap_image_capture
@@ -1774,5 +1764,16 @@ set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id signal_tap_image_capture
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id signal_tap_image_capture
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id signal_tap_image_capture
+set_global_assignment -name QIP_FILE ip/sdram_control/Sdram_Control.qip
+set_global_assignment -name QIP_FILE "ip/7-segment_displays/7-segment_displays.qip"
+set_global_assignment -name QIP_FILE ip/camera_controller/camera_core.qip
+set_global_assignment -name VERILOG_FILE ip/GHRD_IPs/edge_detect/altera_edge_detector.v
+set_global_assignment -name VERILOG_FILE ip/GHRD_IPs/debounce/debounce.v
+set_global_assignment -name QIP_FILE ip/GHRD_IPs/altsource_probe/hps_reset.qip
+set_global_assignment -name VHDL_FILE ip/vga_controller/vga_controller.vhd
+set_global_assignment -name QIP_FILE soc_system/synthesis/soc_system.qip
+set_global_assignment -name VERILOG_FILE ghrd_top.v
+set_global_assignment -name SIGNALTAP_FILE signal_tap_fifo_sdram.stp
+set_global_assignment -name SIGNALTAP_FILE signal_taps.stp
 set_global_assignment -name SLD_FILE db/signal_taps_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

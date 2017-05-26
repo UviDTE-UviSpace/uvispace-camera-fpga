@@ -1,0 +1,5 @@
+set_global_assignment -name IP_TOOL_NAME "7-segment_displays"
+set_global_assignment -name IP_TOOL_VERSION "16.0"
+set_global_assignment -name IP_GENERATED_DEVICE_FAMILY "{Cyclone V}"
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "SEG7_LUT.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "SEG7_LUT_8.v"]

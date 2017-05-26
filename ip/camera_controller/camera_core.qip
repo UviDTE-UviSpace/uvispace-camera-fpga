@@ -2,12 +2,9 @@ set_global_assignment -name IP_TOOL_NAME "Camera core"
 set_global_assignment -name IP_TOOL_VERSION "16.0"
 set_global_assignment -name IP_GENERATED_DEVICE_FAMILY "{Cyclone V}"
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "camera_capture.v"]
-set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "camera_config.v"]
-set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "I2C_Controller.v"]
-set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "Line_Buffer.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "config_controller/camera_config.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "config_controller/I2C_Controller.v"]
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "rgb2hue.v"]
-set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "SEG7_LUT.v"]
-set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "SEG7_LUT_8.v"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "image_capture.vhd"]
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "raw2rgb/raw2rgb.v"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "raw2rgb/onchip_fifo.vhd"]
