@@ -13,7 +13,15 @@
    {
       datum _sortIndex
       {
-         value = "7";
+         value = "4";
+         type = "int";
+      }
+   }
+   element avalon_write_bridge_0
+   {
+      datum _sortIndex
+      {
+         value = "5";
          type = "int";
       }
    }
@@ -21,7 +29,7 @@
    {
       datum _sortIndex
       {
-         value = "6";
+         value = "8";
          type = "int";
       }
    }
@@ -50,7 +58,7 @@
    {
       datum _sortIndex
       {
-         value = "5";
+         value = "7";
          type = "int";
       }
    }
@@ -107,24 +115,11 @@
          type = "String";
       }
    }
-   element image_capture_bridge
-   {
-      datum _sortIndex
-      {
-         value = "8";
-         type = "int";
-      }
-      datum sopceditor_expanded
-      {
-         value = "1";
-         type = "boolean";
-      }
-   }
    element led_pio
    {
       datum _sortIndex
       {
-         value = "4";
+         value = "6";
          type = "int";
       }
    }
@@ -197,6 +192,14 @@
          type = "String";
       }
    }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
@@ -224,14 +227,14 @@
    type="conduit"
    dir="end" />
  <interface
+   name="avalon_write_bridge_0_avalon_slave"
+   internal="avalon_write_bridge_0.avalon_slave"
+   type="avalon"
+   dir="end" />
+ <interface
    name="button_pio_external_connection"
    internal="button_pio.external_connection"
    type="conduit"
-   dir="end" />
- <interface
-   name="captured_image"
-   internal="image_capture_bridge.s0"
-   type="avalon"
    dir="end" />
  <interface
    name="ccd_pixel_clock_bridge"
@@ -285,6 +288,15 @@
   <parameter name="START_COLUMN" value="0" />
   <parameter name="START_ROW" value="0" />
   <parameter name="WIDTH" value="640" />
+ </module>
+ <module
+   name="avalon_write_bridge_0"
+   kind="avalon_write_bridge"
+   version="1.0"
+   enabled="1">
+  <parameter name="ADDRESS_SIZE" value="32" />
+  <parameter name="BURSCOUNT_SIZE" value="7" />
+  <parameter name="DATA_SIZE" value="64" />
  </module>
  <module name="button_pio" kind="altera_avalon_pio" version="16.0" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="true" />
@@ -874,24 +886,6 @@
   <parameter name="usb_mp_clk_div" value="0" />
   <parameter name="use_default_mpu_clk" value="true" />
  </module>
- <module
-   name="image_capture_bridge"
-   kind="altera_avalon_mm_bridge"
-   version="16.0"
-   enabled="1">
-  <parameter name="ADDRESS_UNITS" value="SYMBOLS" />
-  <parameter name="ADDRESS_WIDTH" value="32" />
-  <parameter name="DATA_WIDTH" value="32" />
-  <parameter name="LINEWRAPBURSTS" value="0" />
-  <parameter name="MAX_BURST_SIZE" value="1" />
-  <parameter name="MAX_PENDING_RESPONSES" value="4" />
-  <parameter name="PIPELINE_COMMAND" value="1" />
-  <parameter name="PIPELINE_RESPONSE" value="1" />
-  <parameter name="SYMBOL_WIDTH" value="8" />
-  <parameter name="SYSINFO_ADDR_WIDTH" value="32" />
-  <parameter name="USE_AUTO_ADDRESS_WIDTH" value="0" />
-  <parameter name="USE_RESPONSE" value="0" />
- </module>
  <module name="led_pio" kind="altera_avalon_pio" version="16.0" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
@@ -1315,6 +1309,15 @@
  <connection
    kind="avalon"
    version="16.0"
+   start="avalon_write_bridge_0.avalon_master"
+   end="hps_0.f2h_axi_slave">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="16.0"
    start="hps_0.h2f_axi_master"
    end="led_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -1349,20 +1352,6 @@
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
-   kind="avalon"
-   version="16.0"
-   start="image_capture_bridge.m0"
-   end="hps_0.f2h_axi_slave">
-  <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0000" />
-  <parameter name="defaultConnection" value="false" />
- </connection>
- <connection
-   kind="clock"
-   version="16.0"
-   start="ccd_pixel_clock_bridge.out_clk"
-   end="image_capture_bridge.clk" />
- <connection
    kind="clock"
    version="16.0"
    start="external_clock_50_bridge.out_clk"
@@ -1387,6 +1376,11 @@
    version="16.0"
    start="external_clock_50_bridge.out_clk"
    end="avalon_camera_0.clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="ccd_pixel_clock_bridge.out_clk"
+   end="avalon_write_bridge_0.clock" />
  <connection
    kind="clock"
    version="16.0"
@@ -1460,12 +1454,12 @@
    kind="reset"
    version="16.0"
    start="hps_0.h2f_reset"
-   end="image_capture_bridge.reset" />
+   end="avalon_camera_0.reset" />
  <connection
    kind="reset"
    version="16.0"
    start="hps_0.h2f_reset"
-   end="avalon_camera_0.reset" />
+   end="avalon_write_bridge_0.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
 </system>

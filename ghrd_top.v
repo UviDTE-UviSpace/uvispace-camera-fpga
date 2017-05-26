@@ -260,9 +260,12 @@ soc_system u0 (
   .avalon_camera_export_rowmode          ( in_row_mode ),
   .avalon_camera_export_soft_reset_n     ( camera_soft_reset_n ),
   // Bus for the image_capture component to write images in HPS-OCR
-  .captured_image_writedata              ( image_capture_Dout ),
-  .captured_image_address                ( image_capture_AB ), 
-  .captured_image_write                  ( image_capture_WR), 
+  .avalon_write_bridge_0_avalon_slave_address     ( image_capture_address ),  
+  .avalon_write_bridge_0_avalon_slave_write       ( image_capture_write ),     
+  .avalon_write_bridge_0_avalon_slave_byteenable  ( image_capture_byteenable ), 
+  .avalon_write_bridge_0_avalon_slave_writedata   ( image_capture_write_data ), 
+  .avalon_write_bridge_0_avalon_slave_waitrequest ( image_capture_waitrequest), 
+  .avalon_write_bridge_0_avalon_slave_burstcount  ( image_capture_burstcount ),  
   //HPS ddr3
   .memory_mem_a                          ( HPS_DDR3_ADDR ),
   .memory_mem_ba                         ( HPS_DDR3_BA ),
@@ -499,9 +502,12 @@ image_capture imgcap1 (
 	.buff1full( capture_buff1full ),
 	.standby ( capture_standby ),
 	// Avalon MM Master port to save data into a memory.
-	.AB ( image_capture_AB ),
-	.Dout ( image_capture_Dout ),
-	.WR ( image_capture_WR )
+	.address ( image_capture_address ),
+	.write ( image_capture_write ),
+	.byteenable ( image_capture_byteenable ),
+	.writedata ( image_capture_write_data ),
+	.waitrequest ( image_capture_waitrequest ),
+	.burstcount  ( image_capture_burstcount  )
 	);
 	// image_capture control signals
 	wire  start_capture; // Start a new image capture
@@ -513,9 +519,12 @@ image_capture imgcap1 (
 	wire  capture_buff1full; // buff1 is full 
 	wire  capture_standby; // buff1 is full 
 	// Avalon signals to write the pixels into memory
-	wire  [31:0]image_capture_AB; // Adress Bus
-	wire  [31:0]image_capture_Dout; // Write Data Bus
-	wire  image_capture_WR; // Write signal
+	wire  [31:0]image_capture_address; 
+	wire  image_capture_write;
+	wire  [7:0]image_capture_byteenable; 
+	wire  [63:0]image_capture_write_data;
+	wire  image_capture_waitrequest;
+	wire  [6:0] image_capture_burstcount;
 	
   
 // SDRAM memory based on DE1-SOC demonstration
