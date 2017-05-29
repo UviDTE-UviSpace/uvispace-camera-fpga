@@ -52,7 +52,7 @@ pixel was reduced to 15 bits (1 zero and 5 bits per colour).
 `define ENABLE_HPS
 
 //Top level entity. Contains the inputs and outputs wired to external pins.
-module ghrd_top(
+module uvispace_top(
   ///////// ADC /////////
   inout              ADC_CS_N,
   output             ADC_DIN,
