@@ -56,8 +56,8 @@ ENTITY image_capture IS
         -- When start_capture is 1, start getting a new image.
         start_capture   : IN STD_LOGIC;
         -- Number of columns and rows in the input image array.
-        image_width     : IN STD_LOGIC_VECTOR(15 downto 0);
-        image_height    : IN STD_LOGIC_VECTOR(15 downto 0);
+        image_width     : IN STD_LOGIC_VECTOR(23 downto 0);
+        image_height    : IN STD_LOGIC_VECTOR(23 downto 0);
         -- Odd lines buffer address.
         buff0           : IN STD_LOGIC_VECTOR(31 downto 0);
         -- Even lines buffer address.
@@ -91,8 +91,8 @@ ARCHITECTURE arch OF image_capture IS
     SIGNAL condition_5_to_4 : STD_LOGIC;
     SIGNAL condition_5_to_1 : STD_LOGIC;
     --counters.
-    SIGNAL pix_counter      : STD_LOGIC_VECTOR(12 downto 0);
-    SIGNAL line_counter     : STD_LOGIC_VECTOR(12 downto 0);
+    SIGNAL pix_counter      : STD_LOGIC_VECTOR(23 downto 0);
+    SIGNAL line_counter     : STD_LOGIC_VECTOR(23 downto 0);
     SIGNAL line_end_reached : STD_LOGIC;
     SIGNAL image_end_reached: STD_LOGIC;
     -- Write_buff: it saves the address where the next pixel will be saved.
@@ -163,7 +163,7 @@ BEGIN
                 pix_counter <= pix_counter + 1;
             end if;
         end if;
-        if pix_counter = image_width(12 downto 0) then
+        if pix_counter = image_width(23 downto 0) then
             line_end_reached <= '1';
         else
             line_end_reached <= '0';
@@ -176,11 +176,11 @@ BEGIN
         if rising_edge(clk) then
             if (current_state = 1) then
                 line_counter <= (others => '0');   -- reset ctr
-            elsif (current_state = 5) then         -- ctr incremented
+            elsif ((current_state = 4) and (line_end_reached = '1')) then         -- ctr incremented
                 line_counter <= line_counter + 1;
             end if;
         end if;
-        if line_counter = image_height(12 downto 0) then
+        if line_counter = image_height(23 downto 0) then
             image_end_reached <= '1';
         else
             image_end_reached <= '0';
@@ -223,8 +223,6 @@ BEGIN
                 buff0full <= '0';
                 buff1full <= '1';
             elsif current_state = 4 then
-                buff0full <= '0';
-                buff1full <= '0';
                 if data_valid = '1' then
                     write_buff <= write_buff + (COMPONENT_SIZE/2);
                 end if;

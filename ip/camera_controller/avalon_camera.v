@@ -13,8 +13,8 @@ module avalon_camera (
         input [31:0] avs_s1_writedata,
         // Control signals to export to the image_capture
 		output avs_export_start_capture,
-        output [15:0] avs_export_capture_width,
-        output [15:0] avs_export_capture_height,
+        output [23:0] avs_export_capture_width,
+        output [23:0] avs_export_capture_height,
 		output [31:0] avs_export_buff0,
 		output [31:0] avs_export_buff1,
 		input avs_export_buff0full,
@@ -71,8 +71,8 @@ module avalon_camera (
     
     // image_capture regs
     reg start_capture;
-    reg [15:0] capture_width;
-    reg [15:0] capture_height;
+    reg [23:0] capture_width;
+    reg [23:0] capture_height;
     reg [31:0] buff0;
 	reg [31:0] buff1;
     reg buff0full;
@@ -97,8 +97,8 @@ module avalon_camera (
         if (!reset_n) begin
    
 			start_capture <= 1'b0;
-            capture_width <= 16'd0;
-            capture_height <= 16'd0;
+            capture_width <= 24'd0;
+            capture_height <= 24'd0;
 			buff0[31:0] <= 32'd0;
 			buff1[31:0] <= 32'd0;
             data_width[15:0] <= WIDTH[15:0];
@@ -119,9 +119,9 @@ module avalon_camera (
 						`ADDR_START_CAPTURE:
                         avs_s1_readdata[31:0] <= {31'b0, start_capture};
                         `ADDR_CAPTURE_WIDTH:
-                        avs_s1_readdata[31:0] <= {16'b0, capture_width};
+                        avs_s1_readdata[31:0] <= {8'b0, capture_width};
                         `ADDR_CAPTURE_HEIGHT:
-                        avs_s1_readdata[31:0] <= {16'b0, capture_height};
+                        avs_s1_readdata[31:0] <= {8'b0, capture_height};
 						`ADDR_BUFF0:
                         avs_s1_readdata[31:0] <= buff0;
 						`ADDR_BUFF1:
@@ -166,9 +166,9 @@ module avalon_camera (
 						`ADDR_START_CAPTURE:
 						start_capture <= avs_s1_writedata[0];
                         `ADDR_CAPTURE_WIDTH:
-                        capture_width <= avs_s1_writedata[16:0];
+                        capture_width <= avs_s1_writedata[23:0];
                         `ADDR_CAPTURE_HEIGHT:
-                        capture_height <= avs_s1_writedata[16:0];
+                        capture_height <= avs_s1_writedata[23:0];
 						`ADDR_BUFF0:
                         buff0 <= avs_s1_writedata[31:0];
 						`ADDR_BUFF1:

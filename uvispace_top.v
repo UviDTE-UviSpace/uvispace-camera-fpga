@@ -511,8 +511,8 @@ image_capture imgcap1 (
 	);
 	// image_capture control signals
 	wire  start_capture; // Start a new image capture
-	wire  [15:0] capture_width; //with of the image (in dots or RGB pixels)
-	wire  [15:0] capture_height; //height of the image (in dots or RGB pixels)
+	wire  [23:0] capture_width; //with of the image (in dots or RGB pixels)
+	wire  [23:0] capture_height; //height of the image (in dots or RGB pixels)
 	wire 	[31:0] capture_buff0; // Address of the buffer to save odd line
 	wire 	[31:0] capture_buff1; // Address of the buffer to save even line
 	wire  capture_buff0full; // buff0 is full 
