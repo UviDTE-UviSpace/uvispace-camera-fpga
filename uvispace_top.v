@@ -241,12 +241,9 @@ soc_system u0 (
   .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
   // Avalon camera capture_image signals
   .avalon_camera_export_start_capture    ( start_capture ),
-  .avalon_camera_export_capture_width    ( capture_width ), 
-  .avalon_camera_export_capture_height   ( capture_height ),   
-  .avalon_camera_export_buff0            ( capture_buff0 ), 
-  .avalon_camera_export_buff1            ( capture_buff1 ), 
-  .avalon_camera_export_buff0full        ( capture_buff0full ),
-  .avalon_camera_export_buff1full        ( capture_buff1full ), 
+  .avalon_camera_export_capture_imgsize  ( capture_imgsize ), 
+  .avalon_camera_export_buff             ( capture_buff ), 
+  .avalon_camera_export_image_captured   ( image_captured ),
   .avalon_camera_export_capture_standby  ( capture_standby ), 
 	// Avalon camera camera_config signals  
   .avalon_camera_export_width            ( in_width ),
@@ -494,13 +491,11 @@ image_capture imgcap1 (
 	.data_valid( out_hue_valid ),
 	// Signals to control this component.
 	.start_capture( start_capture ),
-	.image_width( capture_width ),
-	.image_height( capture_height ),
-	.buff0( capture_buff0 ),
-	.buff1( capture_buff1 ),
-	.buff0full( capture_buff0full ),
-	.buff1full( capture_buff1full ),
+	.image_size( capture_imgsize ),
+	.buff( capture_buff ),
+	.image_captured( image_captured ),
 	.standby ( capture_standby ),
+	
 	// Avalon MM Master port to save data into a memory.
 	.address ( image_capture_address ),
 	.write ( image_capture_write ),
@@ -511,13 +506,10 @@ image_capture imgcap1 (
 	);
 	// image_capture control signals
 	wire  start_capture; // Start a new image capture
-	wire  [23:0] capture_width; //with of the image (in dots or RGB pixels)
-	wire  [23:0] capture_height; //height of the image (in dots or RGB pixels)
-	wire 	[31:0] capture_buff0; // Address of the buffer to save odd line
-	wire 	[31:0] capture_buff1; // Address of the buffer to save even line
-	wire  capture_buff0full; // buff0 is full 
-	wire  capture_buff1full; // buff1 is full 
-	wire  capture_standby; // buff1 is full 
+	wire  [23:0] capture_imgsize; //size of the image (in dots or RGB pixels)
+	wire 	[31:0] capture_buff; // Address of the buffer to save the image
+	wire  image_captured; // image has been completely capture
+	wire  capture_standby; // image_capture component is in standby state
 	// Avalon signals to write the pixels into memory
 	wire  [31:0]image_capture_address; 
 	wire  image_capture_write;
