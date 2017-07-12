@@ -513,8 +513,8 @@ image_capture imgcap1 (
 	// Avalon signals to write the pixels into memory
 	wire  [31:0]image_capture_address; 
 	wire  image_capture_write;
-	wire  [3:0]image_capture_byteenable; 
-	wire  [31:0]image_capture_write_data;
+	wire  [15:0]image_capture_byteenable; 
+	wire  [127:0]image_capture_write_data;
 	wire  image_capture_waitrequest;
 	wire  [6:0] image_capture_burstcount;
 	
