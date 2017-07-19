@@ -192,8 +192,8 @@ module uvispace_top(
 
 //HPS signals
 wire    hps2fpga_reset_n;
-wire 	  camera_soft_reset_n;
-wire 	  video_stream_reset_n;
+wire    camera_soft_reset_n;
+wire    video_stream_reset_n;
 wire    clk_25;
 wire    clk_193;
 wire    clk_120;
@@ -203,15 +203,15 @@ wire    vga_enable;
 integer vga_row;
 integer vga_col;
 //CCD peripheral signal
-wire	  [11:0] CCD_DATA;
+wire    [11:0] CCD_DATA;
 //CCD_Capture signals
-wire    [11:0] ccd_data_captured;		//output data from CCD_Capture
-wire				ccd_dval;            //valid output data
+wire    [11:0] ccd_data_captured;   //output data from CCD_Capture
+wire        ccd_dval;            //valid output data
 wire    [15:0] X_Cont;
-wire	  [15:0] Y_Cont;
-reg     [11:0] ccd_data_raw;		    //input raw data to CCD_Capture
-reg            ccd_fval_raw;		    //frame valid
-reg            ccd_lval_raw;		    //line valid
+wire    [15:0] Y_Cont;
+reg     [11:0] ccd_data_raw;        //input raw data to CCD_Capture
+reg            ccd_fval_raw;        //frame valid
+reg            ccd_lval_raw;        //line valid
 wire           ccd_pixel_clk;
 wire           ccd_reset;
 wire    [31:0] Frame_Cont;
@@ -232,12 +232,12 @@ wire    [15:0] fifo2_readdata;
 soc_system u0 (      
   //Input clocks
   .clk_50_clk                            ( CLOCK_50 ),
-  .ccd_pixel_clock_bridge_clk				     ( ccd_pixel_clk ),
+  .ccd_pixel_clock_bridge_clk            ( ccd_pixel_clk ),
   //Output clocks
   .pll_vga_clks_25_clk                   ( clk_25 ),
   .pll_vga_clks_191_clk                  ( clk_193 ),
   .pll_camera_clks_24_clk                ( clk_24 ), 
-	//HPS reset output 
+  //HPS reset output 
   .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
   // Avalon camera capture_image signals
   .avalon_camera_export_start_capture    ( start_capture ),
@@ -245,7 +245,7 @@ soc_system u0 (
   .avalon_camera_export_buff             ( capture_buff ), 
   .avalon_camera_export_image_captured   ( image_captured ),
   .avalon_camera_export_capture_standby  ( capture_standby ), 
-	// Avalon camera camera_config signals  
+  // Avalon camera camera_config signals  
   .avalon_camera_export_width            ( in_width ),
   .avalon_camera_export_height           ( in_height ),
   .avalon_camera_export_startrow         ( start_row ),
@@ -280,7 +280,7 @@ soc_system u0 (
   .memory_mem_odt                        ( HPS_DDR3_ODT ),
   .memory_mem_dm                         ( HPS_DDR3_DM ),
   .memory_oct_rzqin                      ( HPS_DDR3_RZQ ),
-  //HPS ethernet		   
+  //HPS ethernet       
   .hps_0_hps_io_hps_io_emac1_inst_TX_CLK ( HPS_ENET_GTX_CLK ),
   .hps_0_hps_io_hps_io_emac1_inst_TXD0   ( HPS_ENET_TX_DATA[0] ),
   .hps_0_hps_io_hps_io_emac1_inst_TXD1   ( HPS_ENET_TX_DATA[1] ),
@@ -415,7 +415,7 @@ in 4 components(RGBG): The number of rows and columns are reduced to the half.
 One from every 2 rows are stored on a buffer for getting the components of the
 corresponding pixel afterwards.
 */
-raw2rgb u4(	
+raw2rgb u4( 
   .iCLK         (ccd_pixel_clk),
   // Negative logic reset
   .iRST         (hps2fpga_reset_n & video_stream_reset_n),
@@ -479,45 +479,45 @@ rgb2hue hue(
   
 // image_capture: save RGB and Hue into HPS memory
 image_capture imgcap1 (
-	// Clock and reset
-	.clk ( ccd_pixel_clk ),
-	.reset_n (hps2fpga_reset_n & video_stream_reset_n),
-	// Signals from the video stream
-	.R( hue_red ),
-	.G( hue_green ),
-	.B( hue_blue ),
-	.Gray( hue_hue ),
-	.frame_valid( ccd_fval_raw ),
-	.data_valid( out_hue_valid ),
-	// Signals to control this component.
-	.start_capture( start_capture ),
-	.image_size( capture_imgsize ),
-	.buff( capture_buff ),
-	.image_captured( image_captured ),
-	.standby ( capture_standby ),
-	
-	// Avalon MM Master port to save data into a memory.
-	.address ( image_capture_address ),
-	.write ( image_capture_write ),
-	.byteenable ( image_capture_byteenable ),
-	.writedata ( image_capture_write_data ),
-	.waitrequest ( image_capture_waitrequest ),
-	.burstcount  ( image_capture_burstcount  )
-	);
-	// image_capture control signals
-	wire  start_capture; // Start a new image capture
-	wire  [23:0] capture_imgsize; //size of the image (in dots or RGB pixels)
-	wire 	[31:0] capture_buff; // Address of the buffer to save the image
-	wire  image_captured; // image has been completely capture
-	wire  capture_standby; // image_capture component is in standby state
-	// Avalon signals to write the pixels into memory
-	wire  [31:0]image_capture_address; 
-	wire  image_capture_write;
-	wire  [15:0]image_capture_byteenable; 
-	wire  [127:0]image_capture_write_data;
-	wire  image_capture_waitrequest;
-	wire  [6:0] image_capture_burstcount;
-	
+  // Clock and reset
+  .clk ( ccd_pixel_clk ),
+  .reset_n (hps2fpga_reset_n & video_stream_reset_n),
+  // Signals from the video stream
+  .R( hue_red ),
+  .G( hue_green ),
+  .B( hue_blue ),
+  .Gray( hue_hue ),
+  .frame_valid( ccd_fval_raw ),
+  .data_valid( out_hue_valid ),
+  // Signals to control this component.
+  .start_capture( start_capture ),
+  .image_size( capture_imgsize ),
+  .buff( capture_buff ),
+  .image_captured( image_captured ),
+  .standby ( capture_standby ),
+  
+  // Avalon MM Master port to save data into a memory.
+  .address ( image_capture_address ),
+  .write ( image_capture_write ),
+  .byteenable ( image_capture_byteenable ),
+  .writedata ( image_capture_write_data ),
+  .waitrequest ( image_capture_waitrequest ),
+  .burstcount  ( image_capture_burstcount  )
+  );
+  // image_capture control signals
+  wire  start_capture; // Start a new image capture
+  wire  [23:0] capture_imgsize; //size of the image (in dots or RGB pixels)
+  wire  [31:0] capture_buff; // Address of the buffer to save the image
+  wire  image_captured; // image has been completely capture
+  wire  capture_standby; // image_capture component is in standby state
+  // Avalon signals to write the pixels into memory
+  wire  [31:0]image_capture_address; 
+  wire  image_capture_write;
+  wire  [15:0]image_capture_byteenable; 
+  wire  [127:0]image_capture_write_data;
+  wire  image_capture_waitrequest;
+  wire  [6:0] image_capture_burstcount;
+  
   
 // SDRAM memory based on DE1-SOC demonstration
 Sdram_Control u1( 
@@ -612,7 +612,7 @@ For getting the frame rate, a 1 second temporizer is created, and the
 number of frames between pulses is displayed. Moreover, a seconds pulse
 is wired to the first led of the board (LEDR[0])
 */
-SEG7_LUT_8 u5(	
+SEG7_LUT_8 u5(  
   .oSEG0        (HEX0),
   .oSEG1        (HEX1),
   .oSEG2        (HEX2),
