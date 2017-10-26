@@ -7,7 +7,7 @@ pins were obtained from the Terasic DE1-SoC Golden Hardware Reference
 Design (GHRD) project. For more information about this basic project and
 the board, you can visit their website (http://www.terasic.com/).
 
-Some of the remaining modules are based on demonstrations provided by 
+Some of the remaining modules are based on demonstrations provided by
 Terasic for the DE1-Soc and the DM5 Camera.
 
 The purpose of the design is to provide an FPGA circuit for configuring
@@ -229,23 +229,23 @@ wire    [15:0] fifo2_readdata;
 //=======================================================
 //  Structural coding
 //=======================================================
-soc_system u0 (      
+soc_system u0 (
   //Input clocks
   .clk_50_clk                            ( CLOCK_50 ),
   .ccd_pixel_clock_bridge_clk            ( ccd_pixel_clk ),
   //Output clocks
   .pll_vga_clks_25_clk                   ( clk_25 ),
   .pll_vga_clks_191_clk                  ( clk_193 ),
-  .pll_camera_clks_24_clk                ( clk_24 ), 
-  //HPS reset output 
+  .pll_camera_clks_24_clk                ( clk_24 ),
+  //HPS reset output
   .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
   // Avalon camera capture_image signals
   .avalon_camera_export_start_capture    ( start_capture ),
-  .avalon_camera_export_capture_imgsize  ( capture_imgsize ), 
-  .avalon_camera_export_buff             ( capture_buff ), 
+  .avalon_camera_export_capture_imgsize  ( capture_imgsize ),
+  .avalon_camera_export_buff             ( capture_buff ),
   .avalon_camera_export_image_captured   ( image_captured ),
-  .avalon_camera_export_capture_standby  ( capture_standby ), 
-  // Avalon camera camera_config signals  
+  .avalon_camera_export_capture_standby  ( capture_standby ),
+  // Avalon camera camera_config signals
   .avalon_camera_export_width            ( in_width ),
   .avalon_camera_export_height           ( in_height ),
   .avalon_camera_export_startrow         ( start_row ),
@@ -257,12 +257,12 @@ soc_system u0 (
   .avalon_camera_export_rowmode          ( in_row_mode ),
   .avalon_camera_export_soft_reset_n     ( camera_soft_reset_n ),
   // Bus for the image_capture component to write images in HPS-OCR
-  .avalon_write_bridge_0_avalon_slave_address     ( image_capture_address ),  
-  .avalon_write_bridge_0_avalon_slave_write       ( image_capture_write ),     
-  .avalon_write_bridge_0_avalon_slave_byteenable  ( image_capture_byteenable ), 
-  .avalon_write_bridge_0_avalon_slave_writedata   ( image_capture_write_data ), 
-  .avalon_write_bridge_0_avalon_slave_waitrequest ( image_capture_waitrequest), 
-  .avalon_write_bridge_0_avalon_slave_burstcount  ( image_capture_burstcount ),  
+  .avalon_write_bridge_0_avalon_slave_address     ( image_capture_address ),
+  .avalon_write_bridge_0_avalon_slave_write       ( image_capture_write ),
+  .avalon_write_bridge_0_avalon_slave_byteenable  ( image_capture_byteenable ),
+  .avalon_write_bridge_0_avalon_slave_writedata   ( image_capture_write_data ),
+  .avalon_write_bridge_0_avalon_slave_waitrequest ( image_capture_waitrequest),
+  .avalon_write_bridge_0_avalon_slave_burstcount  ( image_capture_burstcount ),
   //HPS ddr3
   .memory_mem_a                          ( HPS_DDR3_ADDR ),
   .memory_mem_ba                         ( HPS_DDR3_BA ),
@@ -276,11 +276,11 @@ soc_system u0 (
   .memory_mem_reset_n                    ( HPS_DDR3_RESET_N) ,
   .memory_mem_dq                         ( HPS_DDR3_DQ ),
   .memory_mem_dqs_n                      ( HPS_DDR3_DQS_N ),
-  .memory_mem_dqs                        ( HPS_DDR3_DQS_P ),     
+  .memory_mem_dqs                        ( HPS_DDR3_DQS_P ),
   .memory_mem_odt                        ( HPS_DDR3_ODT ),
   .memory_mem_dm                         ( HPS_DDR3_DM ),
   .memory_oct_rzqin                      ( HPS_DDR3_RZQ ),
-  //HPS ethernet       
+  //HPS ethernet
   .hps_0_hps_io_hps_io_emac1_inst_TX_CLK ( HPS_ENET_GTX_CLK ),
   .hps_0_hps_io_hps_io_emac1_inst_TXD0   ( HPS_ENET_TX_DATA[0] ),
   .hps_0_hps_io_hps_io_emac1_inst_TXD1   ( HPS_ENET_TX_DATA[1] ),
@@ -295,7 +295,7 @@ soc_system u0 (
   .hps_0_hps_io_hps_io_emac1_inst_RXD1   ( HPS_ENET_RX_DATA[1] ),
   .hps_0_hps_io_hps_io_emac1_inst_RXD2   ( HPS_ENET_RX_DATA[2] ),
   .hps_0_hps_io_hps_io_emac1_inst_RXD3   ( HPS_ENET_RX_DATA[3] ),
-  //HPS QSPI  
+  //HPS QSPI
   .hps_0_hps_io_hps_io_qspi_inst_IO0     ( HPS_FLASH_DATA[0] ),
   .hps_0_hps_io_hps_io_qspi_inst_IO1     ( HPS_FLASH_DATA[1] ),
   .hps_0_hps_io_hps_io_qspi_inst_IO2     ( HPS_FLASH_DATA[2] ),
@@ -309,12 +309,12 @@ soc_system u0 (
   .hps_0_hps_io_hps_io_sdio_inst_CLK     ( HPS_SD_CLK ),
   .hps_0_hps_io_hps_io_sdio_inst_D2      ( HPS_SD_DATA[2] ),
   .hps_0_hps_io_hps_io_sdio_inst_D3      ( HPS_SD_DATA[3] ),
-  //HPS USB     
+  //HPS USB
   .hps_0_hps_io_hps_io_usb1_inst_D0      ( HPS_USB_DATA[0] ),
   .hps_0_hps_io_hps_io_usb1_inst_D1      ( HPS_USB_DATA[1] ),
   .hps_0_hps_io_hps_io_usb1_inst_D2      ( HPS_USB_DATA[2] ),
   .hps_0_hps_io_hps_io_usb1_inst_D3      ( HPS_USB_DATA[3] ),
-  .hps_0_hps_io_hps_io_usb1_inst_D4      ( HPS_USB_DATA[4] ), 
+  .hps_0_hps_io_hps_io_usb1_inst_D4      ( HPS_USB_DATA[4] ),
   .hps_0_hps_io_hps_io_usb1_inst_D5      ( HPS_USB_DATA[5] ),
   .hps_0_hps_io_hps_io_usb1_inst_D6      ( HPS_USB_DATA[6] ),
   .hps_0_hps_io_hps_io_usb1_inst_D7      ( HPS_USB_DATA[7] ),
@@ -345,13 +345,13 @@ soc_system u0 (
   .hps_0_hps_io_hps_io_gpio_inst_GPIO53  ( HPS_LED ),
   .hps_0_hps_io_hps_io_gpio_inst_GPIO54  ( HPS_KEY ),
   .hps_0_hps_io_hps_io_gpio_inst_GPIO61  ( HPS_GSENSOR_INT ),
-  //FPGA soft GPIO 
+  //FPGA soft GPIO
   .led_pio_external_connection_export    (  ),
   .dipsw_pio_external_connection_export  ( SW ),
   .button_pio_external_connection_export ( KEY )
   );
 
-camera_capture u3( 
+camera_capture u3(
   .out_data     (ccd_data_captured),    // component output data
   .out_valid    (ccd_dval),             // data valid signal
   .out_count_x  (X_Cont_raw),
@@ -395,7 +395,7 @@ camera_capture u3(
   assign  ccd_pixel_clk=  GPIO_1[0];  //Pixel clock
   assign  GPIO_1[19]   =  1'b1;       //trigger
   assign  GPIO_1[17]   =  hps2fpga_reset_n & video_stream_reset_n;
-  
+
   assign  GPIO_0[0]   =  hps2fpga_reset_n & video_stream_reset_n;
   assign  GPIO_0[1]   =  ccd_pixel_clk;
 
@@ -415,7 +415,7 @@ in 4 components(RGBG): The number of rows and columns are reduced to the half.
 One from every 2 rows are stored on a buffer for getting the components of the
 corresponding pixel afterwards.
 */
-raw2rgb u4( 
+raw2rgb u4(
   .iCLK         (ccd_pixel_clk),
   // Negative logic reset
   .iRST         (hps2fpga_reset_n & video_stream_reset_n),
@@ -430,9 +430,9 @@ raw2rgb u4(
   );
   // On each camera cycle (defined by the pixel clock), the 3 components (RGB)
   // of a pixel are written to 2 FIFOs on the SDRAM memory. As the VGA controller
-  // can take only 1 byte per component, only the 8 most significative bits of 
+  // can take only 1 byte per component, only the 8 most significative bits of
   // each 'raw' component are sent to the 2 FIFOs created in the SDRAM.
-  // In case that only one FIFO memory is used, only the 5 most significative 
+  // In case that only one FIFO memory is used, only the 5 most significative
   // bits of each component are sent to the SDRAM.
   always @(posedge ccd_pixel_clk) begin
     if (!hps2fpga_reset_n & video_stream_reset_n) begin
@@ -440,43 +440,50 @@ raw2rgb u4(
     end
     else begin
       if (SW[3]) begin
-        fifo1_writedata <= {1'b0, raw_rgb_red[11:7], raw_rgb_green[11:7], 
+        fifo1_writedata <= {1'b0, raw_rgb_red[11:7], raw_rgb_green[11:7],
                             raw_rgb_blue[11:7]};
         fifo_write_enable <= raw_rgb_dval;
       end
       else begin
-        fifo1_writedata <= {8'h00, hue_hue[7:0]};
+        fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
         fifo_write_enable <= out_hue_valid;
       end
     end
   end
 
-rgb2hue hue(
+image_processing img_proc(
   .clock(ccd_pixel_clk),
   .reset_n(hps2fpga_reset_n & video_stream_reset_n),
   // Data input
   .in_red(raw_rgb_red[11:4]),
   .in_green(raw_rgb_green[11:4]),
   .in_blue(raw_rgb_blue[11:4]),
+  .hue_l_threshold(lower_hue),
+  .hue_h_threshold(higher_hue),
+  .sat_threshold(saturation_level),
+  .bri_threshold(brightness_level),
   .in_valid(raw_rgb_dval),
-  .in_visual(1'b1),
-  .in_done(1'b1),
   // Data output
-  .out_red(hue_red),
-  .out_green(hue_green),
-  .out_blue(hue_blue),
   .out_hue(hue_hue),
-  .out_valid(out_hue_valid),
-  .out_visual(),
-  .out_done()
+  .out_bin(binarized),
+  .out_valid(out_hue_valid)
   );
+  wire  [7:0] lower_hue;
+  wire  [7:0] higher_hue;
+  wire  [7:0] saturation_level;
+  wire  [7:0] brightness_level;
   wire  [7:0] hue_hue;
-  wire  [7:0] hue_red;
-  wire  [7:0] hue_green;
-  wire  [7:0] hue_blue;
+  wire        binarized;
   wire        out_hue_valid;
+  wire  [7:0] binarized_8bit;
+  // Test values
+  assign binarized_8bit = binarized ? 8'd255 : 8'd0;
+  assign lower_hue = 8'd220;
+  assign higher_hue = 8'd30;
+  assign saturation_level = 8'd60;
+  assign brigthness_level = 8'd60;
 
-  
+
 // image_capture: save RGB and Hue into HPS memory
 image_capture imgcap1 (
   // Clock and reset
@@ -495,7 +502,7 @@ image_capture imgcap1 (
   .buff( capture_buff ),
   .image_captured( image_captured ),
   .standby ( capture_standby ),
-  
+
   // Avalon MM Master port to save data into a memory.
   .address ( image_capture_address ),
   .write ( image_capture_write ),
@@ -511,16 +518,16 @@ image_capture imgcap1 (
   wire  image_captured; // image has been completely capture
   wire  capture_standby; // image_capture component is in standby state
   // Avalon signals to write the pixels into memory
-  wire  [31:0]image_capture_address; 
+  wire  [31:0]image_capture_address;
   wire  image_capture_write;
-  wire  [15:0]image_capture_byteenable; 
+  wire  [15:0]image_capture_byteenable;
   wire  [127:0]image_capture_write_data;
   wire  image_capture_waitrequest;
   wire  [6:0] image_capture_burstcount;
-  
-  
+
+
 // SDRAM memory based on DE1-SOC demonstration
-Sdram_Control u1( 
+Sdram_Control u1(
   // HOST Side
   .REF_CLK(CLOCK_50),
   .RESET_N(1'b1),
@@ -543,7 +550,7 @@ Sdram_Control u1(
   // FIFO Read Side 1
   .RD1_DATA(fifo1_readdata),          //data bus size: 16 bits
   .RD1(vga_enable),                   //Read enable
-  .RD1_ADDR(0),     
+  .RD1_ADDR(0),
   .RD1_MAX_ADDR(640*480),             //address bus size: 25 bits
   .RD1_LENGTH(9'h80),                 //Max allowed size: 8 bits
   .RD1_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
@@ -551,7 +558,7 @@ Sdram_Control u1(
   // FIFO Read Side 2 (Unused. Needed if 8 bits per pixel are used)
   .RD2_DATA(fifo2_readdata),          //data bus size: 16 bits
   .RD2(vga_enable),                   //Read enable
-  .RD2_ADDR(22'h100000),     
+  .RD2_ADDR(22'h100000),
   .RD2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
   .RD2_LENGTH(9'h80),                 //Max allowed size: 8 bits
   .RD2_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
@@ -566,7 +573,7 @@ Sdram_Control u1(
   .WE_N(DRAM_WE_N),
   .DQ(DRAM_DQ),
   .DQM({DRAM_UDQM,DRAM_LDQM}),
-  .SDR_CLK(DRAM_CLK)  
+  .SDR_CLK(DRAM_CLK)
   );
   reg    fifo_write_enable;
 
@@ -612,7 +619,7 @@ For getting the frame rate, a 1 second temporizer is created, and the
 number of frames between pulses is displayed. Moreover, a seconds pulse
 is wired to the first led of the board (LEDR[0])
 */
-SEG7_LUT_8 u5(  
+SEG7_LUT_8 u5(
   .oSEG0        (HEX0),
   .oSEG1        (HEX1),
   .oSEG2        (HEX2),
@@ -687,7 +694,7 @@ camera_config #(
   // assign in_column_size = 16'h09FF;
   // assign in_row_mode = 16'h0011;
   // assign in_column_mode = 16'h0011;
-  
+
 // Reset logic
 assign video_stream_reset_n = (camera_soft_reset_n & KEY[0]);
 

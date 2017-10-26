@@ -1,0 +1,22 @@
+#Quartus II files
+*.qsys_edit/
+soc_system/
+*hps_isw_handoff/**
+*db/**
+*.bak
+incremental_db/
+*.txt
+*.rpt
+*.csv
+*.done
+*.smsg
+*.summary
+*.pin
+*.jdi
+*.sopcinfo
+*.sld
+*.qws
+*.sof
+*.rbf
+*.cdf
+*.stp
