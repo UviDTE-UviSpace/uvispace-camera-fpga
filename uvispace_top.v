@@ -195,7 +195,7 @@ wire    hps2fpga_reset_n;
 wire    camera_soft_reset_n;
 wire    video_stream_reset_n;
 wire    clk_25;
-wire    clk_193;
+wire    clk_191;
 wire    clk_120;
 wire    clk_24;
 //VGA signals
@@ -235,7 +235,7 @@ soc_system u0 (
   .ccd_pixel_clock_bridge_clk            ( ccd_pixel_clk ),
   //Output clocks
   .pll_vga_clks_25_clk                   ( clk_25 ),
-  .pll_vga_clks_191_clk                  ( clk_193 ),
+  .pll_vga_clks_191_clk                  ( clk_191 ),
   .pll_camera_clks_24_clk                ( clk_24 ),
   //HPS reset output
   .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
@@ -344,11 +344,7 @@ soc_system u0 (
   .hps_0_hps_io_hps_io_gpio_inst_GPIO48  ( HPS_I2C_CONTROL ),
   .hps_0_hps_io_hps_io_gpio_inst_GPIO53  ( HPS_LED ),
   .hps_0_hps_io_hps_io_gpio_inst_GPIO54  ( HPS_KEY ),
-  .hps_0_hps_io_hps_io_gpio_inst_GPIO61  ( HPS_GSENSOR_INT ),
-  //FPGA soft GPIO
-  .led_pio_external_connection_export    (  ),
-  .dipsw_pio_external_connection_export  ( SW ),
-  .button_pio_external_connection_export ( KEY )
+  .hps_0_hps_io_hps_io_gpio_inst_GPIO61  ( HPS_GSENSOR_INT )
   );
 
 camera_capture u3(
