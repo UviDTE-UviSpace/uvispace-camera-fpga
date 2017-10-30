@@ -7,9 +7,11 @@ This folder contains Quartus II projects that simulate some of the components de
 Folders content
 ===============
 The components that have simulation are:
+
 * avalon_image_writer: this component takes the raw pixels from the camera, packs them into a word. When the word is full it writes the pixels into a avalon memory-mapped master port. It is used in Uvispace to write images from FPGA into processors memory.
 
 Inside each simulation folder there is:
+
 * <component_name>.qpf: Quartus project file, containing files involved in the project, some configurations of Quartus , etc.
 * <component_name>.qsf: Quartus settings file, target device, describes the simulation (using Nativelink flow), etc.
 * <component_name>.vhd: VHDL file describing the component behaviour.
