@@ -1,5 +1,5 @@
 //
-// Avalon MM Slave for parallel input/output camera registers 
+// Avalon MM Slave for parallel input/output camera registers
 //
 module avalon_camera (
     // Avalon clock interface signals
@@ -11,12 +11,6 @@ module avalon_camera (
     output reg [31:0] avs_s1_readdata,
     input avs_s1_write,
     input [31:0] avs_s1_writedata,
-    // Control signals to export to the image_capture
-    output avs_export_start_capture,
-    output [23:0] avs_export_capture_imgsize,
-    output [31:0] avs_export_buff,
-    input avs_export_image_captured,
-    input avs_export_capture_standby,
     // Registers to export to the camera_config
     output [15:0] avs_export_width,
     output [15:0] avs_export_height,
@@ -31,24 +25,19 @@ module avalon_camera (
     output avs_export_cam_soft_reset_n
     );
 
-// Addresses of the registers to control image_capture
-`define ADDR_START_CAPTURE      5'h00
-`define ADDR_CAPTURE_IMGSIZE    5'h01
-`define ADDR_BUFF               5'h02
-`define ADDR_IMGCAPTURED        5'h03
-`define ADDR_CAPTURE_STANDBY    5'h04
 // Addresses of the registers to control camera_config
-`define ADDR_WIDTH              5'h09
-`define ADDR_HEIGHT             5'h0a
-`define ADDR_START_ROW          5'h0b
-`define ADDR_START_COLUMN       5'h0c
-`define ADDR_ROW_SIZE           5'h0d
-`define ADDR_COLUMN_SIZE        5'h0e
-`define ADDR_ROW_MODE           5'h0f
-`define ADDR_COLUMN_MODE        5'h10
-`define ADDR_EXPOSURE           5'h11
-// Address of the soft reset 
-`define SOFT_RESET_N           5'h1F //last address
+`define ADDR_WIDTH              5'h00
+`define ADDR_HEIGHT             5'h01
+`define ADDR_START_ROW          5'h02
+`define ADDR_START_COLUMN       5'h03
+`define ADDR_ROW_SIZE           5'h04
+`define ADDR_COLUMN_SIZE        5'h05
+`define ADDR_ROW_MODE           5'h06
+`define ADDR_COLUMN_MODE        5'h07
+`define ADDR_EXPOSURE           5'h08
+
+// Address of the soft reset
+`define SOFT_RESET_N            5'h1F //last address
 
 // Camera configuration registers default values.
 parameter WIDTH         = 16'd320;
@@ -61,13 +50,7 @@ parameter ROW_MODE      = 16'h0002;
 parameter COLUMN_MODE   = 16'h0002;
 parameter EXPOSURE      = 16'h07c0;
 
-// image_capture registers
-reg start_capture;
-reg [23:0] capture_imgsize;
-reg [31:0] buff;
-reg imgcaptured;
-wire standby;
-// camera_config registers   
+// camera_config registers
 reg [15:0] data_width;
 reg [15:0] data_height;
 reg [15:0] data_start_row;
@@ -77,17 +60,15 @@ reg [15:0] data_column_size;
 reg [15:0] data_row_mode;
 reg [15:0] data_column_mode;
 reg [15:0] data_exposure;
+
 //soft_reset reg
 reg cam_soft_reset_n;
 
 
 // Read/Write registers
-always @(posedge clk or negedge reset_n) 
+always @(posedge clk or negedge reset_n)
 begin
     if (!reset_n) begin
-        start_capture           <= 1'b0;
-        capture_imgsize         <= 24'd0;
-        buff[31:0]              <= 32'd0;
         data_width[15:0]        <= WIDTH[15:0];
         data_height[15:0]       <= HEIGHT[15:0];
         data_start_row[15:0]    <= START_ROW[15:0];
@@ -101,20 +82,9 @@ begin
     end
     else begin
         if (avs_s1_read) begin
-            case (avs_s1_address)
-                // image_capture
-                `ADDR_START_CAPTURE:
-                    avs_s1_readdata[31:0] <= {31'b0, start_capture};
-                `ADDR_CAPTURE_IMGSIZE:
-                    avs_s1_readdata[31:0] <= {8'b0, capture_imgsize};
-                `ADDR_BUFF:
-                    avs_s1_readdata[31:0] <= buff;
-                `ADDR_IMGCAPTURED:
-                    avs_s1_readdata[31:0] <= {31'b0, imgcaptured};
-                `ADDR_CAPTURE_STANDBY:
-                    avs_s1_readdata[31:0] <= {31'b0, standby};
+            case (avs_s1_address) //(Read registers from Avalon bus)
                 // camera_config
-                `ADDR_WIDTH: 
+                `ADDR_WIDTH:
                     avs_s1_readdata[15:0] <= data_width[15:0];
                 `ADDR_HEIGHT:
                     avs_s1_readdata[15:0] <= data_height[15:0];
@@ -136,22 +106,13 @@ begin
                 `SOFT_RESET_N:
                     avs_s1_readdata[31:0] <= {31'b0, cam_soft_reset_n};
                 default:
-                    avs_s1_readdata[31:0] <= {32'b0};  
+                    avs_s1_readdata[31:0] <= {32'b0};
             endcase
         end
-        // Routine when avs_s1_read is FALSE.
+        // Routine when avs_s1_read is FALSE (Write registers from Avalon bus)
         else begin
             if (avs_s1_write) begin
                 case (avs_s1_address)
-                    // image_capture
-                    `ADDR_START_CAPTURE:
-                        start_capture           <= avs_s1_writedata[0];
-                    `ADDR_CAPTURE_IMGSIZE:
-                        capture_imgsize         <= avs_s1_writedata[23:0];
-                    `ADDR_BUFF:
-                        buff                    <= avs_s1_writedata[31:0];
-                    //`ADDR_CAPTURE_STANDBY://not writable
-                    // camera_config
                     `ADDR_WIDTH:
                         data_width[15:0]        <= avs_s1_writedata[15:0];
                     `ADDR_HEIGHT:
@@ -179,35 +140,6 @@ begin
     end
 end
 
-
-// imgcaptured registers
-// This signals come from the capture_image component and may be clocked 
-// by a different clock. That is why asynchronous set is done here 
-// to set this signal. The processor uses this signals to know that
-// one line has been captured and can read the buffer. The processor is
-// in charge of erasing these signals through the avalon bus.
-// The standby signal can also be used to know when a capture finished.
-always @(posedge clk or negedge reset_n or posedge avs_export_image_captured) 
-begin
-    if (avs_export_image_captured) 
-        imgcaptured <= 1'b1;
-    else if (!reset_n) 
-        imgcaptured <= 1'b0;
-    else begin
-        if (avs_s1_write == 1) begin
-            case (avs_s1_address) 
-                `ADDR_IMGCAPTURED: imgcaptured <= avs_s1_writedata[0];
-            endcase
-        end
-    end
-end
-
-
-// Control signals to export to the image capture
-assign avs_export_start_capture = start_capture;
-assign avs_export_capture_imgsize = capture_imgsize;
-assign avs_export_buff = buff;
-assign standby = avs_export_capture_standby;
 // Registers to export to the camera_config
 assign avs_export_start_row[15:0] = data_start_row[15:0];
 assign avs_export_start_column[15:0] = data_start_column[15:0];

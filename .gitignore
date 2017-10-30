@@ -2,7 +2,7 @@
 *.qsys_edit/
 soc_system/
 *hps_isw_handoff/**
-*db/**
+*db/
 *.bak
 incremental_db/
 *.txt
@@ -20,3 +20,10 @@ incremental_db/
 *.rbf
 *.cdf
 *.stp
+*_hw.tcl~
+
+#simulation
+*modelsim.ini
+*msim_transcript
+*.wlf
+*rtl_work/

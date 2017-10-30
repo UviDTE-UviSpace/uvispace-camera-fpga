@@ -17,12 +17,52 @@
          type = "int";
       }
    }
-   element avalon_write_bridge_0
+   element avalon_img_writer_binary
+   {
+      datum _sortIndex
+      {
+         value = "7";
+         type = "int";
+      }
+   }
+   element avalon_img_writer_binary.avalon_slave
+   {
+      datum baseAddress
+      {
+         value = "768";
+         type = "String";
+      }
+   }
+   element avalon_img_writer_gray
+   {
+      datum _sortIndex
+      {
+         value = "6";
+         type = "int";
+      }
+   }
+   element avalon_img_writer_gray.avalon_slave
+   {
+      datum baseAddress
+      {
+         value = "512";
+         type = "String";
+      }
+   }
+   element avalon_img_writer_rgbgray
    {
       datum _sortIndex
       {
          value = "5";
          type = "int";
+      }
+   }
+   element avalon_img_writer_rgbgray.avalon_slave
+   {
+      datum baseAddress
+      {
+         value = "256";
+         type = "String";
       }
    }
    element ccd_pixel_clock_bridge
@@ -69,7 +109,7 @@
    {
       datum _sortIndex
       {
-         value = "7";
+         value = "9";
          type = "int";
       }
    }
@@ -77,7 +117,7 @@
    {
       datum _sortIndex
       {
-         value = "6";
+         value = "8";
          type = "int";
       }
    }
@@ -156,9 +196,9 @@
    type="conduit"
    dir="end" />
  <interface
-   name="avalon_write_bridge_0_avalon_slave"
-   internal="avalon_write_bridge_0.avalon_slave"
-   type="avalon"
+   name="binary_img"
+   internal="avalon_img_writer_binary.conduit_end"
+   type="conduit"
    dir="end" />
  <interface
    name="ccd_pixel_clock_bridge"
@@ -169,6 +209,11 @@
    name="clk_50"
    internal="external_clock_50_bridge.in_clk"
    type="clock"
+   dir="end" />
+ <interface
+   name="gray_img"
+   internal="avalon_img_writer_gray.conduit_end"
+   type="conduit"
    dir="end" />
  <interface
    name="h2f_reset"
@@ -192,6 +237,11 @@
    internal="pll_vga_clks.outclk0"
    type="clock"
    dir="start" />
+ <interface
+   name="rgbgray_img"
+   internal="avalon_img_writer_rgbgray.conduit_end"
+   type="conduit"
+   dir="end" />
  <module name="avalon_camera_0" kind="avalon_camera" version="1.0" enabled="1">
   <parameter name="COLUMN_MODE" value="17" />
   <parameter name="COLUMN_SIZE" value="2559" />
@@ -204,13 +254,31 @@
   <parameter name="WIDTH" value="640" />
  </module>
  <module
-   name="avalon_write_bridge_0"
-   kind="avalon_write_bridge"
+   name="avalon_img_writer_binary"
+   kind="avalon_image_writer"
    version="1.0"
    enabled="1">
-  <parameter name="ADDRESS_SIZE" value="32" />
-  <parameter name="BURSCOUNT_SIZE" value="7" />
-  <parameter name="DATA_SIZE" value="128" />
+  <parameter name="COMPONENT_SIZE" value="8" />
+  <parameter name="NUMBER_COMPONENTS" value="1" />
+  <parameter name="PIX_WR" value="16" />
+ </module>
+ <module
+   name="avalon_img_writer_gray"
+   kind="avalon_image_writer"
+   version="1.0"
+   enabled="1">
+  <parameter name="COMPONENT_SIZE" value="8" />
+  <parameter name="NUMBER_COMPONENTS" value="1" />
+  <parameter name="PIX_WR" value="16" />
+ </module>
+ <module
+   name="avalon_img_writer_rgbgray"
+   kind="avalon_image_writer"
+   version="1.0"
+   enabled="1">
+  <parameter name="COMPONENT_SIZE" value="8" />
+  <parameter name="NUMBER_COMPONENTS" value="4" />
+  <parameter name="PIX_WR" value="4" />
  </module>
  <module
    name="ccd_pixel_clock_bridge"
@@ -227,7 +295,7 @@
    version="16.0"
    enabled="1">
   <parameter name="ACTIVE_LOW_RESET" value="1" />
-  <parameter name="AUTO_CLK_CLOCK_RATE" value="50000000" />
+  <parameter name="AUTO_CLK_CLOCK_RATE" value="0" />
   <parameter name="NUM_RESET_OUTPUTS" value="1" />
   <parameter name="SYNCHRONOUS_EDGES" value="deassert" />
   <parameter name="USE_RESET_REQUEST" value="0" />
@@ -393,10 +461,10 @@
   <parameter name="FPGA_PERIPHERAL_OUTPUT_CLOCK_FREQ_SPIM1_SCLK_OUT" value="100" />
   <parameter name="GPIO_Enable">No,No,No,No,No,No,No,No,No,Yes,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,Yes,No,No,No,No,Yes,No,No,No,No,No,No,No,Yes,No,No,No,No,Yes,Yes,No,No,No,No,No,No,Yes,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No,No</parameter>
   <parameter name="GP_Enable" value="false" />
-  <parameter name="H2F_AXI_CLOCK_FREQ" value="50000000" />
+  <parameter name="H2F_AXI_CLOCK_FREQ" value="0" />
   <parameter name="H2F_CTI_CLOCK_FREQ" value="100" />
   <parameter name="H2F_DEBUG_APB_CLOCK_FREQ" value="100" />
-  <parameter name="H2F_LW_AXI_CLOCK_FREQ" value="50000000" />
+  <parameter name="H2F_LW_AXI_CLOCK_FREQ" value="0" />
   <parameter name="H2F_TPIU_CLOCK_IN_FREQ" value="100" />
   <parameter name="HARD_EMIF" value="true" />
   <parameter name="HCX_COMPAT_MODE" value="false" />
@@ -1181,10 +1249,55 @@
  <connection
    kind="avalon"
    version="16.0"
-   start="avalon_write_bridge_0.avalon_master"
+   start="avalon_img_writer_binary.avalon_master"
    end="hps_0.f2h_axi_slave">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="16.0"
+   start="avalon_img_writer_gray.avalon_master"
+   end="hps_0.f2h_axi_slave">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="16.0"
+   start="avalon_img_writer_rgbgray.avalon_master"
+   end="hps_0.f2h_axi_slave">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="16.0"
+   start="hps_0.h2f_axi_master"
+   end="avalon_img_writer_rgbgray.avalon_slave">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0100" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="16.0"
+   start="hps_0.h2f_axi_master"
+   end="avalon_img_writer_gray.avalon_slave">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0200" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="16.0"
+   start="hps_0.h2f_axi_master"
+   end="avalon_img_writer_binary.avalon_slave">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0300" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1199,18 +1312,28 @@
  <connection
    kind="clock"
    version="16.0"
-   start="external_clock_50_bridge.out_clk"
+   start="ccd_pixel_clock_bridge.out_clk"
    end="export_hps_reset_bridge.clk" />
  <connection
    kind="clock"
    version="16.0"
-   start="external_clock_50_bridge.out_clk"
-   end="avalon_camera_0.clock" />
+   start="ccd_pixel_clock_bridge.out_clk"
+   end="avalon_img_writer_rgbgray.clock" />
  <connection
    kind="clock"
    version="16.0"
    start="ccd_pixel_clock_bridge.out_clk"
-   end="avalon_write_bridge_0.clock" />
+   end="avalon_img_writer_gray.clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="ccd_pixel_clock_bridge.out_clk"
+   end="avalon_img_writer_binary.clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="ccd_pixel_clock_bridge.out_clk"
+   end="avalon_camera_0.clock" />
  <connection
    kind="clock"
    version="16.0"
@@ -1219,23 +1342,23 @@
  <connection
    kind="clock"
    version="16.0"
-   start="external_clock_50_bridge.out_clk"
+   start="ccd_pixel_clock_bridge.out_clk"
    end="hps_0.h2f_axi_clock" />
  <connection
    kind="clock"
    version="16.0"
-   start="external_clock_50_bridge.out_clk"
+   start="ccd_pixel_clock_bridge.out_clk"
    end="hps_0.h2f_lw_axi_clock" />
  <connection
    kind="clock"
    version="16.0"
    start="external_clock_50_bridge.out_clk"
-   end="pll_vga_clks.refclk" />
+   end="pll_camera_clks.refclk" />
  <connection
    kind="clock"
    version="16.0"
    start="external_clock_50_bridge.out_clk"
-   end="pll_camera_clks.refclk" />
+   end="pll_vga_clks.refclk" />
  <connection
    kind="reset"
    version="16.0"
@@ -1260,7 +1383,17 @@
    kind="reset"
    version="16.0"
    start="hps_0.h2f_reset"
-   end="avalon_write_bridge_0.reset" />
+   end="avalon_img_writer_rgbgray.reset" />
+ <connection
+   kind="reset"
+   version="16.0"
+   start="hps_0.h2f_reset"
+   end="avalon_img_writer_gray.reset" />
+ <connection
+   kind="reset"
+   version="16.0"
+   start="hps_0.h2f_reset"
+   end="avalon_img_writer_binary.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
 </system>

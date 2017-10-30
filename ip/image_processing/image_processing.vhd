@@ -26,6 +26,9 @@ entity image_processing is
         bri_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         in_valid        : in STD_LOGIC;
         -- Data output
+		  out_red          : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        out_green        : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        out_blue         : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         out_hue         : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         out_bin         : out STD_LOGIC;
         out_valid       : out STD_LOGIC
@@ -109,9 +112,9 @@ architecture arch of image_processing is
                 in_visual       => '1',
                 in_done         => '1',
                 -- Data output
-                out_red         => open,
-                out_green       => open,
-                out_blue        => open,
+                out_red         => out_red,
+                out_green       => out_green,
+                out_blue        => out_blue,
                 out_hue         => hsv_out_hue,
                 out_saturation  => hsv_out_saturation,
                 out_brightness  => hsv_out_brightness,

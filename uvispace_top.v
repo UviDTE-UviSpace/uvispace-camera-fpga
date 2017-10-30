@@ -51,7 +51,9 @@ pixel was reduced to 15 bits (1 zero and 5 bits per colour).
 
 `define ENABLE_HPS
 
+//=======================================================
 //Top level entity. Contains the inputs and outputs wired to external pins.
+//=======================================================
 module uvispace_top(
   ///////// ADC /////////
   inout              ADC_CS_N,
@@ -190,7 +192,7 @@ module uvispace_top(
 //  REG/WIRE declarations
 //=======================================================
 
-//HPS signals
+//Clocks and resets
 wire    hps2fpga_reset_n;
 wire    camera_soft_reset_n;
 wire    video_stream_reset_n;
@@ -206,7 +208,7 @@ integer vga_col;
 wire    [11:0] CCD_DATA;
 //CCD_Capture signals
 wire    [11:0] ccd_data_captured;   //output data from CCD_Capture
-wire        ccd_dval;            //valid output data
+wire        	ccd_dval;            //valid output data
 wire    [15:0] X_Cont;
 wire    [15:0] Y_Cont;
 reg     [11:0] ccd_data_raw;        //input raw data to CCD_Capture
@@ -229,6 +231,8 @@ wire    [15:0] fifo2_readdata;
 //=======================================================
 //  Structural coding
 //=======================================================
+
+//---------------------Qsys System---------------------//
 soc_system u0 (
   //Input clocks
   .clk_50_clk                            ( CLOCK_50 ),
@@ -239,12 +243,6 @@ soc_system u0 (
   .pll_camera_clks_24_clk                ( clk_24 ),
   //HPS reset output
   .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
-  // Avalon camera capture_image signals
-  .avalon_camera_export_start_capture    ( start_capture ),
-  .avalon_camera_export_capture_imgsize  ( capture_imgsize ),
-  .avalon_camera_export_buff             ( capture_buff ),
-  .avalon_camera_export_image_captured   ( image_captured ),
-  .avalon_camera_export_capture_standby  ( capture_standby ),
   // Avalon camera camera_config signals
   .avalon_camera_export_width            ( in_width ),
   .avalon_camera_export_height           ( in_height ),
@@ -256,14 +254,17 @@ soc_system u0 (
   .avalon_camera_export_colsize          ( in_column_size ),
   .avalon_camera_export_rowmode          ( in_row_mode ),
   .avalon_camera_export_soft_reset_n     ( camera_soft_reset_n ),
-  // Bus for the image_capture component to write images in HPS-OCR
-  .avalon_write_bridge_0_avalon_slave_address     ( image_capture_address ),
-  .avalon_write_bridge_0_avalon_slave_write       ( image_capture_write ),
-  .avalon_write_bridge_0_avalon_slave_byteenable  ( image_capture_byteenable ),
-  .avalon_write_bridge_0_avalon_slave_writedata   ( image_capture_write_data ),
-  .avalon_write_bridge_0_avalon_slave_waitrequest ( image_capture_waitrequest),
-  .avalon_write_bridge_0_avalon_slave_burstcount  ( image_capture_burstcount ),
-  //HPS ddr3
+  // Import images in Qsys for the avalon_image_writers
+  .rgbgray_img_frame_valid               ( ccd_fval_raw ),
+  .rgbgray_img_data_valid                ( out_hsv_valid ),
+  .rgbgray_img_input_data                ( hsv_hue & hsv_blue & hsv_green & hsv_red ),
+  .gray_img_frame_valid                  ( ccd_fval_raw ),
+  .gray_img_data_valid                   ( out_hsv_valid ),
+  .gray_img_input_data                   ( hsv_hue ),
+  .binary_img_frame_valid                ( ccd_fval_raw ),
+  .binary_img_data_valid                 ( out_hsv_valid ),
+  .binary_img_input_data                 ( binarized_8bit ),
+  //HPS 1GB ddr3
   .memory_mem_a                          ( HPS_DDR3_ADDR ),
   .memory_mem_ba                         ( HPS_DDR3_BA ),
   .memory_mem_ck                         ( HPS_DDR3_CK_P ),
@@ -347,6 +348,48 @@ soc_system u0 (
   .hps_0_hps_io_hps_io_gpio_inst_GPIO61  ( HPS_GSENSOR_INT )
   );
 
+//-----------Camera Configuration and Capture-----------//
+// Component for writing configuration to the camera peripheral.
+camera_config #(
+  .CLK_FREQ(25000000),  // 25 MHz
+  .I2C_FREQ(20000)      // 20 kHz
+  ) camera_conf(
+  // Host Side
+  .clock(ccd_pixel_clk),
+  .reset_n(hps2fpga_reset_n & video_stream_reset_n),
+  // Configuration registers
+  .exposure(in_exposure),
+  .start_row(in_start_row),
+  .start_column(in_start_column),
+  .row_size(in_row_size),
+  .column_size(in_column_size),
+  .row_mode(in_row_mode),
+  .column_mode(in_column_mode),
+  // Ready signal
+  .out_ready(ready),
+  // I2C Side
+  .I2C_SCLK(GPIO_1[24]),
+  .I2C_SDAT(GPIO_1[23])
+  );
+  // Camera config (I2C)
+  wire          ready;
+  wire  [15:0]  in_exposure;
+  wire  [15:0]  start_row;
+  wire  [15:0]  start_column;
+  wire  [15:0]  in_row_size;
+  wire  [15:0]  in_column_size;
+  wire  [15:0]  in_row_mode;
+  wire  [15:0]  in_column_mode;
+
+  // assign in_exposure = 16'h07C0;
+  // assign start_row = 16'h0000;
+  // assign start_column = 16'h0000;
+  // assign in_row_size = 16'h077F;
+  // assign in_column_size = 16'h09FF;
+  // assign in_row_mode = 16'h0011;
+  // assign in_column_mode = 16'h0011;
+
+
 camera_capture u3(
   .out_data     (ccd_data_captured),    // component output data
   .out_valid    (ccd_dval),             // data valid signal
@@ -404,6 +447,8 @@ camera_capture u3(
   end
 
 
+//---------------Raw 2 RGB 2 HSV 2 Binary--------------//
+
 /* This component converts 'raw' data obtained in the CCD to RGB data.
 
 The output width  and height are half of the input ones, as, each pixel consists
@@ -424,7 +469,48 @@ raw2rgb u4(
   .iX_Cont      (X_Cont),
   .iY_Cont      (Y_Cont)
   );
-  // On each camera cycle (defined by the pixel clock), the 3 components (RGB)
+  
+
+image_processing img_proc(
+  .clock(ccd_pixel_clk),
+  .reset_n(hps2fpga_reset_n & video_stream_reset_n),
+  // Data input
+  .in_red(raw_rgb_red[11:4]),
+  .in_green(raw_rgb_green[11:4]),
+  .in_blue(raw_rgb_blue[11:4]),
+  .hue_l_threshold(lower_hue),
+  .hue_h_threshold(higher_hue),
+  .sat_threshold(saturation_level),
+  .bri_threshold(brightness_level),
+  .in_valid(raw_rgb_dval),
+  // Data output
+  .out_red(hsv_red),
+  .out_green(hsv_green),
+  .out_blue(hsv_blue),
+  .out_hue(hsv_hue),
+  .out_bin(binarized),
+  .out_valid(out_hsv_valid)
+  );
+  wire  [7:0] lower_hue;
+  wire  [7:0] higher_hue;
+  wire  [7:0] saturation_level;
+  wire  [7:0] brightness_level;
+  wire  [7:0] hsv_red;
+  wire  [7:0] hsv_green;
+  wire  [7:0] hsv_blue;
+  wire  [7:0] hsv_hue;
+  wire        binarized;
+  wire        out_hsv_valid;
+  wire  [7:0] binarized_8bit;
+  // Test values
+  assign binarized_8bit = binarized ? 8'd255 : 8'd0;
+  assign lower_hue = 8'd220;
+  assign higher_hue = 8'd30;
+  assign saturation_level = 8'd60;
+  assign brigthness_level = 8'd60;
+
+//-------------------------VGA------------------------//
+// On each camera cycle (defined by the pixel clock), the 3 components (RGB)
   // of a pixel are written to 2 FIFOs on the SDRAM memory. As the VGA controller
   // can take only 1 byte per component, only the 8 most significative bits of
   // each 'raw' component are sent to the 2 FIFOs created in the SDRAM.
@@ -442,87 +528,12 @@ raw2rgb u4(
       end
       else begin
         fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
-        fifo_write_enable <= out_hue_valid;
+        fifo_write_enable <= out_hsv_valid;
       end
     end
   end
 
-image_processing img_proc(
-  .clock(ccd_pixel_clk),
-  .reset_n(hps2fpga_reset_n & video_stream_reset_n),
-  // Data input
-  .in_red(raw_rgb_red[11:4]),
-  .in_green(raw_rgb_green[11:4]),
-  .in_blue(raw_rgb_blue[11:4]),
-  .hue_l_threshold(lower_hue),
-  .hue_h_threshold(higher_hue),
-  .sat_threshold(saturation_level),
-  .bri_threshold(brightness_level),
-  .in_valid(raw_rgb_dval),
-  // Data output
-  .out_hue(hue_hue),
-  .out_bin(binarized),
-  .out_valid(out_hue_valid)
-  );
-  wire  [7:0] lower_hue;
-  wire  [7:0] higher_hue;
-  wire  [7:0] saturation_level;
-  wire  [7:0] brightness_level;
-  wire  [7:0] hue_hue;
-  wire        binarized;
-  wire        out_hue_valid;
-  wire  [7:0] binarized_8bit;
-  // Test values
-  assign binarized_8bit = binarized ? 8'd255 : 8'd0;
-  assign lower_hue = 8'd220;
-  assign higher_hue = 8'd30;
-  assign saturation_level = 8'd60;
-  assign brigthness_level = 8'd60;
-
-
-// image_capture: save RGB and Hue into HPS memory
-image_capture imgcap1 (
-  // Clock and reset
-  .clk ( ccd_pixel_clk ),
-  .reset_n (hps2fpga_reset_n & video_stream_reset_n),
-  // Signals from the video stream
-  .R( hue_red ),
-  .G( hue_green ),
-  .B( hue_blue ),
-  .Gray( hue_hue ),
-  .frame_valid( ccd_fval_raw ),
-  .data_valid( out_hue_valid ),
-  // Signals to control this component.
-  .start_capture( start_capture ),
-  .image_size( capture_imgsize ),
-  .buff( capture_buff ),
-  .image_captured( image_captured ),
-  .standby ( capture_standby ),
-
-  // Avalon MM Master port to save data into a memory.
-  .address ( image_capture_address ),
-  .write ( image_capture_write ),
-  .byteenable ( image_capture_byteenable ),
-  .writedata ( image_capture_write_data ),
-  .waitrequest ( image_capture_waitrequest ),
-  .burstcount  ( image_capture_burstcount  )
-  );
-  // image_capture control signals
-  wire  start_capture; // Start a new image capture
-  wire  [23:0] capture_imgsize; //size of the image (in dots or RGB pixels)
-  wire  [31:0] capture_buff; // Address of the buffer to save the image
-  wire  image_captured; // image has been completely capture
-  wire  capture_standby; // image_capture component is in standby state
-  // Avalon signals to write the pixels into memory
-  wire  [31:0]image_capture_address;
-  wire  image_capture_write;
-  wire  [15:0]image_capture_byteenable;
-  wire  [127:0]image_capture_write_data;
-  wire  image_capture_waitrequest;
-  wire  [6:0] image_capture_burstcount;
-
-
-// SDRAM memory based on DE1-SOC demonstration
+// Dual clock SDRAM controller, based on DE1-SOC demonstration
 Sdram_Control u1(
   // HOST Side
   .REF_CLK(CLOCK_50),
@@ -605,6 +616,7 @@ vga_controller vga_component(
   assign  VGA_CLK = clk_25;
 
 
+//------------------7 segments Displays----------------//
 /*
 Instantiation of the 7-segment displays module.
 
@@ -651,47 +663,7 @@ SEG7_LUT_8 u5(
   end
 
 
-// Component for writing configuration to the camera peripheral.
-camera_config #(
-  .CLK_FREQ(25000000),  // 25 MHz
-  .I2C_FREQ(20000)      // 20 kHz
-  ) camera_conf(
-  // Host Side
-  .clock(ccd_pixel_clk),
-  .reset_n(hps2fpga_reset_n & video_stream_reset_n),
-  // Configuration registers
-  .exposure(in_exposure),
-  .start_row(in_start_row),
-  .start_column(in_start_column),
-  .row_size(in_row_size),
-  .column_size(in_column_size),
-  .row_mode(in_row_mode),
-  .column_mode(in_column_mode),
-  // Ready signal
-  .out_ready(ready),
-  // I2C Side
-  .I2C_SCLK(GPIO_1[24]),
-  .I2C_SDAT(GPIO_1[23])
-  );
-  // Camera config (I2C)
-  wire          ready;
-  wire  [15:0]  in_exposure;
-  wire  [15:0]  start_row;
-  wire  [15:0]  start_column;
-  wire  [15:0]  in_row_size;
-  wire  [15:0]  in_column_size;
-  wire  [15:0]  in_row_mode;
-  wire  [15:0]  in_column_mode;
-
-  // assign in_exposure = 16'h07C0;
-  // assign start_row = 16'h0000;
-  // assign start_column = 16'h0000;
-  // assign in_row_size = 16'h077F;
-  // assign in_column_size = 16'h09FF;
-  // assign in_row_mode = 16'h0011;
-  // assign in_column_mode = 16'h0011;
-
-// Reset logic
+//------------------Reset logic------------//
 assign video_stream_reset_n = (camera_soft_reset_n & KEY[0]);
 
 endmodule
