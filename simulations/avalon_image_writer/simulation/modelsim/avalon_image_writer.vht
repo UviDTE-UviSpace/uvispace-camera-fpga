@@ -84,7 +84,7 @@ BEGIN
 --	GENERIC MAP(
 --			COMPONENT_SIZE 	=> 8,
 --			NUMBER_COMPONENTS => 1,
---			PIX_WR => 4)
+--			PIX_WR => 8)
 	
 	PORT MAP (
 -- list connections between master ports and signals
@@ -170,7 +170,7 @@ BEGIN
 		---Write img height
 		if ( edge_rise = 4 ) then
 			S_address <= "0010";--2
-			S_writedata <= X"00000002";
+			S_writedata <= X"00000004";
 		end if;
 		---Write buff 0
 		if ( edge_rise = 5 ) then
@@ -205,7 +205,7 @@ BEGIN
 			S_write <= '0';
 		end if;
 		
-		----------------Program the 8 pixels-------------
+		----------------Program the 16 pixels-------------
 		if ( edge_rise = 13 ) then
 			frame_valid <= '1';
 		end if;
@@ -283,9 +283,91 @@ BEGIN
 			input_data <= X"00";
 		end if;
 		
+		--Pix 8
+		if ( edge_rise = 38 ) then
+			data_valid <= '1';
+			input_data <= X"09";
+		end if;
+		if ( edge_rise = 39 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 9
+		if ( edge_rise = 40 ) then
+			data_valid <= '1';
+			input_data <= X"0A";
+		end if;
+		if ( edge_rise = 41 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 10
+		if ( edge_rise = 42 ) then
+			data_valid <= '1';
+			input_data <= X"0B";
+		end if;
+		if ( edge_rise = 43 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 11
+		if ( edge_rise = 44 ) then
+			data_valid <= '1';
+			input_data <= X"0C";
+		end if;
+		if ( edge_rise = 45 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 12
+		if ( edge_rise = 46 ) then
+			data_valid <= '1';
+			input_data <= X"0D";
+		end if;
+		if ( edge_rise = 47 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 13
+		if ( edge_rise = 48 ) then
+			data_valid <= '1';
+			input_data <= X"0E";
+		end if;
+		if ( edge_rise = 49 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 14
+		if ( edge_rise = 50 ) then
+			data_valid <= '1';
+			input_data <= X"0F";
+		end if;
+		if ( edge_rise = 51 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 15
+		if ( edge_rise = 52 ) then
+			data_valid <= '1';
+			input_data <= X"10";
+		end if;
+		if ( edge_rise = 53 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
 		
-		if ( edge_rise = 36 ) then
+		if ( edge_rise = 56 ) then
 			frame_valid <= '0';
+		end if;
+		
+		--Read the number of image to check if the reading is properly implemented
+		if ( edge_rise = 58 ) then
+			S_address <= "1000";--1
+			S_write <= '0';
+			S_read <= '1';
+		end if;
+		if ( edge_rise = 59 ) then
+			S_read <= '0';
 		end if;
 		
 	end process stimuli;           
