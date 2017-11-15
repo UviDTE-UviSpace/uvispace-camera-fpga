@@ -257,7 +257,7 @@ soc_system u0 (
   // Import images in Qsys for the avalon_image_writers
   .rgbgray_img_frame_valid               ( ccd_fval_raw ),
   .rgbgray_img_data_valid                ( out_hsv_valid ),
-  .rgbgray_img_input_data                ( hsv_hue & hsv_blue & hsv_green & hsv_red ),
+  .rgbgray_img_input_data                ( {hsv_hue, hsv_blue, hsv_green, hsv_red} ),
   .gray_img_frame_valid                  ( ccd_fval_raw ),
   .gray_img_data_valid                   ( out_hsv_valid ),
   .gray_img_input_data                   ( hsv_hue ),
@@ -645,6 +645,7 @@ SEG7_LUT_8 u5(
   reg          seconds_pulse;
   reg          pulse;
   assign LEDR[0] = pulse;
+  assign LEDR[1] = pulse;
   assign display = (SW[8]) ? {16'h0, in_exposure} : rate;
   // Calculate the frame rate.
   // Seconds counter. The output will be 1 during one pulse after 1 second.
