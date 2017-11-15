@@ -21,7 +21,7 @@
    {
       datum _sortIndex
       {
-         value = "7";
+         value = "8";
          type = "int";
       }
    }
@@ -37,7 +37,7 @@
    {
       datum _sortIndex
       {
-         value = "6";
+         value = "7";
          type = "int";
       }
    }
@@ -53,7 +53,7 @@
    {
       datum _sortIndex
       {
-         value = "5";
+         value = "6";
          type = "int";
       }
    }
@@ -63,6 +63,14 @@
       {
          value = "256";
          type = "String";
+      }
+   }
+   element avalon_write_bridge_0
+   {
+      datum _sortIndex
+      {
+         value = "5";
+         type = "int";
       }
    }
    element ccd_pixel_clock_bridge
@@ -109,7 +117,7 @@
    {
       datum _sortIndex
       {
-         value = "9";
+         value = "10";
          type = "int";
       }
    }
@@ -117,7 +125,7 @@
    {
       datum _sortIndex
       {
-         value = "8";
+         value = "9";
          type = "int";
       }
    }
@@ -279,6 +287,14 @@
   <parameter name="COMPONENT_SIZE" value="8" />
   <parameter name="NUMBER_COMPONENTS" value="4" />
   <parameter name="PIX_WR" value="4" />
+ </module>
+ <module
+   name="avalon_write_bridge_0"
+   kind="avalon_write_bridge"
+   version="1.0"
+   enabled="1">
+  <parameter name="BURSCOUNT_SIZE" value="7" />
+  <parameter name="MASTER_ADDRESS_SIZE" value="32" />
  </module>
  <module
    name="ccd_pixel_clock_bridge"
@@ -1249,8 +1265,8 @@
  <connection
    kind="avalon"
    version="16.0"
-   start="avalon_img_writer_binary.avalon_master"
-   end="hps_0.f2h_axi_slave">
+   start="avalon_img_writer_rgbgray.avalon_master"
+   end="avalon_write_bridge_0.avalon_slave">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
@@ -1259,7 +1275,7 @@
    kind="avalon"
    version="16.0"
    start="avalon_img_writer_gray.avalon_master"
-   end="hps_0.f2h_axi_slave">
+   end="avalon_write_bridge_0.avalon_slave">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
@@ -1267,7 +1283,7 @@
  <connection
    kind="avalon"
    version="16.0"
-   start="avalon_img_writer_rgbgray.avalon_master"
+   start="avalon_img_writer_binary.avalon_master"
    end="hps_0.f2h_axi_slave">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
@@ -1338,6 +1354,11 @@
    kind="clock"
    version="16.0"
    start="ccd_pixel_clock_bridge.out_clk"
+   end="avalon_write_bridge_0.clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="ccd_pixel_clock_bridge.out_clk"
    end="hps_0.f2h_axi_clock" />
  <connection
    kind="clock"
@@ -1394,6 +1415,11 @@
    version="16.0"
    start="hps_0.h2f_reset"
    end="avalon_img_writer_binary.reset" />
+ <connection
+   kind="reset"
+   version="16.0"
+   start="hps_0.h2f_reset"
+   end="avalon_write_bridge_0.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
 </system>
