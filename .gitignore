@@ -21,6 +21,7 @@ incremental_db/
 *.cdf
 *.stp
 *_hw.tcl~
+*__Previews/
 
 #simulation
 *modelsim.ini
