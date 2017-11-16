@@ -264,6 +264,11 @@ soc_system u0 (
   .binary_img_frame_valid                ( ccd_fval_raw ),
   .binary_img_data_valid                 ( out_hsv_valid ),
   .binary_img_input_data                 ( binarized_8bit ),
+	//Export the signals to control the image processing
+  .img_processing_hue_thres_l            (hue_threshold_l),
+  .img_processing_hue_thres_h            (hue_threshold_h), 
+  .img_processing_bri_thres_l            (brightness_threshold_l),
+  .img_processing_sat_thres_l            (saturation_threshold_l),
   //HPS 1GB ddr3
   .memory_mem_a                          ( HPS_DDR3_ADDR ),
   .memory_mem_ba                         ( HPS_DDR3_BA ),
@@ -478,10 +483,10 @@ image_processing img_proc(
   .in_red(raw_rgb_red[11:4]),
   .in_green(raw_rgb_green[11:4]),
   .in_blue(raw_rgb_blue[11:4]),
-  .hue_l_threshold(lower_hue),
-  .hue_h_threshold(higher_hue),
-  .sat_threshold(saturation_level),
-  .bri_threshold(brightness_level),
+  .hue_l_threshold(hue_threshold_l),
+  .hue_h_threshold(hue_threshold_h),
+  .sat_threshold(saturation_threshold_l),
+  .bri_threshold(brightness_threshold_l),
   .in_valid(raw_rgb_dval),
   // Data output
   .out_red(hsv_red),
@@ -491,10 +496,10 @@ image_processing img_proc(
   .out_bin(binarized),
   .out_valid(out_hsv_valid)
   );
-  wire  [7:0] lower_hue;
-  wire  [7:0] higher_hue;
-  wire  [7:0] saturation_level;
-  wire  [7:0] brightness_level;
+  wire  [7:0] hue_threshold_l;
+  wire  [7:0] hue_threshold_h;
+  wire  [7:0] saturation_threshold_l;
+  wire  [7:0] brightness_threshold_l;
   wire  [7:0] hsv_red;
   wire  [7:0] hsv_green;
   wire  [7:0] hsv_blue;
@@ -502,12 +507,8 @@ image_processing img_proc(
   wire        binarized;
   wire        out_hsv_valid;
   wire  [7:0] binarized_8bit;
-  // Test values
+  // Generate a 8 bit bin img with all 8 bits 0 or 1
   assign binarized_8bit = binarized ? 8'd255 : 8'd0;
-  assign lower_hue = 8'd220;
-  assign higher_hue = 8'd30;
-  assign saturation_level = 8'd60;
-  assign brigthness_level = 8'd60;
 
 //-------------------------VGA------------------------//
 // On each camera cycle (defined by the pixel clock), the 3 components (RGB)

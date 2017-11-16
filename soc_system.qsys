@@ -17,6 +17,27 @@
          type = "int";
       }
    }
+   element avalon_image_processing_0
+   {
+      datum _sortIndex
+      {
+         value = "9";
+         type = "int";
+      }
+   }
+   element avalon_image_processing_0.avalon_slave
+   {
+      datum _tags
+      {
+         value = "";
+         type = "String";
+      }
+      datum baseAddress
+      {
+         value = "1024";
+         type = "String";
+      }
+   }
    element avalon_img_writer_binary
    {
       datum _sortIndex
@@ -117,7 +138,7 @@
    {
       datum _sortIndex
       {
-         value = "10";
+         value = "11";
          type = "int";
       }
    }
@@ -125,7 +146,7 @@
    {
       datum _sortIndex
       {
-         value = "9";
+         value = "10";
          type = "int";
       }
    }
@@ -229,6 +250,11 @@
    type="reset"
    dir="start" />
  <interface name="hps_0_hps_io" internal="hps_0.hps_io" type="conduit" dir="end" />
+ <interface
+   name="img_processing"
+   internal="avalon_image_processing_0.conduit_end"
+   type="conduit"
+   dir="end" />
  <interface name="memory" internal="hps_0.memory" type="conduit" dir="end" />
  <interface
    name="pll_camera_clks_24"
@@ -260,6 +286,16 @@
   <parameter name="START_COLUMN" value="0" />
   <parameter name="START_ROW" value="0" />
   <parameter name="WIDTH" value="640" />
+ </module>
+ <module
+   name="avalon_image_processing_0"
+   kind="avalon_image_processing"
+   version="1.0"
+   enabled="1">
+  <parameter name="BRIGHTNESS_THRESHOLD_L" value="60" />
+  <parameter name="HUE_THRESHOLD_H" value="30" />
+  <parameter name="HUE_THRESHOLD_L" value="220" />
+  <parameter name="SATURATION_THRESHOLD_L" value="60" />
  </module>
  <module
    name="avalon_img_writer_binary"
@@ -1320,6 +1356,15 @@
    kind="avalon"
    version="16.0"
    start="hps_0.h2f_axi_master"
+   end="avalon_image_processing_0.avalon_slave">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0400" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="16.0"
+   start="hps_0.h2f_axi_master"
    end="avalon_camera_0.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
@@ -1355,6 +1400,11 @@
    version="16.0"
    start="ccd_pixel_clock_bridge.out_clk"
    end="avalon_write_bridge_0.clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="external_clock_50_bridge.out_clk"
+   end="avalon_image_processing_0.clock" />
  <connection
    kind="clock"
    version="16.0"
@@ -1420,6 +1470,11 @@
    version="16.0"
    start="hps_0.h2f_reset"
    end="avalon_write_bridge_0.reset" />
+ <connection
+   kind="reset"
+   version="16.0"
+   start="hps_0.h2f_reset"
+   end="avalon_image_processing_0.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
 </system>
