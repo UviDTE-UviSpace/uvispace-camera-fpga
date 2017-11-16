@@ -52,12 +52,22 @@ begin
             out_bin <= '0';
             out_valid <= '0';
         else
-            if (saturation>sat_threshold) and (brightness>bri_threshold)
-                    and ((hue>hue_l_threshold) or (hue<hue_h_threshold)) then
-                out_bin <= '1';
-            else
-                out_bin <= '0';
-            end if;
+				--if the color we want to detect crosses the 0 line (0 degrees is red)
+				if (hue_l_threshold > hue_h_threshold) then
+					if (saturation>sat_threshold) and (brightness>bri_threshold) 
+							and ((hue>hue_l_threshold) or (hue<hue_h_threshold)) then
+						out_bin <= '1';
+					else
+						out_bin <= '0';
+					end if;
+				else
+					if (saturation>sat_threshold) and (brightness>bri_threshold)
+							and ((hue>hue_l_threshold) and (hue<hue_h_threshold)) then
+						out_bin <= '1';
+					else
+						out_bin <= '0';
+					end if;
+				end if;
             out_valid <= in_valid;
         end if;
     end process main_process;
