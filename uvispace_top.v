@@ -487,6 +487,7 @@ image_processing img_proc(
   .hue_h_threshold(hue_threshold_h),
   .sat_threshold(saturation_threshold_l),
   .bri_threshold(brightness_threshold_l),
+  .img_width(in_width),
   .in_valid(raw_rgb_dval),
   // Data output
   .out_red(hsv_red),
@@ -494,7 +495,11 @@ image_processing img_proc(
   .out_blue(hsv_blue),
   .out_hue(hsv_hue),
   .out_bin(binarized),
-  .out_valid(out_hsv_valid)
+  .rgb_hsv_bin_valid(out_hsv_valid),
+  .out_erosion (eroded),
+  .erosion_valid (erosion_valid),
+  .out_dilation (dilated),
+  .dilation_valid (dilation_valid)
   );
   wire  [7:0] hue_threshold_l;
   wire  [7:0] hue_threshold_h;
@@ -507,8 +512,18 @@ image_processing img_proc(
   wire        binarized;
   wire        out_hsv_valid;
   wire  [7:0] binarized_8bit;
+  wire        eroded;
+  wire        erosion_valid;
+  wire  [7:0] eroded_8bit;
+  wire        dilated;
+  wire        dilation_valid;
+  wire  [7:0] dilated_8bit;
   // Generate a 8 bit bin img with all 8 bits 0 or 1
   assign binarized_8bit = binarized ? 8'd255 : 8'd0;
+  assign eroded_8bit = eroded ? 8'd255 : 8'd0;
+  assign dilated_8bit = dilated ? 8'd255 : 8'd0;
+  
+  
 
 //-------------------------VGA------------------------//
 // On each camera cycle (defined by the pixel clock), the 3 components (RGB)
