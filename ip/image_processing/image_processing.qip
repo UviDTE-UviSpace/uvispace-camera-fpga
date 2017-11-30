@@ -5,4 +5,8 @@ set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "image_pro
 
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "rgb2hsv.v"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "hsv2bin.vhd"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "erosion.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "dilation.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "fifo.v"]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "fifo_prg.v"]
 

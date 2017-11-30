@@ -19,12 +19,12 @@ module erosion #(
         input clock,
         input reset_n,
         // Image size
-        input [15:0] width,
+        input [15:0] img_width,
         // Image data input
-        input in_write,
+        input in_valid,
         input [N-1:0] in_pixel,
         // Image data output
-        output out_read,
+        output out_valid,
         output [N-1:0] out_pixel
     );
     
@@ -38,15 +38,15 @@ module erosion #(
         .clock(clock),
         .reset_n(reset_n),
         // Size,
-        .width(width[15:0]),
+        .width(img_width[15:0]),
         // Data input
-        .read(in_write), 
+        .read(in_valid), 
         .pi(in_pixel),
         // Data output
         .po00(pix00), .po01(pix01), .po02(pix02),
         .po10(pix10), .po11(pix11), .po12(pix12),
         .po20(pix20), .po21(pix21), .po22(pix22),
-        .valid(out_read)
+        .valid(out_valid)
     );
     
     // Erosion

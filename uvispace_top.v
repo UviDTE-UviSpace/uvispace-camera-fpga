@@ -1,19 +1,15 @@
 /*
 This is the top level design for the DE1-SoC boards of UviSpace project.
-
 The ghrd_top() module; hps processor instantiation and connection; and
 the connection of the module's input/output signals to the corresponding
 pins were obtained from the Terasic DE1-SoC Golden Hardware Reference
 Design (GHRD) project. For more information about this basic project and
 the board, you can visit their website (http://www.terasic.com/).
-
 Some of the remaining modules are based on demonstrations provided by
 Terasic for the DE1-Soc and the DM5 Camera.
-
 The purpose of the design is to provide an FPGA circuit for configuring
 and acquiring images from a camera attached to the GPIO1 port. Hence,
 the following modules are used:
-
 - soc_system_u0: This module provides an interface with the Qsys design.
 The main component is the interface with the HPS processor and its main
 peripherals. Moreover, there are the following Qsys components: led_pio,
@@ -39,7 +35,6 @@ being by default 640x480.
 hexadecimal 8-segments peripherals.
 - camera_config: This module sends the default configuration to the
 camera using the I2C standard.
-
 NOTE: The desired design should have 2 FIFOs, in order to send 8 bits
 per component to the VGA controller. However, there is a synchronization
 error, and the values obtained in the second FIFO have an offset
@@ -455,7 +450,6 @@ camera_capture u3(
 //---------------Raw 2 RGB 2 HSV 2 Binary--------------//
 
 /* This component converts 'raw' data obtained in the CCD to RGB data.
-
 The output width  and height are half of the input ones, as, each pixel consists
 in 4 components(RGBG): The number of rows and columns are reduced to the half.
 One from every 2 rows are stored on a buffer for getting the components of the
@@ -475,7 +469,6 @@ raw2rgb u4(
   .iY_Cont      (Y_Cont)
   );
   
-
 image_processing img_proc(
   .clock(ccd_pixel_clk),
   .reset_n(hps2fpga_reset_n & video_stream_reset_n),
@@ -487,19 +480,19 @@ image_processing img_proc(
   .hue_h_threshold(hue_threshold_h),
   .sat_threshold(saturation_threshold_l),
   .bri_threshold(brightness_threshold_l),
-  .img_width(in_width),
+  .img_width({4'h0,in_width}),
   .in_valid(raw_rgb_dval),
   // Data output
-  .out_red(hsv_red),
-  .out_green(hsv_green),
-  .out_blue(hsv_blue),
-  .out_hue(hsv_hue),
-  .out_bin(binarized),
-  .rgb_hsv_bin_valid(out_hsv_valid),
-  .out_erosion (eroded),
-  .erosion_valid (erosion_valid),
-  .out_dilation (dilated),
-  .dilation_valid (dilation_valid)
+  .export_red(hsv_red),
+  .export_green(hsv_green),
+  .export_blue(hsv_blue),
+  .export_hue(hsv_hue),
+  .export_bin(binarized),
+  .export_bin_valid(bin_valid),
+  .export_erosion(eroded),
+  .export_erosion_valid(erosion_valid),
+  .export_dilation(dilated),
+  .export_dilation_valid(dilation_valid)
   );
   wire  [7:0] hue_threshold_l;
   wire  [7:0] hue_threshold_h;
@@ -510,7 +503,7 @@ image_processing img_proc(
   wire  [7:0] hsv_blue;
   wire  [7:0] hsv_hue;
   wire        binarized;
-  wire        out_hsv_valid;
+  wire        bin_valid;
   wire  [7:0] binarized_8bit;
   wire        eroded;
   wire        erosion_valid;
@@ -518,11 +511,12 @@ image_processing img_proc(
   wire        dilated;
   wire        dilation_valid;
   wire  [7:0] dilated_8bit;
+  
+  
   // Generate a 8 bit bin img with all 8 bits 0 or 1
   assign binarized_8bit = binarized ? 8'd255 : 8'd0;
   assign eroded_8bit = eroded ? 8'd255 : 8'd0;
   assign dilated_8bit = dilated ? 8'd255 : 8'd0;
-  
   
 
 //-------------------------VGA------------------------//
@@ -544,7 +538,7 @@ image_processing img_proc(
       end
       else begin
         fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
-        fifo_write_enable <= out_hsv_valid;
+        fifo_write_enable <= bin_valid;
       end
     end
   end
@@ -635,10 +629,8 @@ vga_controller vga_component(
 //------------------7 segments Displays----------------//
 /*
 Instantiation of the 7-segment displays module.
-
 Depending on the status of the 8th switch (SW[8]), it will display the
 exposure value (if SW[8] = 1) or the frame rate (if SW[8] = 0).
-
 For getting the frame rate, a 1 second temporizer is created, and the
 number of frames between pulses is displayed. Moreover, a seconds pulse
 is wired to the first led of the board (LEDR[0])

@@ -11,6 +11,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
+
 entity image_processing is
     generic(
         -- Size of each pixel component
@@ -28,22 +29,25 @@ entity image_processing is
         hue_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         sat_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         bri_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-		  img_width       : in STD_LOGIC_VECTOR(15 downto 0);
-        in_valid        : in STD_LOGIC;
+        img_width       : in STD_LOGIC_VECTOR(15 downto 0);
+		  in_valid        : in STD_LOGIC;
         -- Data output
-		      --RGB HSV and simple binary share a valid signal
-		  out_red           : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        out_green         : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        out_blue          : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        out_hue           : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        out_bin           : out STD_LOGIC;
-        rgb_hsv_bin_valid : out STD_LOGIC;
+		    --RGB HSV
+		  export_red          : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        export_green        : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        export_blue         : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        export_hue          : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        export_hsv_valid    : out STD_LOGIC;
+		    --Simple binary
+		  export_bin          : out STD_LOGIC;
+        export_bin_valid    : out STD_LOGIC;
 		    --Binary signal after erosion
-		  out_erosion       : out STD_LOGIC;
-		  erosion_valid     : out STD_LOGIC;
+		  export_erosion       : out STD_LOGIC;
+		  export_erosion_valid : out STD_LOGIC;
 		    --Binary signal after dilation
-		  out_dilation      : out STD_LOGIC;
-		  dilation_valid    : out STD_LOGIC;
+		  export_dilation      : out STD_LOGIC;
+		  export_dilation_valid: out STD_LOGIC
+		  
     );
 end image_processing;
 
@@ -102,7 +106,7 @@ architecture arch of image_processing is
             );
     end component;
 
-	 -- Component to provoke a 3x3 erosion  to the binary image
+	  -- Component to provoke a 3x3 erosion  to the binary image
 	 component erosion
 	     port (
 		      -- clock and reset
@@ -114,8 +118,8 @@ architecture arch of image_processing is
 				in_valid        : in STD_LOGIC;
 				in_pixel        : in STD_LOGIC;
 				--output binay pixels
-				out_valid        : in STD_LOGIC;
-				out_pixel        : in STD_LOGIC;
+				out_valid        : out STD_LOGIC;
+				out_pixel        : out STD_LOGIC
             );
 	 end component;
 
@@ -131,14 +135,12 @@ architecture arch of image_processing is
 				in_valid        : in STD_LOGIC;
 				in_pixel        : in STD_LOGIC;
 				--output binary pixels
-				out_valid        : in STD_LOGIC;
-				out_pixel        : in STD_LOGIC;
+				out_valid        : out STD_LOGIC;
+				out_pixel        : out STD_LOGIC
             );
 	 end component;
-
-
+	 
     -- Intermediate signals declaration
-	     --Outputs of RGBtoHSV
     signal hsv_out_valid        : STD_LOGIC;
     signal hsv_out_hue          : STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
     signal hsv_out_saturation   : STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
@@ -152,7 +154,6 @@ architecture arch of image_processing is
 	     --Outputs of Dilation
     signal dilation_out         : STD_LOGIC;
 	 signal dilation_out_valid   : STD_LOGIC;
-
 
     begin
         -- Instantiation and mapping of the rgb2hsv component.
@@ -169,9 +170,9 @@ architecture arch of image_processing is
                 in_visual       => '1',
                 in_done         => '1',
                 -- Data output
-                out_red         => out_red,
-                out_green       => out_green,
-                out_blue        => out_blue,
+                out_red         => export_red,
+                out_green       => export_green,
+                out_blue        => export_blue,
                 out_hue         => hsv_out_hue,
                 out_saturation  => hsv_out_saturation,
                 out_brightness  => hsv_out_brightness,
@@ -179,7 +180,9 @@ architecture arch of image_processing is
                 out_visual      => open,
                 out_done        => open
                 );
-        -- Instantiation and mapping of the hsv2bin component.
+		
+					 
+        -- Instantiation and mapping of the hsv2bin component. 
         hsv2bin_component : hsv2bin
         port map(
                 -- Control signals
@@ -198,37 +201,46 @@ architecture arch of image_processing is
                 out_bin         => bin_out,
                 out_valid       => bin_out_valid
                 );
+					 
+					 
+		  -- Instantiation and mapping of the dilation and erosion components.
+		  -- Together they delete small noise dots of the binarization
+		  erosion_component : erosion
+		  port map(
+			  -- clock and reset
+			  clock           => clock,
+			  reset_n         => reset_n,
+			  --width of the image
+			  img_width 	   => img_width,
+			  --input binay pixels
+			  in_valid        =>  bin_out,
+			  in_pixel        =>  bin_out_valid,
+			  --output binay pixels
+			  out_pixel       =>   erosion_out,
+			  out_valid       =>   erosion_out_valid
+			  );
 
-			 -- Instantiation and mapping of the dilation and erosion components.
-			 -- Together they delete small noise dots of the binarization
-			 erosion_component : erosion
-			 port map(
-			     -- clock and reset
-		        clock           => clock,
-				  reset_n         => reset_n,
-				  --width of the image
-				  img_width 	   => img_width,
-				  --input binay pixels
-				  in_valid        =>  bin_out,
-				  in_pixel        =>  bin_out_valid,
-				  --output binay pixels
-				  out_pixel       =>   erosion_out,
-				  out_valid       =>   erosion_out_valid
-              );
-
-			 dilation_component : dilation
-			 port map(
-			     -- clock and reset
-		        clock           => clock,
-				  reset_n         => reset_n,
-				  --width of the image
-				  img_width 	   => img_width,
-				  --input binay pixels
-				  in_valid        =>  erosion_out,
-				  in_pixel        =>  erosion_out_valid,
-				  --output binay pixels
-				  out_pixel       =>   dilation_out,
-				  out_valid       =>   dilation_out_valid
-              );
+		  dilation_component : dilation
+		  port map(
+			  -- clock and reset
+			  clock           => clock,
+			  reset_n         => reset_n,
+			  --width of the image
+			  img_width 	   => img_width,
+			  --input binay pixels
+			  in_valid        =>  erosion_out,
+			  in_pixel        =>  erosion_out_valid,
+			  --output binay pixels
+			  out_pixel       =>   dilation_out,
+			  out_valid       =>   dilation_out_valid
+			  );
+			
+			
+			export_bin <= bin_out;
+			export_bin_valid <= bin_out_valid;
+			export_erosion <= erosion_out;
+			export_erosion_valid <= erosion_out_valid;
+			export_dilation <= erosion_out;
+			export_dilation_valid <= erosion_out_valid;
 
 end arch;
