@@ -73,6 +73,29 @@ architecture arch of erosion is
 	 
 	 --Moving window that will generate the output pixel
 	 SIGNAL moving_window : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1) downto 0)((PIX_SIZE-1) downto 0);
+	 
+	 --Define subcomponents 
+	 component morphological_fifo
+    generic (
+
+          PIX_SIZE  : integer := 1;
+			 KERN_SIZE : integer := 3;
+		    MAX_IMG_WIDTH : integer := 640
+			 );
+			 port (
+				  -- Clock and reset.
+				  clk             : in STD_LOGIC;
+				  reset_n         : in STD_LOGIC;
+				  -- Configuration
+				  img_width  :in STD_LOGIC_VECTOR(15 downto 0);
+				  -- Input image and sync signals
+				  pix		    : in STD_LOGIC_VECTOR((PIX_SIZE - 1) downto 0);--one pixel
+				  data_valid  : in STD_LOGIC; --there is a valid pixel in pix
+				  -- Output signal is the moving window to do the morphological operation
+				  moving_window    : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
+				  data_valid_out   : out STD_LOGIC; 
+			 );
+		end component;
 begin
 
 --------------------------Implement a State machine----------------------
@@ -172,10 +195,13 @@ begin
 	 
 ------------------------------Erosion process--------------------------
 	
-	
-	
 	--Do erosion and generate output signals
-	
+	erosion: process(clk)
+	begin
+		if rising_edge(clk) and current_state=3 then
+			
+		end if;
+	end process;
 	
 	--Generate Frame valid for the next stage
 	frame_valid_proc: process(clk)

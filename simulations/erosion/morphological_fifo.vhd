@@ -1,10 +1,21 @@
 ------------------------------------------------------------------------
 -- morphological_fifo
 ------------------------------------------------------------------------
--- morphological_fifo
---
---
---
+-- morphological_fifo is a memory that stores the lines needed to 
+-- perform a morphological operation to an image. Its output is the 
+-- pixels of the moving window that in conjuction with a kernel will 
+-- be used to perform the morphological operation. The size of the 
+-- moving window is KERN_SIZE x KERN_SIZE. PIX_SIZE is the number of bits
+-- per pixel (1 for binary, 8 for 8-bit gray, and so on). 
+-- The moving window size in this component is fixed on compilation time, 
+-- but the width of the input image is not. The width is pased as a
+-- parameter called img_width. This permits to change the resolution
+-- of the image used without the need to recompile the hardware.
+-- MAX_IMG_WIDTH specifies the maximum img_with that can be used because
+-- it defines the depht of the internal buffers. User should set this 
+-- parameter as the witdh of the biggest resolution that will be used.
+-- As usual, data_valid is used to know when a pixel is valid in the 
+-- input and data_valid_out does the same for the output.
 ------------------------------------------------------------------------
 library IEEE;
 	use IEEE.STD_LOGIC_1164.ALL;
@@ -23,9 +34,7 @@ entity morphological_fifo is
 		    --Size of the kernel moving along the image (3x3 by default)
 			 KERN_SIZE : integer := 3;
 		  --Advanced features
-		    --Maximum line width. Defines the depth of the memory that stores 
-			 --lines. In a system that can change resolution should be the 
-			 --size of the width of the maximum resolution allowed.
+		    --Maximum line img_width
 			 --Default resolution is 640x480 so max width is 640.
 		    MAX_IMG_WIDTH : integer := 640
     );
@@ -53,7 +62,7 @@ architecture arch of erosion is
 	 SIGNAL pix_buff :array2D_of_std_logic_vector((KERN_SIZE-2) downto 0)((MAX_WIDTH-1) downto 0)((PIX_SIZE-1) downto 0);
 	 --pix_buff_last stores last values and needs to be only KERN_SIZE depth
 	 SIGNAL pix_buff_last:array_of_std_logic_vector((KERN_SIZE-1) downto 0)((PIX_SIZE-1) downto 0);
-begin
+	 begin
 
 	--Save the previous (KERN_SIZE) lines in memory
 		--Full image width lines. They are (KERN_SIZE-1) lines
