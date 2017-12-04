@@ -9,13 +9,16 @@ Folders content
 The components that have simulation are:
 
 * avalon_image_writer: this component takes the raw pixels from the camera, packs them into a word. When the word is full it writes the pixels into a avalon memory-mapped master port. It is used in Uvispace to write images from FPGA into processors memory.
+* erosion: applies the morphological operation of erosion to an image.
+* frame_sync: used after raw2rgb component to skip some frames after reset and wait VGA to start up so images images in VGA start synchronized. Otherwise they would appear shiffted sometimes.
+
 
 Inside each simulation folder there is:
 
 * <component_name>.qpf: Quartus project file, containing files involved in the project, some configurations of Quartus , etc.
 * <component_name>.qsf: Quartus settings file, target device, describes the simulation (using Nativelink flow), etc.
 * <component_name>.vhd: VHDL file describing the component behaviour.
-* simulation/modelsim<component_name>.vht: file describing the simulation to be done to the component.
+* simulation/modelsim<component_name>.vht: test bench file describing the simulation to be done to the component.
 
 How to run the simulations
 ==========================
@@ -23,5 +26,3 @@ How to run the simulations
 * Open Quartus . **Open project -> <component_name>.qpf**
 * Run Processing -> Start -> Analysis&Synthesis.
 * Run simulation doing: Tools -> Run Simulation Tool -> RTL Simulation. Modelsim should open and the Wave with the simulation should automatically appear.
-
-

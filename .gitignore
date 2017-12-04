@@ -28,3 +28,4 @@ incremental_db/
 *msim_transcript
 *.wlf
 *rtl_work/
+*run_msim_rtl*
