@@ -187,41 +187,31 @@ module uvispace_top(
 //  REG/WIRE declarations
 //=======================================================
 
-//Clocks and resets
-wire    hps2fpga_reset_n;
-wire    camera_soft_reset_n;
-wire    video_stream_reset_n;
-wire    clk_25;
-wire    clk_191;
-wire    clk_120;
-wire    clk_24;
-//VGA signals
-wire    vga_enable;
-integer vga_row;
-integer vga_col;
-//CCD peripheral signal
-wire    [11:0] CCD_DATA;
-//CCD_Capture signals
-wire    [11:0] ccd_data_captured;   //output data from CCD_Capture
-wire        	ccd_dval;            //valid output data
-wire    [15:0] X_Cont;
-wire    [15:0] Y_Cont;
-reg     [11:0] ccd_data_raw;        //input raw data to CCD_Capture
-reg            ccd_fval_raw;        //frame valid
-reg            ccd_lval_raw;        //line valid
-wire           ccd_pixel_clk;
-wire           ccd_reset;
-wire    [31:0] Frame_Cont;
-//RAW2RGB signals
-wire    [11:0] raw_rgb_red;
-wire    [11:0] raw_rgb_green;
-wire    [11:0] raw_rgb_blue;
-wire           raw_rgb_dval;        //valid output data
-//SDRAM FIFOs data
-reg     [15:0] fifo1_writedata;
-reg     [15:0] fifo2_writedata;
-wire    [15:0] fifo1_readdata;
-wire    [15:0] fifo2_readdata;
+//Resets
+  //Comes from hps. Resets all the FPGA when HPS is reset.
+  wire    hps2fpga_reset_n;
+  //Comes from a register in avalon_camera. Permits reset
+  //of video stream from software. 
+  wire    camera_soft_reset_n;
+  //Reset  video stream.(Components in FPGA outside Qsys).
+  //It has 2 sources, camera_soft_reset_n and KEY[0].
+  wire    video_stream_reset_n;
+  assign video_stream_reset_n = (camera_soft_reset_n & KEY[0]);
+  
+//Clocks
+	//Input camera clock. Generated in Qsys it is the source of clock 
+	//for the external camera. 
+	wire    clk_24;
+	//Main clock clocking all the FPGA. It comes from the external camera.
+	//All pixels and synchronizations signals from the external camera
+	//are clocked to this clock.
+	//The external camera generates it from the clk_24. 24x4=96
+	wire           ccd_pixel_clk;
+	//VGA clock for 640x480 resolution (currentlty used in Uvispace)
+	wire    clk_25;
+	//VGA clock for HD resolution (currentlty not used in Uvispace)
+	wire    clk_191;
+	
 
 //=======================================================
 //  Structural coding
@@ -406,14 +396,22 @@ camera_capture u3(
   .in_width     (in_width[11:0]),
   .in_height    (in_height[11:0])
   );
+  reg     [11:0] ccd_data_raw;        //input raw data to CCD_Capture
+  reg            ccd_fval_raw;        //frame valid
+  reg            ccd_lval_raw;        //line valid
   wire    [15:0] in_width;
   wire    [15:0] in_height;
   wire    [11:0] X_Cont_raw;
   wire    [11:0] Y_Cont_raw;
+  wire    [11:0] ccd_data_captured;   //output data from CCD_Capture
+  wire        	  ccd_dval;            //valid output data
+  wire    [31:0] Frame_Cont;
+  
+  //CCD peripheral signal
+  wire    [11:0] CCD_DATA;
   // assign in_width = 11'd1280;
   // assign in_height = 11'd960;
-  assign X_Cont = {4'd0, X_Cont_raw};
-  assign Y_Cont = {4'd0, Y_Cont_raw};
+  
 
   // CCD_Capture external pinout conections.
   assign  CCD_DATA[0]  =  GPIO_1[13]; //Pixel data Bit 0
@@ -461,27 +459,54 @@ raw2rgb u4(
   .iRST         (hps2fpga_reset_n & video_stream_reset_n),
   .iDATA        (ccd_data_captured),  // Component input data
   .iDVAL        (ccd_dval),           // Data valid signal
-  .oRed         (raw_rgb_red),        // Output red component
-  .oGreen       (raw_rgb_green),      // Output green component
-  .oBlue        (raw_rgb_blue),       // Output blue component
-  .oDVAL        (raw_rgb_dval),       // Pixel value available
+  .oRed         (rgb_red),        // Output red component
+  .oGreen       (rgb_green),      // Output green component
+  .oBlue        (rgb_blue),       // Output blue component
+  .oDVAL        (rgb_dval),       // Pixel value available
   .iX_Cont      (X_Cont),
   .iY_Cont      (Y_Cont)
   );
+  wire    [15:0] X_Cont;
+  wire    [15:0] Y_Cont;
+  assign X_Cont = {4'd0, X_Cont_raw};
+  assign Y_Cont = {4'd0, Y_Cont_raw};
+  //RAW2RGB signals
+  wire    [11:0] rgb_red;
+  wire    [11:0] rgb_green;
+  wire    [11:0] rgb_blue;
+  wire           rgb_dval; //data valid
+  
+  
+//frame_sync frame_sync1(
+//  .clk					(ccd_pixel_clk),
+//  .reset_n				(hps2fpga_reset_n & video_stream_reset_n),
+//  //Input image and sync signals
+//  .in_RED				(raw_rgb_red),
+//  .in_GREEN				(raw_rgb_green),
+//  .in_BLUE				(raw_rgb_blue),
+//  .in_data_valid 		(raw_rgb_dval),
+//  .in_frame_valid		(),
+//  //Output image and sync signals
+//  .out_RED				(),
+//  .out_GREEN		   (),
+//  .out_BLUE				(),
+//  .out_data_valid 	(),
+//  .out_frame_valid	()
+//   );
   
 image_processing img_proc(
   .clock(ccd_pixel_clk),
   .reset_n(hps2fpga_reset_n & video_stream_reset_n),
   // Data input
-  .in_red(raw_rgb_red[11:4]),
-  .in_green(raw_rgb_green[11:4]),
-  .in_blue(raw_rgb_blue[11:4]),
+  .in_red(rgb_red[11:4]),
+  .in_green(rgb_green[11:4]),
+  .in_blue(rgb_blue[11:4]),
   .hue_l_threshold(hue_threshold_l),
   .hue_h_threshold(hue_threshold_h),
   .sat_threshold(saturation_threshold_l),
   .bri_threshold(brightness_threshold_l),
   .img_width({4'h0,in_width}),
-  .in_valid(raw_rgb_dval),
+  .in_valid(rgb_dval),
   // Data output
   .export_red(hsv_red),
   .export_green(hsv_green),
@@ -532,9 +557,9 @@ image_processing img_proc(
     end
     else begin
       if (SW[3]) begin
-        fifo1_writedata <= {1'b0, raw_rgb_red[11:7], raw_rgb_green[11:7],
-                            raw_rgb_blue[11:7]};
-        fifo_write_enable <= raw_rgb_dval;
+        fifo1_writedata <= {1'b0, rgb_red[11:7], rgb_green[11:7],
+                            rgb_blue[11:7]};
+        fifo_write_enable <= rgb_dval;
       end
       else begin
         fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
@@ -593,7 +618,11 @@ Sdram_Control u1(
   .SDR_CLK(DRAM_CLK)
   );
   reg    fifo_write_enable;
-
+  //SDRAM FIFOs data
+  reg     [15:0] fifo1_writedata;
+  reg     [15:0] fifo2_writedata;
+  wire    [15:0] fifo1_readdata;
+  wire    [15:0] fifo2_readdata;
 
 // VGA controller component.
 vga_controller vga_component(
@@ -608,6 +637,11 @@ vga_controller vga_component(
   .n_sync     ( VGA_SYNC_N ),
   .data_req   ( vga_request )
   );
+  //VGA signals
+  wire    vga_enable;
+  //not used now
+  integer vga_row;
+  integer vga_col;
 
   // Send the data on the FIFO memory to the VGA outputs.
   assign VGA_R = (!vga_enable) ? 0 :
@@ -670,9 +704,4 @@ SEG7_LUT_8 u5(
       _Frame_Cont = Frame_Cont;
     end
   end
-
-
-//------------------Reset logic------------//
-assign video_stream_reset_n = (camera_soft_reset_n & KEY[0]);
-
 endmodule
