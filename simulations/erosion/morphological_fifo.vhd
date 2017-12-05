@@ -44,25 +44,169 @@ entity morphological_fifo is
         reset_n         : in STD_LOGIC;
         
 		  -- Configuration
-		  img_width  :in STD_LOGIC_VECTOR(15 downto 0);
+		  img_width   :in STD_LOGIC_VECTOR(15 downto 0);
 		  
         -- Input image and sync signals
-        pix		    : in STD_LOGIC_VECTOR((PIX_SIZE - 1) downto 0);--one pixel
+        pix		     : in STD_LOGIC_VECTOR((PIX_SIZE - 1) downto 0);--one pixel
 		  data_valid  : in STD_LOGIC; --there is a valid pixel in pix
+		  frame_valid : in STD_LOGIC;
 		 
         -- Output signal is the moving window to do the morphological operation
 		  moving_window    : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
 		  data_valid_out   : out STD_LOGIC; 
+		  frame_valid_out : in STD_LOGIC;
     );
 end morphological_fifo;
 
 architecture arch of erosion is
+	--Variables for the state machine
+	  constant NUMBER_OF_STATES   : INTEGER := 4;
+    --signals for the evolution of the state machine
+    signal current_state        : INTEGER range 0 to (NUMBER_OF_STATES - 1);
+    signal next_state           : INTEGER range 0 to (NUMBER_OF_STATES - 1);
+    -- Conditions to change next state.
+    -- State_condition(x) condition to go from x to x+1.
+    signal state_condition      : STD_LOGIC_VECTOR((NUMBER_OF_STATES - 2)
+                                    downto 0);
+	 signal condition_3_to_2     : STD_LOGIC; 
+	 -- the output image starts and ends KERN_SIZE-1 lines delayed with respect to
+	 -- the input image. This variable flags that moment to generate a delayed
+	 -- version of frame buffer
+	 signal end_of_output_img    : STD_LOGIC; 
+    --counters.
+		--Counts pixels in each line
+    signal pix_counter          : STD_LOGIC_VECTOR(23 downto 0);
+	 signal line_end_reached	  : STD_LOGIC; 
+	   --Counts lines
+	 signal line_counter         : STD_LOGIC_VECTOR(23 downto 0);
+    signal image_end_reached    : STD_LOGIC;
+	   --Counts the number of cycles that the out_frame_valid will last
+	 signal wait_counter         : STD_LOGIC_VECTOR(23 downto 0);
+    signal wait_end_reached     : STD_LOGIC;
+	 constant FRAME_VALID_TIME   : INTEGER := 10; --clock cycles
+	
+	
 	--Variables to save pixels needed to show the moving window
 	--pix_buff stores (KERN_SIZE-1) previous lines
 	 SIGNAL pix_buff :array2D_of_std_logic_vector((KERN_SIZE-2) downto 0)((MAX_WIDTH-1) downto 0)((PIX_SIZE-1) downto 0);
 	 --pix_buff_last stores last values and needs to be only KERN_SIZE depth
 	 SIGNAL pix_buff_last:array_of_std_logic_vector((KERN_SIZE-1) downto 0)((PIX_SIZE-1) downto 0);
-	 begin
+
+begin
+
+------------------------------STATE MACHINE---------------------
+	-- FSM (Finite State Machine) clocking and reset.
+	 fsm_mem: process (clk)
+    begin
+        if rising_edge(clk) then
+            if reset_n = '0' then 
+                current_state <= 0;
+            else
+                current_state <= next_state;
+            end if;
+        end if;
+    end process fsm_mem;
+
+    -- Evolution of FSM.
+    comb_fsm: process (current_state, state_condition, condition_3_to_2)
+    begin
+        case current_state is
+            when 0 =>
+                if state_condition(0) = '1' then 
+                    next_state <= 1;
+                else 
+                    next_state <= 0;
+                end if;
+            when 1 =>
+                if state_condition(1) = '1' then
+                    next_state <= 2;
+                else
+                    next_state<=1;  
+                end if;
+            when 2 =>
+                if state_condition(2) = '1' then
+                    next_state <= 3;
+                else
+                    next_state<=2;
+                end if;
+            when 3 =>
+                if condition_3_to_2 = '1' then
+                    next_state <= 1;
+                else
+                    next_state<=2;
+                end if;
+            when others =>
+                next_state <= 0;
+        end case;
+    end process comb_fsm;
+	 
+	 -- Conditions of FSM.
+	 state_condition(0) <= frame_valid;
+    state_condition(1) <= end_of_output_img;
+    state_condition(2) <= wait_end_reached;
+    condition_3_to_2   <= end_of_output_img;
+	 
+	 end_of_output_img <= 
+	 
+	 -- Evaluation and update pix_counter.
+    pix_counter_proc:process (clk)
+    begin
+        if rising_edge(clk) then
+            if (current_state = 0) or (line_end_reached = '1') then
+                -- reset the pixel counter
+                pix_counter <= (others => '0');
+            elsif (data_valid = '1') then
+                 -- Increment the pixel counter
+                pix_counter <= pix_counter + 1;
+            end if;
+        end if;
+        if pix_counter = img_width then
+            line_end_reached <= '1';
+        else
+            line_end_reached <= '0';
+        end if;
+    end process;
+	 
+	 -- Evaluation and update line_counter.
+    line_counter_proc:process (clk)
+    begin
+        if rising_edge(clk) then
+            if (current_state = 0) or (image_end_reached = '1') then
+                -- reset the pixel counter
+                line_counter <= (others => '0');
+            elsif (line_end_reached = '1') then
+                 -- Increment the pixel counter
+                line_counter <= line_counter + 1;
+            end if;
+        end if;
+        if line_counter = img_height then
+            image_end_reached <= '1';
+        else
+            image_end_reached <= '0';
+        end if;
+    end process;
+	 
+	 -- Evaluation and update wait_counter.
+	 wait_counter_proc:process (clk)
+    begin
+        if rising_edge(clk) then
+            if (current_state = 0) or (wait_end_reached = '1') then
+                -- reset the pixel counter
+                wait_counter <= (others => '0');
+            elsif (current_state = 2) then
+                 -- Increment the pixel counter
+                wait_counter <= wait_counter + 1;
+            end if;
+        end if;
+        if wait_counter = FRAME_VALID_TIME then
+            wait_end_reached <= '1';
+        else
+            wait_end_reached <= '0';
+        end if;
+    end process;
+
+
+---------------------------SAVE DATA IN MEMORY------------------
 
 	--Save the previous (KERN_SIZE) lines in memory
 		--Full image width lines. They are (KERN_SIZE-1) lines
@@ -75,7 +219,7 @@ architecture arch of erosion is
 						if rising_edge(clk) then
 							if reset_n = '1' then
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (data_valid = '1') then
+							elsif (current_state != 0) and (data_valid = '1') then
 								if (PIX_I<(img_width-1)) then --regular pixels
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
 								elsif (PIX_I=(img_width-1)) then --last pixel used in line
@@ -92,7 +236,7 @@ architecture arch of erosion is
 						if rising_edge(clk) then
 							if reset_n = '1' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (data_valid = '1') then
+							elsif (current_state != 0) and (data_valid = '1') then
 								if (PIX_I=(img_width-1)) then --last pixel used in line
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I+1)(0);
 								else --not used
@@ -109,7 +253,7 @@ architecture arch of erosion is
 						if rising_edge(clk) then
 							if reset_n = '1' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (data_valid = '1') then
+							elsif (current_state != 0) and (data_valid = '1') then
 								if (PIX_I<(img_width-1)) then --regular pixels
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
 								elsif (PIX_I=(img_width-1)) then --last pixel used in line
@@ -127,7 +271,7 @@ architecture arch of erosion is
 						if rising_edge(clk) then
 							if reset_n = '1' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (data_valid = '1') then
+							elsif (current_state != 0) and (data_valid = '1') then
 								if (PIX_I=(img_width-1)) then --last pixel used in line
 									pix_buff(LINE_I)(PIX_I) <= pix_buff_last(0);
 								else
@@ -150,7 +294,7 @@ architecture arch of erosion is
 				if rising_edge(clk) then
 					if reset_n = '1' then 
 						pix_buff(LINE_I)(PIX_I) <= (others => '0');
-					else if (data_valid = '1') then
+					else if (current_state != 0) and (data_valid = '1') then
 						pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
 					end if;
 				end if;
@@ -162,7 +306,7 @@ architecture arch of erosion is
 				if rising_edge(clk) then
 					if reset_n = '1' then 
 						pix_buff(LINE_I)(PIX_I) <= (others => '0');
-					else if (data_valid = '1') then
+					else if (current_state != 0) and (data_valid = '1') then
 						pix_buff(LINE_I)(PIX_I) <= pix;
 					end if;
 				end if;
@@ -170,6 +314,9 @@ architecture arch of erosion is
 			end generate Last_pixel;
 		end generate Line_generate;
 		
+	
+
+----------------------------GENERATE OUTPUTS--------------------
 	--Generate the data_valid output. It is one clock cycle delayed from input
 		Data_valid_proc: process(clk) begin
 			if rising_edge(clk) then
@@ -180,7 +327,7 @@ architecture arch of erosion is
 				end if;
 			end if;
 		end process;
-		
+
 	--Map the moving_window output to the memory elements of the pix_buffer
 	Mapping: for LINE_I in 0 to (KERN_SIZE-1) generate
 		Line_generate: for PIX_I in 0 to (KERN_SIZE-1) generate
@@ -192,4 +339,5 @@ architecture arch of erosion is
 			end generate Last_line;
 		end generate Line_generate;
 	end generate Mapping;
+	
 end arch;
