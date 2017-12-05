@@ -477,36 +477,41 @@ raw2rgb u4(
   wire           rgb_dval; //data valid
   
   
-//frame_sync frame_sync1(
-//  .clk					(ccd_pixel_clk),
-//  .reset_n				(hps2fpga_reset_n & video_stream_reset_n),
-//  //Input image and sync signals
-//  .in_RED				(raw_rgb_red),
-//  .in_GREEN				(raw_rgb_green),
-//  .in_BLUE				(raw_rgb_blue),
-//  .in_data_valid 		(raw_rgb_dval),
-//  .in_frame_valid		(),
-//  //Output image and sync signals
-//  .out_RED				(),
-//  .out_GREEN		   (),
-//  .out_BLUE				(),
-//  .out_data_valid 	(),
-//  .out_frame_valid	()
-//   );
+frame_sync frame_sync1(
+  .clk					(ccd_pixel_clk),
+  .reset_n				(hps2fpga_reset_n & video_stream_reset_n),
+  //Input image and sync signals
+  .in_RED				(rgb_red),
+  .in_GREEN				(rgb_green),
+  .in_BLUE				(rgb_blue),
+  .in_data_valid 		(rgb_dval),
+  .in_frame_valid		(ccd_fval_raw),
+  //Output image and sync signals
+  .out_RED				(sync_rgb_red),
+  .out_GREEN		   (sync_rgb_green),
+  .out_BLUE				(sync_rgb_blue),
+  .out_data_valid 	(sync_rgb_dval),
+  .out_frame_valid	(sync_rgb_fval)
+   );
+  wire    [11:0] sync_rgb_red;
+  wire    [11:0] sync_rgb_green;
+  wire    [11:0] sync_rgb_blue;
+  wire           sync_rgb_dval;
+  wire           sync_rgb_fval;
   
 image_processing img_proc(
   .clock(ccd_pixel_clk),
   .reset_n(hps2fpga_reset_n & video_stream_reset_n),
   // Data input
-  .in_red(rgb_red[11:4]),
-  .in_green(rgb_green[11:4]),
-  .in_blue(rgb_blue[11:4]),
+  .in_red(sync_rgb_red[11:4]),
+  .in_green(sync_rgb_green[11:4]),
+  .in_blue(sync_rgb_blue[11:4]),
   .hue_l_threshold(hue_threshold_l),
   .hue_h_threshold(hue_threshold_h),
   .sat_threshold(saturation_threshold_l),
   .bri_threshold(brightness_threshold_l),
   .img_width({4'h0,in_width}),
-  .in_valid(rgb_dval),
+  .in_valid(sync_rgb_dval),
   // Data output
   .export_red(hsv_red),
   .export_green(hsv_green),
@@ -557,9 +562,9 @@ image_processing img_proc(
     end
     else begin
       if (SW[3]) begin
-        fifo1_writedata <= {1'b0, rgb_red[11:7], rgb_green[11:7],
-                            rgb_blue[11:7]};
-        fifo_write_enable <= rgb_dval;
+        fifo1_writedata <= {1'b0, sync_rgb_red[11:7], sync_rgb_green[11:7],
+                            sync_rgb_blue[11:7]};
+        fifo_write_enable <= sync_rgb_dval;
       end
       else begin
         fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
