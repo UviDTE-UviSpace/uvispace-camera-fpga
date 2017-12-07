@@ -53,8 +53,9 @@ entity morphological_fifo is
 		 
         -- Output signal is the moving window to do the morphological operation
 		  moving_window    : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
+		  window_valid     : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
 		  data_valid_out   : out STD_LOGIC; 
-		  frame_valid_out : in STD_LOGIC;
+		  frame_valid_out  : in STD_LOGIC;
     );
 end morphological_fifo;
 
@@ -318,15 +319,24 @@ begin
 
 ----------------------------GENERATE OUTPUTS--------------------
 	--Generate the data_valid output. It is one clock cycle delayed from input
-		Data_valid_proc: process(clk) begin
-			if rising_edge(clk) then
-				if reset_n = '1' then 
-					data_valid_out <= (others => '0');
-				else
-					data_valid_out <= data_valid;
-				end if;
+	Data_valid_proc: process(clk) begin
+		if rising_edge(clk) then
+			if current_state = 0 then 
+				data_valid_out <= (others => '0');
+			else if (current state = 2) or (current_state = 3) then
+				data_valid_out <= data_valid;
 			end if;
-		end process;
+		end if;
+	end process;
+		
+	--The output frame buffer is active in state 2
+	Frame_valid_proc: process(clk) begin
+		if current_state = 2 then
+			frame_valid_out <= '1';
+		else
+			frame_valid_out <= '0';
+		end if;
+	end process;
 
 	--Map the moving_window output to the memory elements of the pix_buffer
 	Mapping: for LINE_I in 0 to (KERN_SIZE-1) generate
@@ -339,5 +349,11 @@ begin
 			end generate Last_line;
 		end generate Line_generate;
 	end generate Mapping;
+	
+	--The whole output window should usually be used but in the borders only 
+	--some pixels are valid. The non valid pixels are from previous image
+	--(top rows), next image (last rows), previous lines (last pixels in a )
+	--line) or next line (). Only the pixels indicated in window_valid 
+	--should be used in the outter morphological operation with the kernel.
 	
 end arch;
