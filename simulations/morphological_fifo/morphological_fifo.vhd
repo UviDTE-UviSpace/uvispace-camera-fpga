@@ -56,11 +56,11 @@ entity morphological_fifo is
 		  moving_window  : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
 		  window_valid   : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
 		  data_valid_out : out STD_LOGIC; 
-		  frame_valid_out: in STD_LOGIC;
+		  frame_valid_out: in STD_LOGIC
     );
 end morphological_fifo;
 
-architecture arch of erosion is
+architecture arch of morphological_fifo is
 	--Variables for the state machine
 	  constant NUMBER_OF_STATES  : INTEGER := 4;
     --signals for the evolution of the state machine
@@ -148,7 +148,13 @@ begin
     state_condition(2) <= wait_end_reached;
     condition_3_to_2   <= end_of_output_img;
 	 
-	 end_of_output_img <= 
+	 end_out_img_proc: process (line_counter, pix_counter) begin
+		if (line_counter = (KERN_SIZE-1)/2) and (pix_counter = (KERN_SIZE-1)/2) then
+			end_of_output_img <= '1';
+		else 
+			end_of_output_img <= '0';
+		end if;
+	 end process;
 	 
 	 -- Evaluation and update pix_counter.
     pix_counter_proc:process (clk)
@@ -216,33 +222,35 @@ begin
 			Line_generate: for PIX_I in 0 to (MAX_WIDTH-1) generate
 			
 				Regular_lines: if LINE_I < (KERN_SIZE-2) generate
-					Reg_line_regular_pixels: if PIX_I<(MAX_WIDTH-1) 
+					Reg_line_regular_pixels: if PIX_I<(MAX_WIDTH-1) generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
 							if reset_n = '1' then
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (current_state != 0) and (data_valid = '1') then
+							elsif ((current_state /= 0) and (data_valid = '1')) then
 								if (PIX_I<(img_width-1)) then --regular pixels
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
 								elsif (PIX_I=(img_width-1)) then --last pixel used in line
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I+1)(0);
 								else --not used pixel
 									pix_buff(LINE_I)(PIX_I) <= (others => '0');
+								end if;
 							end if;
 						end if;
 						end process;
-					end generate Reg_line_regular_pixels
+					end generate Reg_line_regular_pixels;
 					
-					Reg_line_last_pixel: if PIX_I=(MAX_WIDTH-1) 
+					Reg_line_last_pixel: if PIX_I=(MAX_WIDTH-1)  generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
 							if reset_n = '1' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (current_state != 0) and (data_valid = '1') then
+							elsif (current_state /= 0) and (data_valid = '1') then
 								if (PIX_I=(img_width-1)) then --last pixel used in line
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I+1)(0);
 								else --not used
 									pix_buff(LINE_I)(PIX_I) <= (others => '0');
+								end if;
 							end if;
 						end if;
 						end process;
@@ -250,12 +258,12 @@ begin
 				end generate Regular_lines;
 			
 				Last_line: if LINE_I = (KERN_SIZE-2) generate
-					Last_line_regular_pixels: if PIX_I<(MAX_WIDTH-1) 
+					Last_line_regular_pixels: if PIX_I<(MAX_WIDTH-1) generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
 							if reset_n = '1' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (current_state != 0) and (data_valid = '1') then
+							elsif (current_state /= 0) and (data_valid = '1') then
 								if (PIX_I<(img_width-1)) then --regular pixels
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
 								elsif (PIX_I=(img_width-1)) then --last pixel used in line
@@ -266,14 +274,14 @@ begin
 							end if;
 						end if;
 						end process;
-					end generate Last_line_regular_pixels
+					end generate Last_line_regular_pixels;
 				
-					Last_line_last_pixel: if PIX_I=(MAX_WIDTH-1) 
+					Last_line_last_pixel: if PIX_I=(MAX_WIDTH-1) generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
 							if reset_n = '1' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (current_state != 0) and (data_valid = '1') then
+							elsif (current_state /= 0) and (data_valid = '1') then
 								if (PIX_I=(img_width-1)) then --last pixel used in line
 									pix_buff(LINE_I)(PIX_I) <= pix_buff_last(0);
 								else
@@ -294,14 +302,16 @@ begin
 			Regular_pixels: if PIX_I<(KERN_SIZE-1) generate
 				Update_pix_proc: process(clk) begin
 				if rising_edge(clk) then
+				
 					if reset_n = '1' then 
 						pix_buff(LINE_I)(PIX_I) <= (others => '0');
-					else if (current_state != 0) and (data_valid = '1') then
+					else if (current_state /= 0) and (data_valid = '1') then
 						pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
 					end if;
+				
 				end if;
 				end process;
-			end generate Reg_line_regular_pixels;
+			end generate Regular_pixels;
 			
 			Last_pixel: if PIX_I=(KERN_SIZE-1) generate
 				Update_pix_proc: process(clk) begin
@@ -314,7 +324,7 @@ begin
 				end if;
 				end process;
 			end generate Last_pixel;
-		end generate Line_generate;
+		end generate Last_Line_generate;
 		
 	
 
