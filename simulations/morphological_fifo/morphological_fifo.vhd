@@ -53,10 +53,10 @@ entity morphological_fifo is
 		  frame_valid    : in STD_LOGIC;
 		 
         -- Output signal is the moving window to do the morphological operation
-		  moving_window  : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
-		  window_valid   : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
+		  moving_window  : out array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
+		  window_valid   : out array2D_of_std_logic((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0);
 		  data_valid_out : out STD_LOGIC; 
-		  frame_valid_out: in STD_LOGIC
+		  frame_valid_out: out STD_LOGIC
     );
 end morphological_fifo;
 
@@ -90,7 +90,7 @@ architecture arch of morphological_fifo is
 	
 	--Variables to save pixels needed to show the moving window
 	--pix_buff stores (KERN_SIZE-1) previous lines
-	 SIGNAL pix_buff :array2D_of_std_logic_vector((KERN_SIZE-2) downto 0)((MAX_WIDTH-1) downto 0)((PIX_SIZE-1) downto 0);
+	 SIGNAL pix_buff :array2D_of_std_logic_vector((KERN_SIZE-2) downto 0)((MAX_IMG_WIDTH-1) downto 0)((PIX_SIZE-1) downto 0);
 	 --pix_buff_last stores last values and needs to be only KERN_SIZE depth
 	 SIGNAL pix_buff_last:array_of_std_logic_vector((KERN_SIZE-1) downto 0)((PIX_SIZE-1) downto 0);
 
@@ -219,10 +219,10 @@ begin
 	--Save the previous (KERN_SIZE) lines in memory
 		--Full image width lines. They are (KERN_SIZE-1) lines
 		Pix_buffer_generate: for LINE_I in 0 to (KERN_SIZE-2) generate
-			Line_generate: for PIX_I in 0 to (MAX_WIDTH-1) generate
+			Line_generate: for PIX_I in 0 to (MAX_IMG_WIDTH-1) generate
 			
 				Regular_lines: if LINE_I < (KERN_SIZE-2) generate
-					Reg_line_regular_pixels: if PIX_I<(MAX_WIDTH-1) generate
+					Reg_line_regular_pixels: if PIX_I<(MAX_IMG_WIDTH-1) generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
 							if reset_n = '1' then
@@ -240,7 +240,7 @@ begin
 						end process;
 					end generate Reg_line_regular_pixels;
 					
-					Reg_line_last_pixel: if PIX_I=(MAX_WIDTH-1)  generate
+					Reg_line_last_pixel: if PIX_I=(MAX_IMG_WIDTH-1)  generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
 							if reset_n = '1' then 
@@ -258,7 +258,7 @@ begin
 				end generate Regular_lines;
 			
 				Last_line: if LINE_I = (KERN_SIZE-2) generate
-					Last_line_regular_pixels: if PIX_I<(MAX_WIDTH-1) generate
+					Last_line_regular_pixels: if PIX_I<(MAX_IMG_WIDTH-1) generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
 							if reset_n = '1' then 
@@ -276,7 +276,7 @@ begin
 						end process;
 					end generate Last_line_regular_pixels;
 				
-					Last_line_last_pixel: if PIX_I=(MAX_WIDTH-1) generate
+					Last_line_last_pixel: if PIX_I=(MAX_IMG_WIDTH-1) generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
 							if reset_n = '1' then 
@@ -297,18 +297,16 @@ begin
 		end generate Pix_buffer_generate;
 		
 		--Last line of the buffer only stores KERN_SIZE PIXELS
-		Last_Line_generate: for PIX_I in 0 to (MAX_WIDTH-1) generate
+		Last_Line_generate: for PIX_I in 0 to (MAX_IMG_WIDTH-1) generate
 			
 			Regular_pixels: if PIX_I<(KERN_SIZE-1) generate
 				Update_pix_proc: process(clk) begin
 				if rising_edge(clk) then
-				
 					if reset_n = '1' then 
-						pix_buff(LINE_I)(PIX_I) <= (others => '0');
-					else if (current_state /= 0) and (data_valid = '1') then
-						pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
+						pix_buff_last(PIX_I) <= (others => '0');
+					elsif (current_state /= 0) and (data_valid = '1') then
+						pix_buff_last(PIX_I) <= pix_buff_last(PIX_I+1);
 					end if;
-				
 				end if;
 				end process;
 			end generate Regular_pixels;
@@ -317,9 +315,9 @@ begin
 				Update_pix_proc: process(clk) begin
 				if rising_edge(clk) then
 					if reset_n = '1' then 
-						pix_buff(LINE_I)(PIX_I) <= (others => '0');
-					else if (current_state != 0) and (data_valid = '1') then
-						pix_buff(LINE_I)(PIX_I) <= pix;
+						pix_buff_last(PIX_I) <= (others => '0');
+					elsif (current_state /= 0) and (data_valid = '1') then
+						pix_buff_last(PIX_I) <= pix;
 					end if;
 				end if;
 				end process;
@@ -333,9 +331,11 @@ begin
 	Data_valid_proc: process(clk) begin
 		if rising_edge(clk) then
 			if current_state = 0 then 
-				data_valid_out <= (others => '0');
-			else if (current state = 2) or (current_state = 3) then
-				data_valid_out <= data_valid;
+				data_valid_out <= '0';
+			else
+				if ((current_state = 2) or (current_state = 3)) then
+				  data_valid_out <= data_valid;
+				end if;
 			end if;
 		end if;
 	end process;
@@ -356,7 +356,7 @@ begin
 				moving_window(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I);
 			end generate Regular_lines;
 			Last_line: if LINE_I = (KERN_SIZE-1) generate 
-				moving_window(LINE_I)(PIX_I) <= pix_buff_last(LINE_I)(PIX_I);
+				moving_window(LINE_I)(PIX_I) <= pix_buff_last(PIX_I);
 			end generate Last_line;
 		end generate Line_generate;
 	end generate Window_Mapping;
@@ -368,7 +368,7 @@ begin
 	--should be used in the outter morphological operation with the kernel.
 	Window_Valid_Mapping: for LINE_I in 0 to (KERN_SIZE-1) generate
 		Line_generate: for PIX_I in 0 to (KERN_SIZE-1) generate
-			win_valid_proc: process(line_counter, pixel_counter) begin
+			win_valid_proc: process(line_counter, pix_counter) begin
 				--For 1st lines of the input image
 				if line_counter < ((KERN_SIZE-1)/2) then
 					--Last lines of window are zero because are pixels from next image
@@ -376,17 +376,17 @@ begin
 						window_valid(LINE_I)(PIX_I) <= '0';
 					--The rest of lines need to check the column
 					--First pixels of input image line
-					else if (pix_counter < ((KERN_SIZE-1)/2)) then
+					elsif (pix_counter < ((KERN_SIZE-1)/2)) then
 						--The last pixels in window are wrong cause are from next line
-						if (PIX_I > (KERN_SIZE - pix_counter - 2) then
+						if (PIX_I > (KERN_SIZE - pix_counter - 2)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 						else
 							window_valid(LINE_I)(PIX_I) <= '1';
 						end if;
 					--Second pixels in input image line
-					else if (pix_counter < (KERN_SIZE-1)) then 
+					elsif (pix_counter < (KERN_SIZE-1)) then 
 						--The first pixels in window are wrong, are from previous line
-						if (PIX_I < (KERN_SIZE - pix_counter - 2) then
+						if (PIX_I < (KERN_SIZE - pix_counter - 2)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 						else
 							window_valid(LINE_I)(PIX_I) <= '1';
@@ -395,24 +395,24 @@ begin
 						window_valid(LINE_I)(PIX_I) <= '1';
 					end if;
 				--For next lines of the input image
-				else if (line_counter < (KERN_SIZE-1)) then
+				elsif (line_counter < (KERN_SIZE-1)) then
 					--First lines in window are wrong cause the are prom previous img
 					if (LINE_I < (KERN_SIZE - line_counter - 1)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 					--The rest of lines need to check the column
 					--First pixels of input image line
 					--First pixels of input image line
-					else if (pix_counter < ((KERN_SIZE-1)/2)) then
+					elsif (pix_counter < ((KERN_SIZE-1)/2)) then
 						--The last pixels in window are wrong cause are from next line
-						if (PIX_I > (KERN_SIZE - pix_counter - 2) then
+						if (PIX_I > (KERN_SIZE - pix_counter - 2)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 						else
 							window_valid(LINE_I)(PIX_I) <= '1';
 						end if;
 					--Second pixels in input image line
-					else if (pix_counter < (KERN_SIZE-1)) then 
+					elsif (pix_counter < (KERN_SIZE-1)) then 
 						--The first pixels in window are wrong, are from previous line
-						if (PIX_I < (KERN_SIZE - pix_counter - 2) then
+						if (PIX_I < (KERN_SIZE - pix_counter - 2)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 						else
 							window_valid(LINE_I)(PIX_I) <= '1';
@@ -425,6 +425,6 @@ begin
 				end if;
 			end process;
 		end generate Line_generate;
-	end generate Window_Mapping;
+	end generate Window_Valid_Mapping;
 			
 end arch;
