@@ -59,19 +59,13 @@ entity morphological_fifo is
 end morphological_fifo;
 
 architecture arch of morphological_fifo is
-	--Variables for the state machine
-	  constant NUMBER_OF_STATES  : INTEGER := 3;
-    --signals for the evolution of the state machine
-    signal current_state        : INTEGER range 0 to (NUMBER_OF_STATES - 1);
-    signal next_state           : INTEGER range 0 to (NUMBER_OF_STATES - 1);
-    -- Conditions to change next state.
-    -- State_condition(x) condition to go from x to x+1.
-    signal state_condition      : STD_LOGIC_VECTOR((NUMBER_OF_STATES - 2)
-                                    downto 0);
-	 -- the output image starts and ends KERN_SIZE-1 lines delayed with respect to
-	 -- the input image. This variable flags that moment to generate a delayed
-	 -- version of frame buffer
-	 signal end_of_output_img    : STD_LOGIC; 
+	 --Enables propagation of data_valid input to data_valid_out output
+	 --When doing morphological operations there is always a delay of
+	 --(KERN_SIZE-1) lines and (KERN_SIZE-1) pixels between the moment
+	 --the 1st pixel of the input image enters and the 1st pixel of the
+	 --output image goes out. This variable helps to produce the waiting
+	 --for this initial delay.
+	 signal enable_data_valid    : STD_LOGIC; 
     --counters.
 		--Counts pixels in each line
     signal pix_counter          : STD_LOGIC_VECTOR(23 downto 0);
@@ -85,60 +79,11 @@ architecture arch of morphological_fifo is
 	 SIGNAL pix_buff_last:array_of_std_logic_vector((KERN_SIZE-1) downto 0)((PIX_SIZE-1) downto 0);
 
 begin
-
-------------------------------STATE MACHINE---------------------
-	-- FSM (Finite State Machine) clocking and reset.
-	 fsm_mem: process (clk)
-    begin
-        if rising_edge(clk) then
-            if reset_n = '0' then 
-                current_state <= 0;
-            else
-                current_state <= next_state;
-            end if;
-        end if;
-    end process fsm_mem;
-
-    -- Evolution of FSM.
-    comb_fsm: process (current_state, state_condition)
-    begin
-        case current_state is
-            when 0 =>
-                if state_condition(0) = '1' then 
-                    next_state <= 1;
-                else 
-                    next_state <= 0;
-                end if;
-            when 1 =>
-                if state_condition(1) = '1' then
-                    next_state <= 2;
-                else
-                    next_state<=1;  
-                end if;
-            when 2 =>
-                next_state<=2;
-            when others =>
-                next_state <= 0;
-        end case;
-    end process comb_fsm;
-	 
-	 -- Conditions of FSM.
-	 state_condition(0) <= '1';
-    state_condition(1) <= end_of_output_img;
-	 
-	 end_out_img_proc: process (line_counter, pix_counter) begin
-		if (line_counter = (KERN_SIZE-1)/2) and (pix_counter = (KERN_SIZE-1)/2) then
-			end_of_output_img <= '1';
-		else 
-			end_of_output_img <= '0';
-		end if;
-	 end process;
-	 
-	 -- Evaluation and update pix_counter and line counter
+	 ------------ Evaluation and update pix_counter and line counter-------------
     pix_counter_proc:process (clk)
     begin
         if rising_edge(clk) then
-            if (current_state = 0) then
+            if (reset_n = '0') then
                 -- reset the pixel counter
                 pix_counter <= (others => '0');
 					 line_counter <= (others => '0');
@@ -171,7 +116,7 @@ begin
 						if rising_edge(clk) then
 							if reset_n = '0' then
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif ((current_state /= 0) and (data_valid = '1')) then
+							elsif (data_valid = '1') then
 								if (PIX_I<(img_width-1)) then --regular pixels
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
 								elsif (PIX_I=(img_width-1)) then --last pixel used in line
@@ -189,7 +134,7 @@ begin
 						if rising_edge(clk) then
 							if reset_n = '0' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (current_state /= 0) and (data_valid = '1') then
+							elsif (data_valid = '1') then
 								if (PIX_I=(img_width-1)) then --last pixel used in line
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I+1)(0);
 								else --not used
@@ -207,7 +152,7 @@ begin
 						if rising_edge(clk) then
 							if reset_n = '0' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (current_state /= 0) and (data_valid = '1') then
+							elsif (data_valid = '1') then
 								if (PIX_I<(img_width-1)) then --regular pixels
 									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
 								elsif (PIX_I=(img_width-1)) then --last pixel used in line
@@ -225,7 +170,7 @@ begin
 						if rising_edge(clk) then
 							if reset_n = '0' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
-							elsif (current_state /= 0) and (data_valid = '1') then
+							elsif (data_valid = '1') then
 								if (PIX_I=(img_width-1)) then --last pixel used in line
 									pix_buff(LINE_I)(PIX_I) <= pix_buff_last(0);
 								else
@@ -248,7 +193,7 @@ begin
 				if rising_edge(clk) then
 					if reset_n = '0' then 
 						pix_buff_last(PIX_I) <= (others => '0');
-					elsif (current_state /= 0) and (data_valid = '1') then
+					elsif (data_valid = '1') then
 						pix_buff_last(PIX_I) <= pix_buff_last(PIX_I+1);
 					end if;
 				end if;
@@ -260,7 +205,7 @@ begin
 				if rising_edge(clk) then
 					if reset_n = '0' then 
 						pix_buff_last(PIX_I) <= (others => '0');
-					elsif (current_state /= 0) and (data_valid = '1') then
+					elsif (data_valid = '1') then
 						pix_buff_last(PIX_I) <= pix;
 					end if;
 				end if;
@@ -274,10 +219,18 @@ begin
 	--Generate the data_valid output. It is one clock cycle delayed from input
 	Data_valid_proc: process(clk) begin
 		if rising_edge(clk) then
-			if current_state = 0 then 
+			if (reset_n = '0') then
+				enable_data_valid <= '0';
 				data_valid_out <= '0';
-			elsif(current_state = 2) then
-				data_valid_out <= data_valid;
+			else
+				if (line_counter = (KERN_SIZE-1)/2) and (pix_counter = (KERN_SIZE-1)/2) and (data_valid = '1') then
+					enable_data_valid <= '1';
+					data_valid_out <= '1';
+				elsif (enable_data_valid = '1') and (data_valid = '1')  then
+					data_valid_out <= '1';
+				else
+					data_valid_out <= '0';
+				end if;
 			end if;
 		end if;
 	end process;
@@ -292,8 +245,8 @@ begin
 				moving_window(LINE_I)(PIX_I) <= pix_buff_last(PIX_I);
 			end generate Last_line;
 		end generate Line_generate;
-	end generate Window_Mapping;
-	
+	end generate Window_Mapping;	
+			
 	--The whole output window should usually be used but in the borders only 
 	--some pixels are valid. The non valid pixels are from previous image
 	--(top rows), next image (last rows), previous lines (1st pixels in a )
@@ -301,63 +254,87 @@ begin
 	--should be used in the outter morphological operation with the kernel.
 	Window_Valid_Mapping: for LINE_I in 0 to (KERN_SIZE-1) generate
 		Line_generate: for PIX_I in 0 to (KERN_SIZE-1) generate
-			win_valid_proc: process(line_counter, pix_counter) begin
-				--For 1st lines of the input image
-				if line_counter < ((KERN_SIZE-1)/2) then
-					--Last lines of window are zero because are pixels from next image
-					if (LINE_I > (KERN_SIZE - line_counter - 2)) then
+			win_valid_proc: process(clk,line_counter, pix_counter) begin
+
+				if (pix_counter = 0) then
+					if (line_counter<((KERN_SIZE+1)/2)) then
+						if (LINE_I > (KERN_SIZE-line_counter-1)) then
+							window_valid(LINE_I)(PIX_I) <= '0';
+						else
+							window_valid(LINE_I)(PIX_I) <= '1';
+						end if;
+					elsif (line_counter < KERN_SIZE) then
+						if (LINE_I < (KERN_SIZE-line_counter)) then
+							window_valid(LINE_I)(PIX_I) <= '0';
+						else
+							window_valid(LINE_I)(PIX_I) <= '1';
+						end if;
+					else
+						window_valid(LINE_I)(PIX_I) <= '1';
+					end if;
+					
+				elsif (pix_counter<((KERN_SIZE+1)/2)) then
+					if (PIX_I > KERN_SIZE-pix_counter-1) then
 						window_valid(LINE_I)(PIX_I) <= '0';
-					--The rest of lines need to check the column
-					--First pixels of input image line
-					elsif (pix_counter < ((KERN_SIZE-1)/2)+1) then
-						--The last pixels in window are wrong cause are from next line
-						if (PIX_I > (KERN_SIZE - pix_counter - 1)) then
-							window_valid(LINE_I)(PIX_I) <= '0';
-						else
-							window_valid(LINE_I)(PIX_I) <= '1';
-						end if;
-					--Second pixels in input image line
-					elsif (pix_counter < (KERN_SIZE-1)+1) then 
-						--The first pixels in window are wrong, are from previous line
-						if (PIX_I < (KERN_SIZE - pix_counter - 1)) then
-							window_valid(LINE_I)(PIX_I) <= '0';
-						else
-							window_valid(LINE_I)(PIX_I) <= '1';
-						end if;
 					else
-						window_valid(LINE_I)(PIX_I) <= '1';
+						if (line_counter<(KERN_SIZE+1)/2) then
+							if (LINE_I > (KERN_SIZE-line_counter-1)) then
+								window_valid(LINE_I)(PIX_I) <= '0';
+							else
+								window_valid(LINE_I)(PIX_I) <= '1';
+							end if;
+						elsif (line_counter < KERN_SIZE) then
+							if (LINE_I < (KERN_SIZE-line_counter)) then
+								window_valid(LINE_I)(PIX_I) <= '0';
+							else
+								window_valid(LINE_I)(PIX_I) <= '1';
+							end if;
+						else
+							window_valid(LINE_I)(PIX_I) <= '1';
+						end if;
 					end if;
-				--For next lines of the input image
-				elsif (line_counter < (KERN_SIZE-1)) then
-					--First lines in window are wrong cause they are prom previous img
-					if (LINE_I < (KERN_SIZE - line_counter - 1)) then
-							window_valid(LINE_I)(PIX_I) <= '0';
-					--The rest of lines need to check the column
-					--First pixels of input image line
-					--First pixels of input image line
-					elsif (pix_counter < ((KERN_SIZE-1)/2)+1) then
-						--The last pixels in window are wrong cause are from next line
-						if (PIX_I > (KERN_SIZE - pix_counter - 1)) then
-							window_valid(LINE_I)(PIX_I) <= '0';
-						else
-							window_valid(LINE_I)(PIX_I) <= '1';
-						end if;
-					--Second pixels in input image line
-					elsif (pix_counter < (KERN_SIZE-1)+1) then 
-						--The first pixels in window are wrong, are from previous line
-						if (PIX_I < (KERN_SIZE - pix_counter - 1)) then
-							window_valid(LINE_I)(PIX_I) <= '0';
-						else
-							window_valid(LINE_I)(PIX_I) <= '1';
-						end if;
+				
+				elsif (pix_counter < KERN_SIZE) then
+					if (PIX_I < KERN_SIZE-pix_counter) then
+						window_valid(LINE_I)(PIX_I) <= '0';
 					else
-						window_valid(LINE_I)(PIX_I) <= '1';
+						if (line_counter<((KERN_SIZE-1)/2)) then
+							if (LINE_I > (KERN_SIZE-line_counter-2)) then
+								window_valid(LINE_I)(PIX_I) <= '0';
+							else
+								window_valid(LINE_I)(PIX_I) <= '1';
+							end if;
+						elsif (line_counter < (KERN_SIZE-1)) then
+							if (LINE_I < (KERN_SIZE-line_counter-1)) then
+								window_valid(LINE_I)(PIX_I) <= '0';
+							else
+								window_valid(LINE_I)(PIX_I) <= '1';
+							end if;
+						else
+							window_valid(LINE_I)(PIX_I) <= '1';
+						end if;
 					end if;
+				
 				else
-					window_valid(LINE_I)(PIX_I) <= '1';
+					if (line_counter<((KERN_SIZE-1)/2)) then
+						if (LINE_I > (KERN_SIZE-line_counter-2)) then
+							window_valid(LINE_I)(PIX_I) <= '0';
+						else
+							window_valid(LINE_I)(PIX_I) <= '1';
+						end if;
+					elsif (line_counter < KERN_SIZE) then
+						if (LINE_I < (KERN_SIZE-line_counter-1)) then
+							window_valid(LINE_I)(PIX_I) <= '0';
+						else
+							window_valid(LINE_I)(PIX_I) <= '1';
+						end if;
+					else
+						window_valid(LINE_I)(PIX_I) <= '1';
+					end if;
 				end if;
+				
 			end process;
 		end generate Line_generate;
 	end generate Window_Valid_Mapping;
-			
+	
 end arch;

@@ -206,6 +206,7 @@ BEGIN
 		if ( edge_rise = 27 ) then
 			data_valid 	<= '0';
 		end if;
+		
 		--8
 		if ( edge_rise = 28 ) then
 			data_valid 	<= '1';
@@ -214,6 +215,7 @@ BEGIN
 		if ( edge_rise = 29 ) then
 			data_valid 	<= '0';
 		end if;
+		
 		--9
 		if ( edge_rise = 30 ) then
 			data_valid 	<= '1';
@@ -222,14 +224,16 @@ BEGIN
 		if ( edge_rise = 31 ) then
 			data_valid 	<= '0';
 		end if;
+		
 		--10
 		if ( edge_rise = 32 ) then
 			data_valid 	<= '1';
 			pix <= X"0A";
 		end if;
-		if ( edge_rise = 33 ) then
+		if ( edge_rise = 32 ) then
 			data_valid 	<= '0';
 		end if;
+		
 		--11
 		if ( edge_rise = 34 ) then
 			data_valid 	<= '1';

@@ -16,6 +16,7 @@ incremental_db/
 *.sopcinfo
 *.sld
 *.qws
+*.qdf
 *.sof
 *.rbf
 *.cdf
