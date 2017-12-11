@@ -30,13 +30,13 @@ entity morphological_fifo is
     generic (
         --Basic configuration of the component
 		    -- Size of each pixel (binary image by default)
-          PIX_SIZE  : integer := 1;
+          PIX_SIZE  : integer := 8;
 		    --Size of the kernel moving along the image (3x3 by default)
 			 KERN_SIZE : integer := 3;
 		  --Advanced features
 		    --Maximum line img_width
 			 --Default resolution is 640x480 so max width is 640.
-		    MAX_IMG_WIDTH : integer := 640
+		    MAX_IMG_WIDTH : integer := 16
     );
     port (
         -- Clock and reset.
@@ -50,19 +50,17 @@ entity morphological_fifo is
         -- Input image and sync signals
         pix		        : in STD_LOGIC_VECTOR((PIX_SIZE - 1) downto 0);--one pixel
 		  data_valid     : in STD_LOGIC; --there is a valid pixel in pix
-		  frame_valid    : in STD_LOGIC;
 		 
         -- Output signal is the moving window to do the morphological operation
 		  moving_window  : out array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
 		  window_valid   : out array2D_of_std_logic((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0);
-		  data_valid_out : out STD_LOGIC; 
-		  frame_valid_out: out STD_LOGIC
+		  data_valid_out : out STD_LOGIC
     );
 end morphological_fifo;
 
 architecture arch of morphological_fifo is
 	--Variables for the state machine
-	  constant NUMBER_OF_STATES  : INTEGER := 4;
+	  constant NUMBER_OF_STATES  : INTEGER := 3;
     --signals for the evolution of the state machine
     signal current_state        : INTEGER range 0 to (NUMBER_OF_STATES - 1);
     signal next_state           : INTEGER range 0 to (NUMBER_OF_STATES - 1);
@@ -70,7 +68,6 @@ architecture arch of morphological_fifo is
     -- State_condition(x) condition to go from x to x+1.
     signal state_condition      : STD_LOGIC_VECTOR((NUMBER_OF_STATES - 2)
                                     downto 0);
-	 signal condition_3_to_2     : STD_LOGIC; 
 	 -- the output image starts and ends KERN_SIZE-1 lines delayed with respect to
 	 -- the input image. This variable flags that moment to generate a delayed
 	 -- version of frame buffer
@@ -78,15 +75,8 @@ architecture arch of morphological_fifo is
     --counters.
 		--Counts pixels in each line
     signal pix_counter          : STD_LOGIC_VECTOR(23 downto 0);
-	 signal line_end_reached	  : STD_LOGIC; 
 	   --Counts lines
 	 signal line_counter         : STD_LOGIC_VECTOR(23 downto 0);
-    signal image_end_reached    : STD_LOGIC;
-	   --Counts the number of cycles that the out_frame_valid will last
-	 signal wait_counter         : STD_LOGIC_VECTOR(23 downto 0);
-    signal wait_end_reached     : STD_LOGIC;
-	 constant FRAME_VALID_TIME   : INTEGER := 10; --clock cycles
-	
 	
 	--Variables to save pixels needed to show the moving window
 	--pix_buff stores (KERN_SIZE-1) previous lines
@@ -110,7 +100,7 @@ begin
     end process fsm_mem;
 
     -- Evolution of FSM.
-    comb_fsm: process (current_state, state_condition, condition_3_to_2)
+    comb_fsm: process (current_state, state_condition)
     begin
         case current_state is
             when 0 =>
@@ -126,27 +116,15 @@ begin
                     next_state<=1;  
                 end if;
             when 2 =>
-                if state_condition(2) = '1' then
-                    next_state <= 3;
-                else
-                    next_state<=2;
-                end if;
-            when 3 =>
-                if condition_3_to_2 = '1' then
-                    next_state <= 1;
-                else
-                    next_state<=2;
-                end if;
+                next_state<=2;
             when others =>
                 next_state <= 0;
         end case;
     end process comb_fsm;
 	 
 	 -- Conditions of FSM.
-	 state_condition(0) <= frame_valid;
+	 state_condition(0) <= '1';
     state_condition(1) <= end_of_output_img;
-    state_condition(2) <= wait_end_reached;
-    condition_3_to_2   <= end_of_output_img;
 	 
 	 end_out_img_proc: process (line_counter, pix_counter) begin
 		if (line_counter = (KERN_SIZE-1)/2) and (pix_counter = (KERN_SIZE-1)/2) then
@@ -156,64 +134,30 @@ begin
 		end if;
 	 end process;
 	 
-	 -- Evaluation and update pix_counter.
+	 -- Evaluation and update pix_counter and line counter
     pix_counter_proc:process (clk)
     begin
         if rising_edge(clk) then
-            if (current_state = 0) or (line_end_reached = '1') then
+            if (current_state = 0) then
                 -- reset the pixel counter
                 pix_counter <= (others => '0');
+					 line_counter <= (others => '0');
             elsif (data_valid = '1') then
                  -- Increment the pixel counter
-                pix_counter <= pix_counter + 1;
+                if pix_counter = (img_width - 1) then 
+						pix_counter <= (others => '0');
+						if line_counter = (img_height - 1) then
+							line_counter <= (others => '0');
+						else 
+							line_counter <= line_counter + 1;
+						end if;
+					 else
+						pix_counter <= pix_counter + 1;
+					 end if;
             end if;
-        end if;
-        if pix_counter = img_width then
-            line_end_reached <= '1';
-        else
-            line_end_reached <= '0';
         end if;
     end process;
 	 
-	 -- Evaluation and update line_counter.
-    line_counter_proc:process (clk)
-    begin
-        if rising_edge(clk) then
-            if (current_state = 0) or (image_end_reached = '1') then
-                -- reset the pixel counter
-                line_counter <= (others => '0');
-            elsif (line_end_reached = '1') then
-                 -- Increment the pixel counter
-                line_counter <= line_counter + 1;
-            end if;
-        end if;
-        if line_counter = img_height then
-            image_end_reached <= '1';
-        else
-            image_end_reached <= '0';
-        end if;
-    end process;
-	 
-	 -- Evaluation and update wait_counter.
-	 wait_counter_proc:process (clk)
-    begin
-        if rising_edge(clk) then
-            if (current_state = 0) or (wait_end_reached = '1') then
-                -- reset the pixel counter
-                wait_counter <= (others => '0');
-            elsif (current_state = 2) then
-                 -- Increment the pixel counter
-                wait_counter <= wait_counter + 1;
-            end if;
-        end if;
-        if wait_counter = FRAME_VALID_TIME then
-            wait_end_reached <= '1';
-        else
-            wait_end_reached <= '0';
-        end if;
-    end process;
-
-
 ---------------------------SAVE DATA IN MEMORY------------------
 
 	--Save the previous (KERN_SIZE) lines in memory
@@ -225,7 +169,7 @@ begin
 					Reg_line_regular_pixels: if PIX_I<(MAX_IMG_WIDTH-1) generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
-							if reset_n = '1' then
+							if reset_n = '0' then
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
 							elsif ((current_state /= 0) and (data_valid = '1')) then
 								if (PIX_I<(img_width-1)) then --regular pixels
@@ -243,7 +187,7 @@ begin
 					Reg_line_last_pixel: if PIX_I=(MAX_IMG_WIDTH-1)  generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
-							if reset_n = '1' then 
+							if reset_n = '0' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
 							elsif (current_state /= 0) and (data_valid = '1') then
 								if (PIX_I=(img_width-1)) then --last pixel used in line
@@ -261,7 +205,7 @@ begin
 					Last_line_regular_pixels: if PIX_I<(MAX_IMG_WIDTH-1) generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
-							if reset_n = '1' then 
+							if reset_n = '0' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
 							elsif (current_state /= 0) and (data_valid = '1') then
 								if (PIX_I<(img_width-1)) then --regular pixels
@@ -279,7 +223,7 @@ begin
 					Last_line_last_pixel: if PIX_I=(MAX_IMG_WIDTH-1) generate
 						Update_pix_proc: process(clk) begin
 						if rising_edge(clk) then
-							if reset_n = '1' then 
+							if reset_n = '0' then 
 								pix_buff(LINE_I)(PIX_I) <= (others => '0');
 							elsif (current_state /= 0) and (data_valid = '1') then
 								if (PIX_I=(img_width-1)) then --last pixel used in line
@@ -302,7 +246,7 @@ begin
 			Regular_pixels: if PIX_I<(KERN_SIZE-1) generate
 				Update_pix_proc: process(clk) begin
 				if rising_edge(clk) then
-					if reset_n = '1' then 
+					if reset_n = '0' then 
 						pix_buff_last(PIX_I) <= (others => '0');
 					elsif (current_state /= 0) and (data_valid = '1') then
 						pix_buff_last(PIX_I) <= pix_buff_last(PIX_I+1);
@@ -314,7 +258,7 @@ begin
 			Last_pixel: if PIX_I=(KERN_SIZE-1) generate
 				Update_pix_proc: process(clk) begin
 				if rising_edge(clk) then
-					if reset_n = '1' then 
+					if reset_n = '0' then 
 						pix_buff_last(PIX_I) <= (others => '0');
 					elsif (current_state /= 0) and (data_valid = '1') then
 						pix_buff_last(PIX_I) <= pix;
@@ -332,20 +276,9 @@ begin
 		if rising_edge(clk) then
 			if current_state = 0 then 
 				data_valid_out <= '0';
-			else
-				if ((current_state = 2) or (current_state = 3)) then
-				  data_valid_out <= data_valid;
-				end if;
+			elsif(current_state = 2) then
+				data_valid_out <= data_valid;
 			end if;
-		end if;
-	end process;
-		
-	--The output frame buffer is active in state 2
-	Frame_valid_proc: process(clk) begin
-		if current_state = 2 then
-			frame_valid_out <= '1';
-		else
-			frame_valid_out <= '0';
 		end if;
 	end process;
 
@@ -376,17 +309,17 @@ begin
 						window_valid(LINE_I)(PIX_I) <= '0';
 					--The rest of lines need to check the column
 					--First pixels of input image line
-					elsif (pix_counter < ((KERN_SIZE-1)/2)) then
+					elsif (pix_counter < ((KERN_SIZE-1)/2)+1) then
 						--The last pixels in window are wrong cause are from next line
-						if (PIX_I > (KERN_SIZE - pix_counter - 2)) then
+						if (PIX_I > (KERN_SIZE - pix_counter - 1)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 						else
 							window_valid(LINE_I)(PIX_I) <= '1';
 						end if;
 					--Second pixels in input image line
-					elsif (pix_counter < (KERN_SIZE-1)) then 
+					elsif (pix_counter < (KERN_SIZE-1)+1) then 
 						--The first pixels in window are wrong, are from previous line
-						if (PIX_I < (KERN_SIZE - pix_counter - 2)) then
+						if (PIX_I < (KERN_SIZE - pix_counter - 1)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 						else
 							window_valid(LINE_I)(PIX_I) <= '1';
@@ -396,23 +329,23 @@ begin
 					end if;
 				--For next lines of the input image
 				elsif (line_counter < (KERN_SIZE-1)) then
-					--First lines in window are wrong cause the are prom previous img
+					--First lines in window are wrong cause they are prom previous img
 					if (LINE_I < (KERN_SIZE - line_counter - 1)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 					--The rest of lines need to check the column
 					--First pixels of input image line
 					--First pixels of input image line
-					elsif (pix_counter < ((KERN_SIZE-1)/2)) then
+					elsif (pix_counter < ((KERN_SIZE-1)/2)+1) then
 						--The last pixels in window are wrong cause are from next line
-						if (PIX_I > (KERN_SIZE - pix_counter - 2)) then
+						if (PIX_I > (KERN_SIZE - pix_counter - 1)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 						else
 							window_valid(LINE_I)(PIX_I) <= '1';
 						end if;
 					--Second pixels in input image line
-					elsif (pix_counter < (KERN_SIZE-1)) then 
+					elsif (pix_counter < (KERN_SIZE-1)+1) then 
 						--The first pixels in window are wrong, are from previous line
-						if (PIX_I < (KERN_SIZE - pix_counter - 2)) then
+						if (PIX_I < (KERN_SIZE - pix_counter - 1)) then
 							window_valid(LINE_I)(PIX_I) <= '0';
 						else
 							window_valid(LINE_I)(PIX_I) <= '1';
