@@ -11,6 +11,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
+LIBRARY work;
+	use work.array_package.all;
 
 entity image_processing is
     generic(
@@ -21,15 +23,19 @@ entity image_processing is
         -- Control signals
         clock           : in STD_LOGIC;
         reset_n         : in STD_LOGIC;
+		  -- Configuration
+		    --Image dimensions
+		  img_width       : in STD_LOGIC_VECTOR(15 downto 0);
+		  img_height      : in STD_LOGIC_VECTOR(15 downto 0);
+		    --binarization thresholds
+		  hue_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        hue_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        sat_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        bri_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         -- Data input
         in_red          : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         in_green        : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         in_blue         : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        hue_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        hue_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        sat_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        bri_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        img_width       : in STD_LOGIC_VECTOR(15 downto 0);
 		  in_valid        : in STD_LOGIC;
         -- Data output
 		    --RGB HSV
@@ -106,39 +112,47 @@ architecture arch of image_processing is
             );
     end component;
 
-	  -- Component to provoke a 3x3 erosion  to the binary image
-	 component erosion
-	     port (
-		      -- clock and reset
-		      clock           : in STD_LOGIC;
-				reset_n         : in STD_LOGIC;
-				--width of the image
-				img_width 	    : in STD_LOGIC_VECTOR(15 downto 0);
-				--input binay pixels
-				in_valid        : in STD_LOGIC;
-				in_pixel        : in STD_LOGIC;
-				--output binay pixels
-				out_valid        : out STD_LOGIC;
-				out_pixel        : out STD_LOGIC
-            );
-	 end component;
-
-	 -- Component to provoke a 3x3 dilatation  to the binary image
-	 component dilation
-	     port (
-		      -- clock and reset
-		      clock           : in STD_LOGIC;
-				reset_n         : in STD_LOGIC;
-				--width of the image
-				img_width 	    : in STD_LOGIC_VECTOR(15 downto 0);
-				--input binary pixels
-				in_valid        : in STD_LOGIC;
-				in_pixel        : in STD_LOGIC;
-				--output binary pixels
-				out_valid        : out STD_LOGIC;
-				out_pixel        : out STD_LOGIC
-            );
-	 end component;
+	 -- Component to provoke a 3x3 erosion  to the binary image
+	 component erosion_bin 
+    generic (
+			 KERN_SIZE : integer := 3;
+			 KERNEL : array2D_of_int(2 downto 0)(2 downto 0) := ((0,1,0),
+												                          (1,1,1),
+												                          (0,1,0));
+		    MAX_IMG_WIDTH : integer := 640
+    );
+    port (
+        clk            : in STD_LOGIC;
+        reset_n        : in STD_LOGIC;
+		  img_width      :in STD_LOGIC_VECTOR(15 downto 0);
+		  img_height     :in STD_LOGIC_VECTOR(15 downto 0);
+        pix		        : in STD_LOGIC;--binary pixels of the input image
+		  data_valid     : in STD_LOGIC; 
+		  pix_out        : out STD_LOGIC;--binary pixels of the output eroded img
+		  data_valid_out : out STD_LOGIC
+    );
+    end component;
+	 
+	 -- Component to provoke a 3x3 dilation  to the binary image
+	 component dilation_bin 
+    generic (
+			 KERN_SIZE : integer := 3;
+			 KERNEL : array2D_of_int(2 downto 0)(2 downto 0) := ((0,1,0),
+												                          (1,1,1),
+												                          (0,1,0));
+		    MAX_IMG_WIDTH : integer := 640
+    );
+    port (
+        clk            : in STD_LOGIC;
+        reset_n        : in STD_LOGIC;
+		  img_width      :in STD_LOGIC_VECTOR(15 downto 0);
+		  img_height     :in STD_LOGIC_VECTOR(15 downto 0);
+        pix		        : in STD_LOGIC;--binary pixels of the input image
+		  data_valid     : in STD_LOGIC; 
+		  pix_out        : out STD_LOGIC;--binary pixels of the output dilated img
+		  data_valid_out : out STD_LOGIC
+    );
+    end component;
 	 
     -- Intermediate signals declaration
     signal hsv_out_valid        : STD_LOGIC;
@@ -205,42 +219,57 @@ architecture arch of image_processing is
 					 
 		  -- Instantiation and mapping of the dilation and erosion components.
 		  -- Together they delete small noise dots of the binarization
-		  erosion_component : erosion
+		  erosion_component : erosion_bin
+		  generic map(
+		     KERN_SIZE => 3,
+			  KERNEL => ((0,1,0),
+                      (1,1,1),
+                      (0,1,0)),
+			  MAX_IMG_WIDTH => 640)
+			  
 		  port map(
-			  -- clock and reset
-			  clock           => clock,
+			  -- Clock and reset.
+			  clk             => clock,
 			  reset_n         => reset_n,
-			  --width of the image
+			  -- Configuration
 			  img_width 	   => img_width,
+			  img_height      => img_height,
 			  --input binay pixels
-			  in_valid        =>  bin_out,
-			  in_pixel        =>  bin_out_valid,
-			  --output binay pixels
-			  out_pixel       =>   erosion_out,
-			  out_valid       =>   erosion_out_valid
-			  );
-
-		  dilation_component : dilation
-		  port map(
-			  -- clock and reset
-			  clock           => clock,
-			  reset_n         => reset_n,
-			  --width of the image
-			  img_width 	   => img_width,
-			  --input binay pixels
-			  in_valid        =>  erosion_out,
-			  in_pixel        =>  erosion_out_valid,
-			  --output binay pixels
-			  out_pixel       =>   dilation_out,
-			  out_valid       =>   dilation_out_valid
+			  pix             =>  bin_out,
+			  data_valid      =>  bin_out_valid,
+			  --output binay pixels eroded
+			  pix_out         =>  erosion_out,
+			  data_valid_out  =>  erosion_out_valid
 			  );
 			
+		  dilation_component : dilation_bin
+		  generic map(
+		     KERN_SIZE => 3,
+			  KERNEL => ((0,1,0),
+                      (1,1,1),
+                      (0,1,0)),
+			  MAX_IMG_WIDTH => 640)
+			  
+		  port map(
+			  -- Clock and reset.
+			  clk             => clock,
+			  reset_n         => reset_n,
+			  -- Configuration
+			  img_width 	   => img_width,
+			  img_height      => img_height,
+			  --input binay pixels
+			  pix             =>  erosion_out,
+			  data_valid      =>  erosion_out_valid,
+			  --output binay pixels eroded
+			  pix_out         =>  dilation_out,
+			  data_valid_out  =>  dilation_out_valid
+			  );
 			
 			export_bin <= bin_out;
 			export_bin_valid <= bin_out_valid;
 			export_erosion <= erosion_out;
 			export_erosion_valid <= erosion_out_valid;
-			export_dilation <= erosion_out;
-			export_dilation_valid <= erosion_out_valid;
+			export_dilation <= dilation_out;
+			export_dilation_valid <= dilation_out_valid;
 
 end arch;

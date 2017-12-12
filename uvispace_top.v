@@ -411,7 +411,6 @@ camera_capture u3(
   wire    [11:0] CCD_DATA;
   // assign in_width = 11'd1280;
   // assign in_height = 11'd960;
-  
 
   // CCD_Capture external pinout conections.
   assign  CCD_DATA[0]  =  GPIO_1[13]; //Pixel data Bit 0
@@ -511,6 +510,7 @@ image_processing img_proc(
   .sat_threshold(saturation_threshold_l),
   .bri_threshold(brightness_threshold_l),
   .img_width({4'h0,in_width}),
+  .img_height({4'h0,in_height}),
   .in_valid(sync_rgb_dval),
   // Data output
   .export_red(hsv_red),
@@ -567,8 +567,8 @@ image_processing img_proc(
         fifo_write_enable <= sync_rgb_dval;
       end
       else begin
-        fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
-        fifo_write_enable <= bin_valid;
+        fifo1_writedata <= {8'h00, eroded_8bit[7:0]};
+        fifo_write_enable <= erosion_valid;
       end
     end
   end
