@@ -1,14 +1,14 @@
 ------------------------------------------------------------------------
--- erosion_bin
+-- dilation_bin
 ------------------------------------------------------------------------
--- erosion_bin produces the morphological operation of erosion to
+-- dilation_bin produces the morphological operation of dilation to
 -- a binary image. It uses morphological_fifo to generate the moving
 -- window needed to perform a morphological operation. 
--- In this file the erosion is produced with the binary operation and
+-- In this file the dilation is produced with the binary operation "or"
 -- thats why this ip core can only be a applied to binary images. To 
 -- generate a more generic version that can be applied to a gray or 
--- RGB image the and operation should be sustitued by the minimum 
--- (as theory in image processing defines erosion).
+-- RGB image the "or" operation should be sustitued by the maximum 
+-- (as theory in image processing defines dilation).
 ------------------------------------------------------------------------
 library IEEE;
 	use IEEE.STD_LOGIC_1164.ALL;
@@ -19,7 +19,7 @@ library IEEE;
 LIBRARY work;
 	use work.array_package.all;
 	
-entity erosion_bin is
+entity dilation_bin is
     generic (
         --Basic configuration of the component
 		    --Size of the kernel moving along the image (3x3 by default)
@@ -50,9 +50,9 @@ entity erosion_bin is
 		  pix_out        : out STD_LOGIC;--binary pixels of the output eroded img
 		  data_valid_out : out STD_LOGIC
     );
-end erosion_bin;
+end dilation_bin;
 
-architecture arch of erosion_bin is
+architecture arch of dilation_bin is
 
 	--Declare morphological_fifo, the component storing the pixels to
 	--genrate the moving window used in morphological operations
@@ -110,17 +110,17 @@ begin
 					  window_valid => mf_window_valid,
 					  data_valid_out => mf_data_valid);
 					  
-	--Perform the erosion to the input image calculating the minimum
+	--Perform the dilation to the input image calculating the maximum
 	--of the pixels of the moving_window with a 1 in the KERNEL
-	erosion: process (mf_moving_window, clk) 
+	dilation: process (mf_moving_window, clk) 
 		variable result : std_ulogic;
 	begin
-		result := '1';
+		result := '0';
 		for i in 0 to (KERN_SIZE-1) loop
 			for j in 0 to (KERN_SIZE-1) loop
 				if mf_window_valid(i)(j) = '1' and 
 				KERNEL(i)(j) = 1 then
-					result := result and mf_moving_window(i)(j)(0);
+					result := result or mf_moving_window(i)(j)(0);
 				end if;
 			end loop;
 		end loop;	
