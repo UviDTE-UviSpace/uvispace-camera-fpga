@@ -10,6 +10,8 @@ package array_package is
 	--std_logic_vector arrays
 	type array_of_std_logic_vector is array(natural range <>) of std_logic_vector;
 	type array2D_of_std_logic_vector is array (natural range <>) of array_of_std_logic_vector;
+	type array_of_std_logic is array(natural range <>) of std_logic;
+	type array2D_of_std_logic is array (natural range <>) of array_of_std_logic;
 	
 	--integer arrays
 	type array_of_int is array(natural range <>) of integer;
