@@ -6,4 +6,4 @@ set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "config
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "config_controller/I2C_Controller.v"]
 set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "raw2rgb/raw2rgb.v"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "raw2rgb/onchip_fifo.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "frame_sync.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "frame_sync/frame_sync.vhd"]
