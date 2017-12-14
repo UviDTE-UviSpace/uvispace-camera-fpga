@@ -566,9 +566,19 @@ image_processing img_proc(
                             sync_rgb_blue[11:7]};
         fifo_write_enable <= sync_rgb_dval;
       end
-      else begin
+		else if (SW[4])
+		begin
+        fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
+        fifo_write_enable <= bin_valid;
+		end 
+		else if (SW[5])
+		begin
         fifo1_writedata <= {8'h00, eroded_8bit[7:0]};
         fifo_write_enable <= erosion_valid;
+		end 
+      else begin
+        fifo1_writedata <= {8'h00, dilated_8bit[7:0]};
+        fifo_write_enable <= dilation_valid;
       end
     end
   end

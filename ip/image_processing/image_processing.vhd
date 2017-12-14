@@ -222,9 +222,9 @@ architecture arch of image_processing is
 		  erosion_component : erosion_bin
 		  generic map(
 		     KERN_SIZE => 3,
-			  KERNEL => ((0,1,0),
+			  KERNEL => ((1,1,1),
                       (1,1,1),
-                      (0,1,0)),
+                      (1,1,1)),
 			  MAX_IMG_WIDTH => 640)
 			  
 		  port map(
@@ -245,9 +245,9 @@ architecture arch of image_processing is
 		  dilation_component : dilation_bin
 		  generic map(
 		     KERN_SIZE => 3,
-			  KERNEL => ((0,1,0),
+			  KERNEL => ((1,1,1),
                       (1,1,1),
-                      (0,1,0)),
+                      (1,1,1)),
 			  MAX_IMG_WIDTH => 640)
 			  
 		  port map(
