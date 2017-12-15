@@ -1,12 +1,31 @@
 ------------------------------------------------------------------------
 -- avalon_image_writer component
 ------------------------------------------------------------------------
--- This component is used to save an image in memory. It uses one
--- buffer in processor memory at address buff0 or buff1. It has the 
--- option for two buffers so while the component is saving an image the 
--- processor can process the other.Using the buffer_write register
--- user can choose where the next image will be saved.
--- This component has a variable input_data to input the pixels. Each
+-- This component is used to save an image in memory. 
+-- It saves it in buffers in processor memory at address buff0 or buff1. 
+-- It has 2 modes: SINGLE SHOT mode and CONTINUOUS mode. 
+--
+-- In SINGLE SHOT mode the user writes a 1 in start_capture register and 
+-- the component waits until the next image starts (synchronization) and 
+-- saves the image in memory. User can check the standby register to know
+-- when the image finished. Using the buffer_select register the user 
+-- can choose where the image will be saved: buff0 or buff1. SINGLE SHOT
+-- is useful to take a picture.
+--
+-- In CONTINUOUS MODE the user writes a 1 in start_capture register
+-- to start a continuous aquisition to memory. The component goes saving
+-- all images into memory so the processor does not have to wait for 
+-- sinchronization and for the image to be captured. Therefore the CPU 
+-- has the last image in memory and can process it inmediately. The 
+-- continuous_double_buff register the user can choose if using 1 or 2
+-- registers. When using 1 the component will save all images in the 
+-- buffer pointed by buff_select. Otherwise it will alternate and save
+-- images 0, 2, 4... in buff0 and images 1, 3, 5 to buff1. The register
+-- last_buff indicates the buffer containing the last image. 
+-- CONTINUOUS mode is useful for streaming video or doing image processing
+-- in CPU.
+--
+-- This component has teh port input_data to input the pixels. Each
 -- pixel is NUMBER_COMPONENTS of color components with COMPONENT_SIZE
 -- bits each. 
 -- To minimize the number of writings in system it packs input data 
@@ -14,11 +33,14 @@
 -- The component also has the possibility of downsample the image. If
 -- downsampling register is set to 1 all image is captured but if 2 is 
 -- written only half of lines and rows will be captured (size in memory
--- is reduced by 4). When downsampling is 4 it is reduced 8 times and 
+-- is reduced by 4). When downsampling is 4 it is reduced 16 times and 
 -- so on.
--- Lastly the component has an image counter that can be used to see 
--- which image we are capturing and can be used to debug and check if
--- we are losing images because processor is not able to  
+--
+-- Lastly the component has an image counter starting from 0 after a 
+-- reset and updating any time a new image finishes in the input.
+-- It can be used to get how many images we miss from the CPU. It could 
+-- be useful for debugging algorithms to know if the algorithm is 
+-- so slow that we miss images.
 ------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -33,8 +55,8 @@ entity avalon_image_writer is
 		  -- Number of components per pixel that you will 
 		  --introduce in input_data (power of 2)
 		  NUMBER_COMPONENTS : integer := 1;
-        -- Number of pixels per write in the output avalon bus (>=1)
-		  -- Each pixel = 
+        -- Number of pixels (all components) per write in the output avalon bus 
+		  --(>=1)
         PIX_WR  : integer := 4
     );
     port (
@@ -74,41 +96,65 @@ architecture arch of avalon_image_writer is
 --Avalon slave
 
   --Internal register address map 
-    -- When start_capture is 1, start writing a new image.
-	 constant START_CAPTURE_ADDRESS  : integer := 0;
+    --Mode permits to select between 2 modes: 
+	   --A 0 in this register (default) selects "SINGLE SHOT" mode.
+		--A 1 in this register selects "CONTINUOUS" mode.
+	 constant MODE_ADDRESS            : integer := 0;
 	 --Image width size (typically 640 pixels)
-	 constant IMG_WIDTH_ADDRESS       : integer  := 1;
+	 constant IMG_WIDTH_ADDRESS       : integer := 1;
 	 --Image height (typically 480 pixels)
-	 constant IMG_HEIGHT_ADDRESS       : integer := 2;
+	 constant IMG_HEIGHT_ADDRESS      : integer := 2;
 	 --(addresses where the images will be written)
-	 constant BUFF0_ADDRESS          : integer := 3;
-	 constant BUFF1_ADDRESS          : integer := 4;
+	 constant BUFF0_ADDRESS           : integer := 3;
+	 constant BUFF1_ADDRESS           : integer := 4;
+	 --In continuous mode selects saving in 1 buffer (write a 0 here, 
+	 --the default after reset) or 2 buffers (write a 1 here)
+	 constant CONT_DOUBLE_BUFF_ADDRESS: integer := 5;
 	 --Number of the buffer where you wanna write next image (0 or 1)
-	 constant BUFFER_WRITE_ADDRESS   : integer := 5;
+	 --In CONTINUOUS mode writing in 2 buffers it is ignored cause
+	 --the component alternates buff0 and buff1.
+	 constant BUFFER_SELECT_ADDRESS  : integer  := 6;
+	 -- Start the capure of image (SINGLE SHOT) or images (CONTINUOUS).
+	 -- In SINGLE SHOT write a 1 here to save 1 image to memory. It 
+	 -- automatically goes to 0 after writing a 1.
+	 -- In CONTINUOUS MODE write a 1 here to start capturing all images
+	 -- and write a 0 to stop the capture. 
+	 constant START_CAPTURE_ADDRESS  : integer  := 7;
 	 -- Signal indicating standby state 
     --(outside of reset, waiting for flank in start_capture)
-	 --It can be used after setting start_capture to check if writting
-	 --image to memory finished
-	 constant STANDBY_ADDRESS        : integer := 6;
+	 --In SINGLE_SHOT mode it can be used after setting start_capture to 
+	 --check if writting the image to memory finished
+	 constant STANDBY_ADDRESS        : integer  := 8;
 	 --Downsampling rate (1=get all image, 2=half of rows and columns so
 	 --size is reduced by four, so on...)
-	 constant DOWNSAMPLING_ADDRESS   : integer := 7;
+	 constant DOWNSAMPLING_ADDRESS   : integer  := 9;
 	 --Image counter
-	 constant IMAGE_COUNTER_ADDRESS  : integer := 8;
+	 constant IMAGE_COUNTER_ADDRESS  : integer  := 10;
+	 
+
 	 
   --Associated registers
-	 signal start_capture 	:STD_LOGIC;
+	 signal mode         	:STD_LOGIC;
 	 signal img_width 		:STD_LOGIC_VECTOR(23 downto 0);
 	 signal img_height 		:STD_LOGIC_VECTOR(23 downto 0);
 	 signal buff0 		      :STD_LOGIC_VECTOR(31 downto 0);
 	 signal buff1 		      :STD_LOGIC_VECTOR(31 downto 0);
-	 signal buffer_write		:STD_LOGIC;
+	 signal cont_double_buff:STD_LOGIC;
+	 signal buffer_select	:STD_LOGIC;
+	 signal start_capture 	:STD_LOGIC;
 	 signal standby		   :STD_LOGIC;
 	 signal downsampling    :STD_LOGIC_VECTOR(6 downto 0);
 	 signal image_counter 	:STD_LOGIC_VECTOR(31 downto 0);
 	 
+  --Create macros for the modes (mode reg)
+    constant SINGLE_SHOT   : STD_LOGIC := '0';
+	 constant CONTINUOUS    : STD_LOGIC := '1';
+--Create macros for cont_double_buff reg 
+    constant SINGLE_BUFF   : STD_LOGIC := '0';
+	 constant DOUBLE_BUFF   : STD_LOGIC := '1';
+	 
   --Chip select
-	 SIGNAL CS              : std_logic_vector((2**4-1) downto 0);
+	 SIGNAL cs              : STD_LOGIC_VECTOR((2**4-1) downto 0);
 	 
 --Variables for the state machine that writes values in memory
 	 type array_of_std_logic_vector is array(natural range <>) 
@@ -143,57 +189,65 @@ architecture arch of avalon_image_writer is
 begin
 
 	--Chip select for Avalon slave registers
-	CS_generate: for I in 0 to (2**4-1) generate
-		CS(I) <= '1' when (I=S_address) else '0';
-	end generate CS_generate;
+	cs_generate: for I in 0 to (2**4-1) generate
+		cs(I) <= '1' when (I=S_address) else '0';
+	end generate cs_generate;
 	
 	--Implement the logic of the registers connected to avalon slave
 	avalon_slave: process (clk) begin
 	if rising_edge(clk)  then
 		if reset_n = '0' then --synchronous reset
-			start_capture <= '0';
+		   --reset only the registers only written from bus
+			mode <= '0';
 			img_width <= (others => '0');
 			img_height <= (others => '0');
 			buff0 <= (others => '0');
 			buff1 <= (others => '0');
-			buffer_write <= '0';
+			cont_double_buff  <= '0';
+			buffer_select  <= '0';
 			downsampling <= (others => '0');
 		elsif S_write ='1' then --write operation
-			if CS(START_CAPTURE_ADDRESS)='1' then 
-				start_capture <= S_writedata(0);
-			elsif CS(IMG_WIDTH_ADDRESS)='1' then 
+			if cs(MODE_ADDRESS)='1' then 
+				mode <= S_writedata(0);
+			elsif cs(IMG_WIDTH_ADDRESS)='1' then 
 				img_width <= S_writedata(23 downto 0);
-			elsif CS(IMG_HEIGHT_ADDRESS)='1' then 
+			elsif cs(IMG_HEIGHT_ADDRESS)='1' then 
 				img_height <= S_writedata(23 downto 0);
-			elsif CS(BUFF0_ADDRESS)='1' then 
+			elsif cs(BUFF0_ADDRESS)='1' then 
 				buff0 <= S_writedata(31 downto 0);
-			elsif CS(BUFF1_ADDRESS)='1' then 
+			elsif cs(BUFF1_ADDRESS)='1' then 
 				buff1 <= S_writedata(31 downto 0);
-			elsif CS(BUFFER_WRITE_ADDRESS)='1' then 
-				buffer_write <= S_writedata(0);
-			elsif CS(DOWNSAMPLING_ADDRESS)='1' then 
+			elsif cs(CONT_DOUBLE_BUFF_ADDRESS)='1' then 
+				cont_double_buff <= S_writedata(0);
+			elsif cs(BUFFER_SELECT_ADDRESS)='1' then 
+				buffer_select <= S_writedata(0);
+			elsif cs(DOWNSAMPLING_ADDRESS)='1' then 
 				downsampling <= S_writedata(6 downto 0);
 			end if;	
 	  end if;
 	end if;
 	if S_read ='1' then --read operation
-		if CS(START_CAPTURE_ADDRESS)='1' then 
-			S_readdata <= (31 downto 1 => '0') & start_capture;
-		elsif CS(IMG_WIDTH_ADDRESS)='1' then 
+		if cs(MODE_ADDRESS)='1' then 
+			S_readdata <= (31 downto 1 => '0') & mode;
+		elsif cs(IMG_WIDTH_ADDRESS)='1' then 
 			S_readdata <= (31 downto 24 => '0') & img_width;
-		elsif CS(IMG_HEIGHT_ADDRESS)='1' then 
+		elsif cs(IMG_HEIGHT_ADDRESS)='1' then 
 			S_readdata <= (31 downto 24 => '0') & img_height;
-		elsif CS(BUFF0_ADDRESS)='1' then 
+		elsif cs(BUFF0_ADDRESS)='1' then 
 			S_readdata <= buff0;
-		elsif CS(BUFF1_ADDRESS)='1' then 
+		elsif cs(BUFF1_ADDRESS)='1' then 
 			S_readdata <= buff1;
-		elsif CS(BUFFER_WRITE_ADDRESS)='1' then 
-			S_readdata <= (31 downto 1 => '0') & buffer_write;
-		elsif CS(STANDBY_ADDRESS)='1' then 
+		elsif cs(CONT_DOUBLE_BUFF_ADDRESS)='1' then 
+			S_readdata <= (31 downto 1 => '0') & cont_double_buff;
+		elsif cs(BUFFER_SELECT_ADDRESS)='1' then 
+			S_readdata <= (31 downto 1 => '0') & buffer_select;
+		elsif cs(START_CAPTURE_ADDRESS)='1' then 
+			S_readdata <= (31 downto 1 => '0') & start_capture;
+		elsif cs(STANDBY_ADDRESS)='1' then 
 			S_readdata <= (31 downto 1 => '0') & standby;
-		elsif CS(DOWNSAMPLING_ADDRESS)='1' then 
+		elsif cs(DOWNSAMPLING_ADDRESS)='1' then 
 			S_readdata <= (31 downto 7 => '0') & downsampling;
-		elsif CS(IMAGE_COUNTER_ADDRESS)='1' then 
+		elsif cs(IMAGE_COUNTER_ADDRESS)='1' then 
 			S_readdata <= image_counter;
 		else
 			S_readdata <= (others => '0');
@@ -423,7 +477,7 @@ begin
             if reset_n = '0' then 
 					write_buff <= (others => '0');
 				elsif current_state = 2 then --reset signals to initial values
-                if buffer_write = '0' then
+                if buffer_select = '0' then
 						write_buff <= buff0;
 					 else
 					   write_buff <= buff1;
