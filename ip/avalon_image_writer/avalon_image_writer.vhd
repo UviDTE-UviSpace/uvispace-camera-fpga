@@ -17,15 +17,18 @@
 -- all images into memory so the processor does not have to wait for 
 -- sinchronization and for the image to be captured. Therefore the CPU 
 -- has the last image in memory and can process it inmediately. The 
--- continuous_double_buff register the user can choose if using 1 or 2
+-- cont_double_buff register the user can choose if using 1 or 2
 -- registers. When using 1 the component will save all images in the 
 -- buffer pointed by buff_select. Otherwise it will alternate and save
 -- images 0, 2, 4... in buff0 and images 1, 3, 5 to buff1. The register
--- last_buff indicates the buffer containing the last image. 
+-- last_buff indicates the buffer containing the last image. CPU should
+-- always get the image pointed by last buff because while the CPU 
+-- processes this image the component is saving a newer image in the other 
+-- and the data corruption for simultaneous access is avoided.
 -- CONTINUOUS mode is useful for streaming video or doing image processing
 -- in CPU.
 --
--- This component has teh port input_data to input the pixels. Each
+-- This component has the port input_data to input the pixels. Each
 -- pixel is NUMBER_COMPONENTS of color components with COMPONENT_SIZE
 -- bits each. 
 -- To minimize the number of writings in system it packs input data 
@@ -69,7 +72,6 @@ entity avalon_image_writer is
 		 
         -- Signals to control the component
         -- When frame_valid is 1, the image from camera is being acquired.
-        frame_valid     : in STD_LOGIC;
         data_valid      : in STD_LOGIC; -- Valid pixel in R,G,B,Gray inputs.
         
 		  -- Avalon MM Slave port to configure the component
@@ -125,11 +127,14 @@ architecture arch of avalon_image_writer is
 	 --In SINGLE_SHOT mode it can be used after setting start_capture to 
 	 --check if writting the image to memory finished
 	 constant STANDBY_ADDRESS        : integer  := 8;
+	 --Last buffer indicates which buffer was the last one written (0 or 1)
+	 constant LAST_BUFFER_ADDRESS    : integer  := 9;
 	 --Downsampling rate (1=get all image, 2=half of rows and columns so
-	 --size is reduced by four, so on...)
-	 constant DOWNSAMPLING_ADDRESS   : integer  := 9;
+	 --size is reduced by four, 4= one fourth of cols and rows are capture, 
+	 --so on...)
+	 constant DOWNSAMPLING_ADDRESS   : integer  := 10;
 	 --Image counter
-	 constant IMAGE_COUNTER_ADDRESS  : integer  := 10;
+	 constant IMAGE_COUNTER_ADDRESS  : integer  := 11;
 	 
 
 	 
@@ -143,6 +148,7 @@ architecture arch of avalon_image_writer is
 	 signal buffer_select	:STD_LOGIC;
 	 signal start_capture 	:STD_LOGIC;
 	 signal standby		   :STD_LOGIC;
+	 signal last_buffer		:STD_LOGIC;
 	 signal downsampling    :STD_LOGIC_VECTOR(6 downto 0);
 	 signal image_counter 	:STD_LOGIC_VECTOR(31 downto 0);
 	 
@@ -159,7 +165,7 @@ architecture arch of avalon_image_writer is
 --Variables for the state machine that writes values in memory
 	 type array_of_std_logic_vector is array(natural range <>) 
             of STD_LOGIC_VECTOR;
-    constant NUMBER_OF_STATES   : INTEGER := 7;
+    constant NUMBER_OF_STATES   : INTEGER := 4;
     --signals for the evolution of the state machine
     signal current_state        : INTEGER range 0 to (NUMBER_OF_STATES - 1);
     signal next_state           : INTEGER range 0 to (NUMBER_OF_STATES - 1);
@@ -167,16 +173,17 @@ architecture arch of avalon_image_writer is
     -- State_condition(x) condition to go from x to x+1.
     signal state_condition      : STD_LOGIC_VECTOR((NUMBER_OF_STATES - 2)
                                     downto 0);
-	 signal condition_5_to_1     : STD_LOGIC; 
+	 signal condition_2_to_1     : STD_LOGIC; 
     --counters.
     signal pix_counter          : STD_LOGIC_VECTOR(23 downto 0);
-	 signal line_end_reached	  : STD_LOGIC;
 	 signal line_counter         : STD_LOGIC_VECTOR(23 downto 0);
-    signal image_end_reached    : STD_LOGIC;
     signal pix_wr_counter       : STD_LOGIC_VECTOR(integer(
                                     ceil(log2(real(PIX_WR+1)))) downto 0);
 	 signal downsamp_counter_pixels : STD_LOGIC_VECTOR(6 downto 0);
 	 signal downsamp_counter_lines : STD_LOGIC_VECTOR(6 downto 0);
+	 signal enable_saving        : STD_LOGIC;
+	 signal reset_buffer_address : STD_LOGIC;
+	 signal synchronized         : STD_LOGIC;
     -- Write_buff saves the address where the next pixel will be saved.
     signal write_buff           : STD_LOGIC_VECTOR(31 downto 0);
     -- Internal copy of the write output signal
@@ -245,6 +252,8 @@ begin
 			S_readdata <= (31 downto 1 => '0') & start_capture;
 		elsif cs(STANDBY_ADDRESS)='1' then 
 			S_readdata <= (31 downto 1 => '0') & standby;
+		elsif cs(LAST_BUFFER_ADDRESS)='1' then 
+			S_readdata <= (31 downto 1 => '0') & last_buffer;
 		elsif cs(DOWNSAMPLING_ADDRESS)='1' then 
 			S_readdata <= (31 downto 7 => '0') & downsampling;
 		elsif cs(IMAGE_COUNTER_ADDRESS)='1' then 
@@ -268,7 +277,7 @@ begin
     end process fsm_mem;
 
     -- Evolution of FSM.
-    comb_fsm: process (current_state, state_condition, condition_5_to_1)
+    comb_fsm: process (current_state, state_condition, condition_2_to_1)
     begin
         case current_state is
             when 0 =>
@@ -284,28 +293,10 @@ begin
                     next_state<=1;  
                 end if;
             when 2 =>
-                if state_condition(2) = '1' then
-                    next_state <= 3;
+                if condition_2_to_1 = '1' then
+                    next_state <= 1;
                 else
                     next_state<=2;
-                end if;
-            when 3 =>
-                if state_condition(3) = '1' then
-                    next_state <= 4;
-                else
-                    next_state<=3;
-                end if;
-            when 4 =>
-					 if state_condition(4) = '1' then
-						  next_state <= 5;
-                else
-                    next_state<=4;
-                end if;
-            when 5 =>
-                if condition_5_to_1 = '1' then
-                    next_state <= 1;
-                else 
-                    next_state<=5;
                 end if;
             when others =>
                 next_state <= 0;
@@ -315,108 +306,136 @@ begin
     -- Conditions of FSM.
     state_condition(0) <= '1';
     state_condition(1) <= start_capture;
-    state_condition(2) <= not(frame_valid);
-    state_condition(3) <= frame_valid;
-    state_condition(4) <= image_end_reached;
-    condition_5_to_1   <= '1';
-    
-    -- Evaluation and update pix_counter.
-    pix_counter_proc:process (clk, current_state, data_valid)
-    begin
-        if rising_edge(clk) then
-            if (current_state = 1) or (line_end_reached = '1') then
-                -- reset the pixel counter
-                pix_counter <= (others => '0');
-            elsif (current_state = 4) and (data_valid = '1') then
-                 -- Increment the pixel counter
-                pix_counter <= pix_counter + 1;
-            end if;
-        end if;
-        if pix_counter = img_width then
-            line_end_reached <= '1';
-        else
-            line_end_reached <= '0';
-        end if;
-    end process;
 	 
-	 -- Evaluation and update line_counter.
-    line_counter_proc:process (clk, current_state, data_valid)
+    --Evaluation and update pix_counter and line counter
+    pix_counter_proc:process (clk)
+	   variable end_of_image : std_ulogic;
+		variable end_of_line : std_ulogic;
     begin
-        if rising_edge(clk) then
-            if (current_state = 1) then
-                -- reset the pixel counter
-                line_counter <= (others => '0');
-            elsif (line_end_reached = '1') then
-                 -- Increment the pixel counter
-                line_counter <= line_counter + 1;
-            end if;
-        end if;
-        if line_counter = img_height then
-            image_end_reached <= '1';
+      if rising_edge(clk) then
+        if (current_state = 0) then
+		    image_counter <= (others => '0');
+		  elsif (current_state = 1) then
+          pix_counter <= (others => '0');
+			 line_counter <= (others => '0');
+			 downsamp_counter_pixels <= (others => '0');
+			 downsamp_counter_lines <= (others => '0');
+			 pix_wr_counter <= (others => '0');
+			 condition_2_to_1 <= '0';
+			 reset_buffer_address <= '0';
+			 enable_saving <= '0';
+			 end_of_line := '0';
+			 end_of_image := '0';
         else
-            image_end_reached <= '0';
+		    if (data_valid = '1') then --new pixel in the input
+            --Always count with pix and line counters
+				if pix_counter = (img_width - 1) then 
+				  pix_counter <= (others => '0'); 
+				  end_of_line := '1';
+				  if line_counter = (img_height - 1) then
+				    line_counter <= (others => '0');
+					 end_of_image := '1';
+				  else 
+				  	 line_counter <= line_counter + 1;
+					 end_of_image := '0';
+				  end if;
+			   else
+				  pix_counter <= pix_counter + 1;
+				  end_of_image := '0';
+				  end_of_line := '0';
+				end if;
+				--Generate the conditions to change state
+				if (synchronized = '1') --at least 1 image captured at this point
+				and (end_of_image = '1') 
+				and (mode = SINGLE_SHOT or (mode = CONTINUOUS and start_capture = '0')) then
+				  condition_2_to_1 <= '1';
+				end if;
+				--Generate signal to permit saving in registers
+				if end_of_image = '1' then
+				  enable_saving <= '1';
+				end if;
+			   --Generate downsampling counters and write counter (count only if savinf is enabled)
+			   if enable_saving = '1' and data_valid = '1' then 
+				  if end_of_image = '1' then
+				    downsamp_counter_lines <= (others => '0');  
+				  elsif end_of_line = '1' then 
+					 if downsamp_counter_lines+1 = downsampling then
+                  downsamp_counter_lines <= (others => '0');
+                else
+                  downsamp_counter_lines <= downsamp_counter_lines + 1;
+                end if;
+				  end if;
+
+				  if end_of_line = '1' then
+				    downsamp_counter_pixels <= (others => '0');
+				  else
+					 if downsamp_counter_pixels+1 = downsampling then
+                  downsamp_counter_pixels <= (others => '0');
+                else
+                  downsamp_counter_pixels <= downsamp_counter_pixels + 1;
+                end if;
+				  end if;
+				
+				  if (downsamp_counter_pixels+1) = downsampling and 
+				  (downsamp_counter_lines+1) = downsampling then 
+				    if pix_wr_counter = (PIX_WR-1) then
+                  pix_wr_counter <= (others => '0');
+                else 
+                  pix_wr_counter <= pix_wr_counter + 1;
+                end if;
+				  end if;
+			   end if;
+				--Update buffer address at the end of the image
+				if (end_of_image = '1') then
+				  reset_buffer_address <= '1';
+				else
+				  reset_buffer_address <= '0';
+				end if;
+				
+			 end if;
         end if;
-    end process;
-     
-    -- Evaluation and update pix_wr_counter.
-    pix_wr_counter_proc:process (clk)
-    begin
-        if rising_edge(clk) then
-            if (current_state = 1) then
-                -- reset the pixel write counter
-                pix_wr_counter <= (others => '0');
-            elsif (current_state = 4) and (data_valid = '1') and 
-					(downsamp_counter_pixels+1) = downsampling and 
-					(downsamp_counter_lines+1) = downsampling then
-                    -- Increment the pixel write counter
-                    if pix_wr_counter = (PIX_WR-1) then
-                        pix_wr_counter <= (others => '0');
-                    else 
-                        pix_wr_counter <= pix_wr_counter + 1;
-                    end if;
-            end if;
-        end if;
-    end process;
-	 
-	 -- Evaluation and update downsampling counters.
-    downsamp_counter_pixels_proc:process (clk)
-    begin
-        if rising_edge(clk) then
-            if (current_state = 1) or line_end_reached = '1' then
-                -- reset the pixel write counter
-                downsamp_counter_pixels <= (others => '0');
-            elsif (current_state = 4) and (data_valid = '1') then
-                    -- Increment the pixel write counter
-                    if downsamp_counter_pixels+1 = downsampling then
-                        downsamp_counter_pixels <= (others => '0');
-                    else
-                        downsamp_counter_pixels <= downsamp_counter_pixels + 1;
-                    end if;
-            end if;
-        end if;
-    end process;
-	 downsamp_counter_lines_proc:process (clk)
-    begin
-        if rising_edge(clk) then
-            if (current_state = 1) then
-                -- reset the pixel write counter
-                downsamp_counter_lines <= (others => '0');
-            elsif (current_state = 4) and line_end_reached = '1' then
-                    -- Increment the pixel write counter
-                    if downsamp_counter_lines+1 = downsampling then
-                        downsamp_counter_lines <= (others => '0');
-                    else
-                        downsamp_counter_lines <= downsamp_counter_lines + 1;
-                    end if;
-            end if;
-        end if;
+	   end if; 
     end process;
 
+	 sync_proc:process (clk)
+    begin
+      if rising_edge(clk) then
+        if (current_state = 1) then
+			 synchronized <= '0';
+		  elsif(data_valid = '1') and (current_state = 2) and enable_saving = '1' then
+		    synchronized <= '1';
+		  end if;
+		end if;
+	 end process;
+	 
     -- Generate standby signal
     with current_state select standby <=
         '1' when 1,
         '0' when others;
-        
+		  
+	--generate start_capture
+	start_capture_proc:process (clk)
+    begin
+        if rising_edge(clk) then
+            if reset_n = '0' then
+					start_capture <= '0';
+				elsif mode = SINGLE_SHOT then
+					if start_capture = '1' then 
+				     start_capture <= '0';
+					else
+					  if S_write = '1' and cs(START_CAPTURE_ADDRESS) = '1' then 
+					    start_capture <= S_writedata(0);
+					  end if;
+					end if;
+            elsif mode = CONTINUOUS then
+				     if S_write ='1' and cs(START_CAPTURE_ADDRESS)='1' then 
+					    start_capture <= S_writedata(0);
+					  end if;
+            end if;
+        end if;
+    end process;
+	 
+	 
     -- Save data in extra output buffers 
     out_buff_generate: for I in 0 to (PIX_WR-1) generate
             output_buff_proc: process (clk)
@@ -436,7 +455,7 @@ begin
                 if (data_valid = '1') and (pix_wr_counter = I) 
                         and (downsamp_counter_pixels+1) = downsampling 
 								and (downsamp_counter_lines+1) = downsampling
-								and (current_state = 4) then
+								and (enable_saving = '1') then
                     out_buff_EN(I) <= '1';
                 else
                     out_buff_EN(I) <= '0';
@@ -444,7 +463,7 @@ begin
             end process;
     end generate out_buff_generate;    
      
-     --Generate Avalon signals
+    --Generate Avalon signals
         --write data
     write_data_generate : for I in 0 to (PIX_WR-1) generate
         M_writedata(((I+1)*NUMBER_COMPONENTS*COMPONENT_SIZE - 1) 
@@ -476,28 +495,43 @@ begin
         if rising_edge(clk) then
             if reset_n = '0' then 
 					write_buff <= (others => '0');
-				elsif current_state = 2 then --reset signals to initial values
-                if buffer_select = '0' then
+					last_buffer <= '0';
+				elsif current_state = 1 then
+				  --Initialize buffer
+					 if mode = SINGLE_SHOT or (mode = CONTINUOUS and cont_double_buff = '0') then
+						if buffer_select = '0' then
+							write_buff <= buff0;
+							last_buffer <= '0';
+						else
+							write_buff <= buff1;
+							last_buffer <= '1';
+						end if;
+					else --mode = CONTINUOUS and cont_double_buff = '1'
 						write_buff <= buff0;
-					 else
-					   write_buff <= buff1;
+						last_buffer <= '1';
+					end if;
+				elsif av_write = '1'  then
+				    if reset_buffer_address = '1' and mode = CONTINUOUS and cont_double_buff = '1' then
+						if last_buffer = '1' then
+						   last_buffer <= '0';
+							write_buff  <= buff1;
+						else
+						   last_buffer <= '1';
+						   write_buff  <= buff0;
+						end if;
+					 elsif reset_buffer_address = '1' and mode = CONTINUOUS and cont_double_buff = '0' then
+					   if last_buffer = '0' then
+						   last_buffer <= '0';
+							write_buff  <= buff0;
+						else
+						   last_buffer <= '1';
+						   write_buff  <= buff1;
+						end if;
+				    else
+				      write_buff <= write_buff + (PIX_WR*NUMBER_COMPONENTS*COMPONENT_SIZE/8);
 					 end if;
-            elsif av_write = '1' then
-                write_buff <= write_buff + (PIX_WR*NUMBER_COMPONENTS*COMPONENT_SIZE/8);
-            end if;
+				end if;
         end if;
     end process;
     M_address <= write_buff;
-
-    --Generation of the image counter
-	 image_counter_proc:process (clk)
-    begin
-        if rising_edge(clk) then
-            if (current_state = 0) then
-					image_counter <= (others => '0');
-				elsif (current_state = 5) then
-					image_counter <= image_counter + 1;
-				end if;
-			end if;
-	 end process;
 end arch;

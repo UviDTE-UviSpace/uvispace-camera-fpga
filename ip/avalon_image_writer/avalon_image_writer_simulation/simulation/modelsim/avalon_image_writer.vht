@@ -35,7 +35,6 @@ ARCHITECTURE avalon_image_writer_arch OF avalon_image_writer_vhd_tst IS
 -- signals                                                   
 SIGNAL clk : STD_LOGIC;
 SIGNAL data_valid : STD_LOGIC;
-SIGNAL frame_valid : STD_LOGIC;
 SIGNAL input_data : STD_LOGIC_VECTOR(7 DOWNTO 0);
 SIGNAL M_address : STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL M_burstcount : STD_LOGIC_VECTOR(6 DOWNTO 0);
@@ -53,7 +52,6 @@ COMPONENT avalon_image_writer
 	PORT (
 	clk : IN STD_LOGIC;
 	data_valid : IN STD_LOGIC;
-	frame_valid : IN STD_LOGIC;
 	input_data : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
 	M_address : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
 	M_burstcount : OUT STD_LOGIC_VECTOR(6 DOWNTO 0);
@@ -90,7 +88,6 @@ BEGIN
 -- list connections between master ports and signals
 	clk => clk,
 	data_valid => data_valid,
-	frame_valid => frame_valid,
 	input_data => input_data,
 	M_address => M_address,
 	M_burstcount => M_burstcount,
@@ -115,7 +112,7 @@ BEGIN
 ----------------    CLOCK PROCESS    ------------------------     
 	simulation_clock : process
 		-- repeat the counters edge_rise & edge_fall
-		constant max_cycles    	: integer   := 100;
+		constant max_cycles    	: integer   := 120;
 	begin
 		-- set sim_clk signal
 		sim_clk <= not(sim_clk);
@@ -144,7 +141,6 @@ BEGIN
 		
 		if ( edge_rise = 0 ) then
 			input_data <= (others => '0');
-			frame_valid <= '0';
 			data_valid <= '0';
 			S_address <= (others => '0');
 			S_writedata <= (others => '0');
@@ -157,10 +153,16 @@ BEGIN
 			sim_reset 	<= '1';	-- stop reset
 		end if;
 		---------------------------------------------
-		---Lets capture a 4x2 image (4columns 2 rows)
+		---Lets capture a 4x4 image (4columns 2 rows)
 		---------------------------------------------
 		
 		-------Program the component using avalon slave--------
+		---Write mode
+		if ( edge_rise = 2 ) then
+			S_address <= "0000";--0
+			S_writedata <= X"00000001";
+			S_write <= '1';
+		end if;
 		---Write img width
 		if ( edge_rise = 3 ) then
 			S_address <= "0001";--1
@@ -182,34 +184,31 @@ BEGIN
 			S_address <= "0100";--4
 			S_writedata <= X"C0004000";
 		end if;
-		--Select buffer to write
+		---Write cont_double_buff (only applies to CONTINUOUS mode)
 		if ( edge_rise = 7 ) then
 			S_address <= "0101";--5
-			S_writedata <= X"00000000";
+			S_writedata <= X"00000001";
+		end if;
+		--Select buffer to write
+		if ( edge_rise = 8 ) then
+			S_address <= "0110";--6
+			S_writedata <= X"00000001";
 		end if;
 		--Choose downsampling
-		if ( edge_rise = 8 ) then
-			S_address <= "0111";--7
-			S_writedata <= X"00000001";
+		if ( edge_rise = 9 ) then
+			S_address <= "1010";--10
+			S_writedata <= X"00000002";
 		end if;
 		--Start capture!!!
-		if ( edge_rise = 9 ) then
-			S_address <= "0000";--0
-			S_writedata <= X"00000001";
-		end if;
 		if ( edge_rise = 10 ) then
-			S_address <= "0000";--0
-			S_writedata <= X"00000000";
+			S_address <= "0111";--0
+			S_writedata <= X"00000001";
 		end if;
 		if ( edge_rise = 11 ) then
 			S_write <= '0';
 		end if;
 		
 		----------------Program the 16 pixels-------------
-		if ( edge_rise = 13 ) then
-			frame_valid <= '1';
-		end if;
-
 		--Pix 0
 		if ( edge_rise = 17 ) then
 			data_valid <= '1';
@@ -356,17 +355,262 @@ BEGIN
 			input_data <= X"00";
 		end if;
 		
-		if ( edge_rise = 56 ) then
-			frame_valid <= '0';
+		
+		----------------Program the 16 pixels-------------
+		--Pix 0
+		if ( edge_rise = 58 ) then
+			data_valid <= '1';
+			input_data <= X"01";
+		end if;
+		if ( edge_rise = 59 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 1
+		if ( edge_rise = 60 ) then
+			data_valid <= '1';
+			input_data <= X"02";
+		end if;
+		if ( edge_rise = 61 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 2
+		if ( edge_rise = 62 ) then
+			data_valid <= '1';
+			input_data <= X"03";
+		end if;
+		if ( edge_rise = 63 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 3
+		if ( edge_rise = 64 ) then
+			data_valid <= '1';
+			input_data <= X"04";
+		end if;
+		if ( edge_rise = 65 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 4
+		if ( edge_rise = 66 ) then
+			data_valid <= '1';
+			input_data <= X"05";
+		end if;
+		if ( edge_rise = 67 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 5
+		if ( edge_rise = 68 ) then
+			data_valid <= '1';
+			input_data <= X"06";
+		end if;
+		if ( edge_rise = 69 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 6
+		if ( edge_rise = 70 ) then
+			data_valid <= '1';
+			input_data <= X"07";
+		end if;
+		if ( edge_rise = 71 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 7
+		if ( edge_rise = 72 ) then
+			data_valid <= '1';
+			input_data <= X"08";
+		end if;
+		if ( edge_rise = 73 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		
+		--Pix 8
+		if ( edge_rise = 75 ) then
+			data_valid <= '1';
+			input_data <= X"09";
+		end if;
+		if ( edge_rise = 76 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 9
+		if ( edge_rise = 77 ) then
+			data_valid <= '1';
+			input_data <= X"0A";
+		end if;
+		if ( edge_rise = 78 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 10
+		if ( edge_rise = 79 ) then
+			data_valid <= '1';
+			input_data <= X"0B";
+		end if;
+		if ( edge_rise = 80 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 11
+		if ( edge_rise = 81 ) then
+			data_valid <= '1';
+			input_data <= X"0C";
+		end if;
+		if ( edge_rise = 82 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 12
+		if ( edge_rise = 83 ) then
+			data_valid <= '1';
+			input_data <= X"0D";
+		end if;
+		if ( edge_rise = 84 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 13
+		if ( edge_rise = 85 ) then
+			data_valid <= '1';
+			input_data <= X"0E";
+		end if;
+		if ( edge_rise = 86 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 14
+		if ( edge_rise = 87 ) then
+			data_valid <= '1';
+			input_data <= X"0F";
+		end if;
+		if ( edge_rise = 88 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		--Pix 15
+		if ( edge_rise = 89 ) then
+			data_valid <= '1';
+			input_data <= X"10";
+		end if;
+		if ( edge_rise = 90 ) then
+			data_valid <= '0';
+			input_data <= X"00";
+		end if;
+		
+		
+		
+		----------------Program the 16 pixels-------------
+		--Pix 0
+		if ( edge_rise = 93 ) then
+			data_valid <= '1';
+			input_data <= X"01";
+		end if;
+		--Pix 1
+		if ( edge_rise = 94 ) then
+			data_valid <= '1';
+			input_data <= X"02";
+		end if;
+		--Pix 2
+		if ( edge_rise = 95 ) then
+			data_valid <= '1';
+			input_data <= X"03";
+		end if;
+		--Pix 3
+		if ( edge_rise = 96 ) then
+			data_valid <= '1';
+			input_data <= X"04";
+		end if;
+		--Pix 4
+		if ( edge_rise = 97 ) then
+			data_valid <= '1';
+			input_data <= X"05";
+		end if;
+		if ( edge_rise = 98 ) then
+			data_valid <= '1';
+			input_data <= X"06";
+		end if;
+		--Pix 6
+		if ( edge_rise = 99 ) then
+			data_valid <= '1';
+			input_data <= X"07";
+		end if;
+		--Pix 7
+		if ( edge_rise = 100 ) then
+			data_valid <= '1';
+			input_data <= X"08";
+		end if;
+		--Pix 8
+		if ( edge_rise = 101 ) then
+			data_valid <= '1';
+			input_data <= X"09";
+			S_address <= "0111";--Stop capture
+			S_writedata <= X"00000000";
+			S_write <= '1';
+		end if;	
+		--Pix 9
+		if ( edge_rise = 102 ) then
+			data_valid <= '1';
+			input_data <= X"0A";
+			S_write <= '0';
+		end if;
+		--Pix 10
+		if ( edge_rise = 103 ) then
+			data_valid <= '1';
+			input_data <= X"0B";
+		end if;
+		--Pix 11
+		if ( edge_rise = 104 ) then
+			data_valid <= '1';
+			input_data <= X"0C";
+		end if;
+		--Pix 12
+		if ( edge_rise = 105 ) then
+			data_valid <= '1';
+			input_data <= X"0D";
+		end if;
+		--Pix 13
+		if ( edge_rise = 106 ) then
+			data_valid <= '1';
+			input_data <= X"0E";
+		end if;
+		--Pix 14
+		if ( edge_rise = 107 ) then
+			data_valid <= '1';
+			input_data <= X"0F";
+		end if;
+		--Pix 15
+		if ( edge_rise = 108 ) then
+			data_valid <= '1';
+			input_data <= X"10";
+		end if;
+		if ( edge_rise = 109 ) then
+			data_valid <= '0';
+			input_data <= X"00";
 		end if;
 		
 		--Read the number of image to check if the reading is properly implemented
-		if ( edge_rise = 58 ) then
-			S_address <= "1000";--1
+		if ( edge_rise = 113 ) then
+			S_address <= "1011";--11
 			S_write <= '0';
 			S_read <= '1';
 		end if;
-		if ( edge_rise = 59 ) then
+		if ( edge_rise = 114 ) then
+			S_read <= '0';
+		end if;
+		
+		--Read last buffer
+		if ( edge_rise = 115 ) then
+			S_address <= "1001";--9
+			S_write <= '0';
+			S_read <= '1';
+		end if;
+		if ( edge_rise = 116 ) then
 			S_read <= '0';
 		end if;
 		
