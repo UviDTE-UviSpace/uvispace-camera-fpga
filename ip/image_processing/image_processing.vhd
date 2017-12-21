@@ -30,8 +30,10 @@ entity image_processing is
 		    --binarization thresholds
 		  hue_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         hue_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        sat_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        bri_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        sat_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+		  sat_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        bri_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+		  bri_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         -- Data input
         in_red          : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         in_green        : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
@@ -103,8 +105,10 @@ architecture arch of image_processing is
             brightness      : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
             hue_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
             hue_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-            sat_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-            bri_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+            sat_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+				sat_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+            bri_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+				bri_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
             in_valid        : in STD_LOGIC;
             -- Data output
             out_bin         : out STD_LOGIC;
@@ -208,8 +212,10 @@ architecture arch of image_processing is
                 brightness      => hsv_out_brightness,
                 hue_l_threshold => hue_l_threshold,
                 hue_h_threshold => hue_h_threshold,
-                sat_threshold   => sat_threshold,
-                bri_threshold   => bri_threshold,
+                sat_l_threshold => sat_l_threshold,
+					 sat_h_threshold => sat_h_threshold,
+                bri_l_threshold => bri_l_threshold,
+					 bri_h_threshold => bri_h_threshold,
                 in_valid        => hsv_out_valid,
                 -- Data output
                 out_bin         => bin_out,
@@ -222,9 +228,9 @@ architecture arch of image_processing is
 		  erosion_component : erosion_bin
 		  generic map(
 		     KERN_SIZE => 3,
-			  KERNEL => ((1,1,1),
+			  KERNEL => ((0,1,0),
                       (1,1,1),
-                      (1,1,1)),
+                      (0,1,0)),
 			  MAX_IMG_WIDTH => 640)
 			  
 		  port map(
@@ -245,9 +251,9 @@ architecture arch of image_processing is
 		  dilation_component : dilation_bin
 		  generic map(
 		     KERN_SIZE => 3,
-			  KERNEL => ((1,1,1),
+			  KERNEL => ((0,1,0),
                       (1,1,1),
-                      (1,1,1)),
+                      (0,1,0)),
 			  MAX_IMG_WIDTH => 640)
 			  
 		  port map(

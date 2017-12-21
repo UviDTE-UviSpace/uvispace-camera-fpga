@@ -277,14 +277,20 @@
    type="conduit"
    dir="end" />
  <module name="avalon_camera_0" kind="avalon_camera" version="1.0" enabled="1">
+  <parameter name="BLUE_GAIN" value="154" />
   <parameter name="COLUMN_MODE" value="17" />
   <parameter name="COLUMN_SIZE" value="2559" />
   <parameter name="EXPOSURE" value="1023" />
+  <parameter name="GREEN1_GAIN" value="19" />
+  <parameter name="GREEN2_GAIN" value="19" />
   <parameter name="HEIGHT" value="480" />
-  <parameter name="ROW_MODE" value="1" />
+  <parameter name="H_BLANKING" value="0" />
+  <parameter name="RED_GAIN" value="156" />
+  <parameter name="ROW_MODE" value="17" />
   <parameter name="ROW_SIZE" value="1919" />
   <parameter name="START_COLUMN" value="0" />
   <parameter name="START_ROW" value="0" />
+  <parameter name="V_BLANKING" value="25" />
   <parameter name="WIDTH" value="640" />
  </module>
  <module
@@ -292,10 +298,12 @@
    kind="avalon_image_processing"
    version="1.0"
    enabled="1">
-  <parameter name="BRIGHTNESS_THRESHOLD_L" value="60" />
-  <parameter name="HUE_THRESHOLD_H" value="30" />
-  <parameter name="HUE_THRESHOLD_L" value="220" />
-  <parameter name="SATURATION_THRESHOLD_L" value="60" />
+  <parameter name="BRIGHTNESS_THRESHOLD_H" value="255" />
+  <parameter name="BRIGHTNESS_THRESHOLD_L" value="45" />
+  <parameter name="HUE_THRESHOLD_H" value="20" />
+  <parameter name="HUE_THRESHOLD_L" value="230" />
+  <parameter name="SATURATION_THRESHOLD_H" value="255" />
+  <parameter name="SATURATION_THRESHOLD_L" value="20" />
  </module>
  <module
    name="avalon_img_writer_binary"

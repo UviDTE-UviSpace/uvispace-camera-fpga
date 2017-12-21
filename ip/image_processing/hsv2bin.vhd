@@ -25,14 +25,19 @@ entity hsv2bin is
         clk             : in STD_LOGIC;
         reset_n         : in STD_LOGIC;
         -- Data input
+		    --HSV components
         hue             : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         saturation      : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         brightness      : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        hue_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+          --binarization thresholds 
+		  hue_l_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
         hue_h_threshold : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        sat_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        bri_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        in_valid        : in STD_LOGIC;
+        sat_l_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+		  sat_h_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        bri_l_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+		  bri_h_threshold   : in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+          --a valid pixel when in_valid = 1
+		  in_valid        : in STD_LOGIC;
         -- Data output
         out_bin         : out STD_LOGIC;
         out_valid       : out STD_LOGIC
@@ -54,14 +59,16 @@ begin
         else
 				--if the color we want to detect crosses the 0 line (0 degrees is red)
 				if (hue_l_threshold > hue_h_threshold) then
-					if (saturation>sat_threshold) and (brightness>bri_threshold) 
+					if (saturation>sat_l_threshold) and (saturation<sat_h_threshold)
+					      and (brightness>bri_l_threshold) and (brightness<bri_h_threshold) 
 							and ((hue>hue_l_threshold) or (hue<hue_h_threshold)) then
 						out_bin <= '1';
 					else
 						out_bin <= '0';
 					end if;
 				else
-					if (saturation>sat_threshold) and (brightness>bri_threshold)
+					if (saturation>sat_l_threshold) and (saturation<sat_h_threshold)
+					      and (brightness>bri_l_threshold) and (brightness<bri_h_threshold) 
 							and ((hue>hue_l_threshold) and (hue<hue_h_threshold)) then
 						out_bin <= '1';
 					else

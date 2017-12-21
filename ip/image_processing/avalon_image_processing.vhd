@@ -17,7 +17,9 @@ entity avalon_image_processing is
 		  HUE_THRESHOLD_L  : integer := 220;
 		  HUE_THRESHOLD_H  : integer := 30;
 		  BRIGHTNESS_THRESHOLD_L  : integer := 60;
-		  SATURATION_THRESHOLD_L  : integer := 60
+		  BRIGHTNESS_THRESHOLD_H  : integer := 255;
+		  SATURATION_THRESHOLD_L  : integer := 60;
+		  SATURATION_THRESHOLD_H  : integer := 255
     );
     port (
         -- Clock and reset.
@@ -35,7 +37,9 @@ entity avalon_image_processing is
         hue_threshold_l_out         : out STD_LOGIC_VECTOR(7 downto 0);
         hue_threshold_h_out         : out STD_LOGIC_VECTOR(7 downto 0);
         brightness_threshold_l_out  : out STD_LOGIC_VECTOR(7 downto 0);
-        saturation_threshold_l_out  : out STD_LOGIC_VECTOR(7 downto 0) 
+		  brightness_threshold_h_out  : out STD_LOGIC_VECTOR(7 downto 0);
+        saturation_threshold_l_out  : out STD_LOGIC_VECTOR(7 downto 0);
+		  saturation_threshold_h_out  : out STD_LOGIC_VECTOR(7 downto 0) 
     );
 end avalon_image_processing;
 
@@ -45,13 +49,17 @@ architecture arch of avalon_image_processing is
 	 constant HUE_THRES_L_ADDRESS  : integer := 0;
 	 constant HUE_THRES_H_ADDRESS  : integer := 1;
 	 constant BRI_THRES_L_ADDRESS  : integer := 2;
-	 constant SAT_THRES_L_ADDRESS  : integer := 3;
+	 constant BRI_THRES_H_ADDRESS  : integer := 3;
+	 constant SAT_THRES_L_ADDRESS  : integer := 4;
+	 constant SAT_THRES_H_ADDRESS  : integer := 5;
 	 
   --Associated registers
 	 signal hue_thres_l 	:STD_LOGIC_VECTOR(7 downto 0);
 	 signal hue_thres_h 	:STD_LOGIC_VECTOR(7 downto 0);
 	 signal bri_thres_l 	:STD_LOGIC_VECTOR(7 downto 0);
+	 signal bri_thres_h 	:STD_LOGIC_VECTOR(7 downto 0);
 	 signal sat_thres_l 	:STD_LOGIC_VECTOR(7 downto 0);
+	 signal sat_thres_h 	:STD_LOGIC_VECTOR(7 downto 0);
   --Chip select
 	 SIGNAL CS           : std_logic_vector((2**7-1) downto 0);
 	 
@@ -69,7 +77,9 @@ begin
 			hue_thres_l <= std_logic_vector(to_unsigned(HUE_THRESHOLD_L, 8));
 			hue_thres_h <= std_logic_vector(to_unsigned(HUE_THRESHOLD_H, 8));
 			bri_thres_l <= std_logic_vector(to_unsigned(BRIGHTNESS_THRESHOLD_L, 8));
+			bri_thres_h <= std_logic_vector(to_unsigned(BRIGHTNESS_THRESHOLD_H, 8));
 			sat_thres_l <= std_logic_vector(to_unsigned(SATURATION_THRESHOLD_L, 8));
+			sat_thres_h <= std_logic_vector(to_unsigned(SATURATION_THRESHOLD_H, 8));
 		elsif S_write ='1' then --write operation
 			if CS(HUE_THRES_L_ADDRESS)='1' then 
 				hue_thres_l <= S_writedata(7 downto 0);
@@ -77,8 +87,12 @@ begin
 				hue_thres_h <= S_writedata(7 downto 0);
 			elsif CS(BRI_THRES_L_ADDRESS)='1' then 
 				bri_thres_l <= S_writedata(7 downto 0);
+		   elsif CS(BRI_THRES_H_ADDRESS)='1' then 
+				bri_thres_h <= S_writedata(7 downto 0);
 			elsif CS(SAT_THRES_L_ADDRESS)='1' then 
 				sat_thres_l <= S_writedata(7 downto 0);
+			elsif CS(SAT_THRES_H_ADDRESS)='1' then 
+				sat_thres_h <= S_writedata(7 downto 0);
 			end if;	
 	  end if;
 	end if;
@@ -89,8 +103,12 @@ begin
 			S_readdata <= (31 downto 8 => '0') & hue_thres_h;
 		elsif CS(BRI_THRES_L_ADDRESS)='1' then 
 			S_readdata <= (31 downto 8 => '0') & bri_thres_l;
+		elsif CS(BRI_THRES_H_ADDRESS)='1' then 
+			S_readdata <= (31 downto 8 => '0') & bri_thres_h;
 		elsif CS(SAT_THRES_L_ADDRESS)='1' then 
 			S_readdata <= (31 downto 8 => '0') & sat_thres_l;
+		elsif CS(SAT_THRES_H_ADDRESS)='1' then 
+			S_readdata <= (31 downto 8 => '0') & sat_thres_h;
 		else
 			S_readdata <= (others => '0');
 		end if;
@@ -101,6 +119,8 @@ begin
 	 hue_threshold_l_out <= hue_thres_l;
 	 hue_threshold_h_out <= hue_thres_h;
 	 brightness_threshold_l_out <= bri_thres_l;
+	 brightness_threshold_h_out <= bri_thres_h;
 	 saturation_threshold_l_out <= sat_thres_l;
+	 saturation_threshold_h_out <= sat_thres_h;
 
 end arch;

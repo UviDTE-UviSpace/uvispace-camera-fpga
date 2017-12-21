@@ -238,22 +238,27 @@ soc_system u0 (
   .avalon_camera_export_rowsize          ( in_row_size ),
   .avalon_camera_export_colsize          ( in_column_size ),
   .avalon_camera_export_rowmode          ( in_row_mode ),
+  .avalon_camera_export_h_blanking       ( h_blanking ),
+  .avalon_camera_export_v_blanking       ( v_blanking ),
+  .avalon_camera_export_red_gain         ( red_gain ),
+  .avalon_camera_export_blue_gain        ( blue_gain ),
+  .avalon_camera_export_green1_gain      ( green1_gain ),
+  .avalon_camera_export_green2_gain      ( green2_gain ),
   .avalon_camera_export_soft_reset_n     ( camera_soft_reset_n ),
   // Import images in Qsys for the avalon_image_writers
-  .rgbgray_img_frame_valid               ( ccd_fval_raw ),
   .rgbgray_img_data_valid                ( out_hsv_valid ),
   .rgbgray_img_input_data                ( {hsv_hue, hsv_blue, hsv_green, hsv_red} ),
-  .gray_img_frame_valid                  ( ccd_fval_raw ),
   .gray_img_data_valid                   ( out_hsv_valid ),
   .gray_img_input_data                   ( hsv_hue ),
-  .binary_img_frame_valid                ( ccd_fval_raw ),
   .binary_img_data_valid                 ( out_hsv_valid ),
-  .binary_img_input_data                 ( binarized_8bit ),
+  .binary_img_input_data                 ( dilated_8bit ),
 	//Export the signals to control the image processing
   .img_processing_hue_thres_l            (hue_threshold_l),
   .img_processing_hue_thres_h            (hue_threshold_h), 
   .img_processing_bri_thres_l            (brightness_threshold_l),
+  .img_processing_bri_thres_h            (brightness_threshold_h),
   .img_processing_sat_thres_l            (saturation_threshold_l),
+  .img_processing_sat_thres_h            (saturation_threshold_h),
   //HPS 1GB ddr3
   .memory_mem_a                          ( HPS_DDR3_ADDR ),
   .memory_mem_ba                         ( HPS_DDR3_BA ),
@@ -355,6 +360,12 @@ camera_config #(
   .column_size(in_column_size),
   .row_mode(in_row_mode),
   .column_mode(in_column_mode),
+  .h_blanking(h_blanking),
+  .v_blanking(v_blanking),
+  .red_gain(red_gain),
+  .blue_gain(blue_gain),
+  .green1_gain(green1_gain),
+  .green2_gain(green2_gain),
   // Ready signal
   .out_ready(ready),
   // I2C Side
@@ -370,14 +381,12 @@ camera_config #(
   wire  [15:0]  in_column_size;
   wire  [15:0]  in_row_mode;
   wire  [15:0]  in_column_mode;
-
-  // assign in_exposure = 16'h07C0;
-  // assign start_row = 16'h0000;
-  // assign start_column = 16'h0000;
-  // assign in_row_size = 16'h077F;
-  // assign in_column_size = 16'h09FF;
-  // assign in_row_mode = 16'h0011;
-  // assign in_column_mode = 16'h0011;
+  wire  [15:0]  h_blanking;
+  wire  [15:0]  v_blanking;
+  wire  [15:0]  red_gain;
+  wire  [15:0]  blue_gain;
+  wire  [15:0]  green1_gain;
+  wire  [15:0]  green2_gain;
 
 
 camera_capture u3(
@@ -507,8 +516,10 @@ image_processing img_proc(
   .in_blue(sync_rgb_blue[11:4]),
   .hue_l_threshold(hue_threshold_l),
   .hue_h_threshold(hue_threshold_h),
-  .sat_threshold(saturation_threshold_l),
-  .bri_threshold(brightness_threshold_l),
+  .sat_l_threshold(saturation_threshold_l),
+  .sat_h_threshold(saturation_threshold_h),
+  .bri_l_threshold(brightness_threshold_l),
+  .bri_h_threshold(brightness_threshold_h),
   .img_width({4'h0,in_width}),
   .img_height({4'h0,in_height}),
   .in_valid(sync_rgb_dval),
@@ -527,7 +538,9 @@ image_processing img_proc(
   wire  [7:0] hue_threshold_l;
   wire  [7:0] hue_threshold_h;
   wire  [7:0] saturation_threshold_l;
+  wire  [7:0] saturation_threshold_h;
   wire  [7:0] brightness_threshold_l;
+  wire  [7:0] brightness_threshold_h;
   wire  [7:0] hsv_red;
   wire  [7:0] hsv_green;
   wire  [7:0] hsv_blue;

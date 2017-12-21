@@ -21,6 +21,12 @@ module avalon_camera (
     output [15:0] avs_export_row_mode,
     output [15:0] avs_export_column_mode,
     output [15:0] avs_export_exposure,
+	 output [15:0] avs_export_h_blanking,
+	 output [15:0] avs_export_v_blanking,
+	 output [15:0] avs_export_red_gain,
+	 output [15:0] avs_export_blue_gain,
+	 output [15:0] avs_export_green1_gain,
+	 output [15:0] avs_export_green2_gain,
     //soft reset
     output avs_export_cam_soft_reset_n
     );
@@ -35,6 +41,12 @@ module avalon_camera (
 `define ADDR_ROW_MODE           5'h06
 `define ADDR_COLUMN_MODE        5'h07
 `define ADDR_EXPOSURE           5'h08
+`define ADDR_H_BLANKING         5'h09
+`define ADDR_V_BLANKING         5'h0A
+`define ADDR_RED_GAIN           5'h0B
+`define ADDR_BLUE_GAIN          5'h0C
+`define ADDR_GREEN1_GAIN        5'h0D
+`define ADDR_GREEN2_GAIN        5'h0E
 
 // Address of the soft reset
 `define SOFT_RESET_N            5'h1F //last address
@@ -49,6 +61,12 @@ parameter COLUMN_SIZE   = 16'h077f;
 parameter ROW_MODE      = 16'h0002;
 parameter COLUMN_MODE   = 16'h0002;
 parameter EXPOSURE      = 16'h07c0;
+parameter H_BLANKING    = 16'h0000;
+parameter V_BLANKING    = 16'h0019;
+parameter RED_GAIN      = 16'h019C;
+parameter BLUE_GAIN     = 16'h009A;
+parameter GREEN1_GAIN   = 16'h0013;
+parameter GREEN2_GAIN   = 16'h0013;
 
 // camera_config registers
 reg [15:0] data_width;
@@ -60,6 +78,12 @@ reg [15:0] data_column_size;
 reg [15:0] data_row_mode;
 reg [15:0] data_column_mode;
 reg [15:0] data_exposure;
+reg [15:0] data_h_blanking;
+reg [15:0] data_v_blanking;
+reg [15:0] data_red_gain;
+reg [15:0] data_blue_gain;
+reg [15:0] data_green1_gain;
+reg [15:0] data_green2_gain;
 
 //soft_reset reg
 reg cam_soft_reset_n;
@@ -78,6 +102,12 @@ begin
         data_row_mode[15:0]     <= ROW_MODE[15:0];
         data_column_mode[15:0]  <= COLUMN_MODE[15:0];
         data_exposure[15:0]     <= EXPOSURE[15:0];
+		  data_h_blanking[15:0]   <= H_BLANKING[15:0];
+		  data_v_blanking[15:0]   <= V_BLANKING[15:0];
+		  data_red_gain[15:0]     <= RED_GAIN[15:0];
+		  data_blue_gain[15:0]    <= BLUE_GAIN[15:0];
+		  data_green1_gain[15:0]  <= GREEN1_GAIN[15:0];
+		  data_green2_gain[15:0]  <= GREEN2_GAIN[15:0];
         cam_soft_reset_n        <= 1;
     end
     else begin
@@ -102,6 +132,18 @@ begin
                     avs_s1_readdata[15:0] <= data_column_mode[15:0];
                 `ADDR_EXPOSURE:
                     avs_s1_readdata[15:0] <= data_exposure[15:0];
+					 `ADDR_H_BLANKING:
+                    avs_s1_readdata[15:0] <= data_h_blanking[15:0];
+					 `ADDR_V_BLANKING:
+                    avs_s1_readdata[15:0] <= data_v_blanking[15:0];
+					 `ADDR_RED_GAIN:
+                    avs_s1_readdata[15:0] <= data_red_gain[15:0];
+					 `ADDR_BLUE_GAIN:
+                    avs_s1_readdata[15:0] <= data_blue_gain[15:0];
+					 `ADDR_GREEN1_GAIN:
+                    avs_s1_readdata[15:0] <= data_green1_gain[15:0];
+					 `ADDR_GREEN2_GAIN:
+                    avs_s1_readdata[15:0] <= data_green2_gain[15:0];
                 // soft reset
                 `SOFT_RESET_N:
                     avs_s1_readdata[31:0] <= {31'b0, cam_soft_reset_n};
@@ -131,6 +173,18 @@ begin
                         data_column_mode[15:0]  <= avs_s1_writedata[15:0];
                     `ADDR_EXPOSURE:
                         data_exposure[15:0]     <= avs_s1_writedata[15:0];
+						  `ADDR_H_BLANKING:
+                        data_h_blanking[15:0]   <= avs_s1_writedata[15:0];
+						  `ADDR_V_BLANKING:
+                        data_v_blanking[15:0]   <= avs_s1_writedata[15:0];
+						  `ADDR_RED_GAIN:
+                        data_red_gain[15:0]     <= avs_s1_writedata[15:0];
+						  `ADDR_BLUE_GAIN:
+                        data_blue_gain[15:0]    <= avs_s1_writedata[15:0];
+						  `ADDR_GREEN1_GAIN:
+                        data_green1_gain[15:0]  <= avs_s1_writedata[15:0];
+						  `ADDR_GREEN2_GAIN:
+                        data_green2_gain[15:0]  <= avs_s1_writedata[15:0];
                     // soft reset
                     `SOFT_RESET_N:
                         cam_soft_reset_n        <= avs_s1_writedata[0];
@@ -141,15 +195,21 @@ begin
 end
 
 // Registers to export to the camera_config
-assign avs_export_start_row[15:0] = data_start_row[15:0];
+assign avs_export_start_row[15:0]    = data_start_row[15:0];
 assign avs_export_start_column[15:0] = data_start_column[15:0];
-assign avs_export_row_size[15:0] = data_row_size[15:0];
-assign avs_export_column_size[15:0] = data_column_size[15:0];
-assign avs_export_row_mode[15:0] = data_row_mode[15:0];
-assign avs_export_column_mode[15:0] = data_column_mode[15:0];
-assign avs_export_exposure[15:0] = data_exposure[15:0];
-// Registers to export to the camera_config an
-assign avs_export_width[15:0] = data_width[15:0];
+assign avs_export_row_size[15:0]     = data_row_size[15:0];
+assign avs_export_column_size[15:0]  = data_column_size[15:0];
+assign avs_export_row_mode[15:0]     = data_row_mode[15:0];
+assign avs_export_column_mode[15:0]  = data_column_mode[15:0];
+assign avs_export_exposure[15:0]     = data_exposure[15:0];
+assign avs_export_h_blanking[15:0]   = data_h_blanking[15:0];
+assign avs_export_v_blanking[15:0]   = data_v_blanking[15:0];
+assign avs_export_red_gain[15:0]     = data_red_gain[15:0];
+assign avs_export_blue_gain[15:0]    = data_blue_gain[15:0];
+assign avs_export_green1_gain[15:0]  = data_green1_gain[15:0];
+assign avs_export_green2_gain[15:0]  = data_green2_gain[15:0];
+// Registers to export to the camera_config and others
+assign avs_export_width[15:0]  = data_width[15:0];
 assign avs_export_height[15:0] = data_height[15:0];
 //soft reset
 assign avs_export_cam_soft_reset_n = cam_soft_reset_n;
