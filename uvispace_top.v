@@ -247,9 +247,9 @@ soc_system u0 (
   .avalon_camera_export_soft_reset_n     ( camera_soft_reset_n ),
   // Import images in Qsys for the avalon_image_writers
   .rgbgray_img_data_valid                ( hsv_valid ),
-  .rgbgray_img_input_data                ( {hsv_hue, hsv_blue, hsv_green, hsv_red} ),
-  .gray_img_data_valid                   ( hsv_valid ),
-  .gray_img_input_data                   ( hsv_hue ),
+  .rgbgray_img_input_data                ( {gray, hsv_blue, hsv_green, hsv_red} ),
+  .gray_img_data_valid                   ( gray_valid ),
+  .gray_img_input_data                   ( gray ),
   .binary_img_data_valid                 ( bin_valid ),
   .binary_img_input_data                 ( dilated_8bit ),
 	//Export the signals to control the image processing
@@ -527,6 +527,8 @@ image_processing img_proc(
   .export_red(hsv_red),
   .export_green(hsv_green),
   .export_blue(hsv_blue),
+  .export_gray(gray),
+  .export_gray_valid(gray_valid),
   .export_hue(hsv_hue),
   .export_hsv_valid(hsv_valid),
   .export_bin(binarized),
@@ -547,6 +549,8 @@ image_processing img_proc(
   wire  [7:0] hsv_blue;
   wire  [7:0] hsv_hue;
   wire        hsv_valid;
+  wire  [7:0] gray;
+  wire        gray_valid;
   wire        binarized;
   wire        bin_valid;
   wire  [7:0] binarized_8bit;

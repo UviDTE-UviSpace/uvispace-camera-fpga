@@ -41,14 +41,17 @@ entity image_processing is
 		  in_valid        : in STD_LOGIC;
         -- Data output
 		    --RGB HSV
-		  export_red          : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        export_green        : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        export_blue         : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        export_hue          : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
-        export_hsv_valid    : out STD_LOGIC;
+		  export_red           : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        export_green         : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        export_blue          : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        export_hue           : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        export_hsv_valid     : out STD_LOGIC;
+			 --RGB to Gray
+		  export_gray			  : out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+		  export_gray_valid	  : out STD_LOGIC;
 		    --Simple binary
-		  export_bin          : out STD_LOGIC;
-        export_bin_valid    : out STD_LOGIC;
+		  export_bin           : out STD_LOGIC;
+        export_bin_valid     : out STD_LOGIC;
 		    --Binary signal after erosion
 		  export_erosion       : out STD_LOGIC;
 		  export_erosion_valid : out STD_LOGIC;
@@ -90,6 +93,23 @@ architecture arch of image_processing is
             out_done        : out STD_LOGIC
             );
     end component;
+	 
+	 --Transforms RGB into Gray image
+	 component rgb2gray
+    port(
+        -- Control signals
+        clk			: in STD_LOGIC;
+        reset_n	: in STD_LOGIC;
+        -- Data input
+		  R      	: in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        G      	: in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+        B	   	: in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+		  in_valid 	: in STD_LOGIC;
+        -- Data output
+		  Gray		: out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0); 
+		  out_valid	: out STD_LOGIC 
+        );
+	end component;
 
     -- This component returns a binary map of a given HSV image, belonging the
     -- '1' pixels to a specified Hue range, altogether with a minimum saturation
@@ -160,6 +180,9 @@ architecture arch of image_processing is
 	 
     -- Intermediate signals declaration
     signal hsv_out_valid        : STD_LOGIC;
+	 signal hsv_out_red          : STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+	 signal hsv_out_green        : STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+	 signal hsv_out_blue         : STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
     signal hsv_out_hue          : STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
     signal hsv_out_saturation   : STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
     signal hsv_out_brightness   : STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
@@ -188,9 +211,9 @@ architecture arch of image_processing is
                 in_visual       => '1',
                 in_done         => '1',
                 -- Data output
-                out_red         => export_red,
-                out_green       => export_green,
-                out_blue        => export_blue,
+                out_red         => hsv_out_red,
+                out_green       => hsv_out_green,
+                out_blue        => hsv_out_blue,
                 out_hue         => hsv_out_hue,
                 out_saturation  => hsv_out_saturation,
                 out_brightness  => hsv_out_brightness,
@@ -198,7 +221,22 @@ architecture arch of image_processing is
                 out_visual      => open,
                 out_done        => open
                 );
-		
+					 
+		  -- Instantiation and mappingof rgb2gray component
+		  rgb2gray_component : rgb2gray
+		  port map(
+				-- Control signals
+				 clk           => clock,
+             reset_n       => reset_n,
+				 -- Data input
+				 R         		=> hsv_out_red,
+             G    	 		=> hsv_out_green,
+             B     	 		=> hsv_out_blue,
+             in_valid    	=> hsv_out_valid,
+				 -- Data output
+				 Gray				=> export_gray,
+				 out_valid		=> export_gray_valid
+				 );
 					 
         -- Instantiation and mapping of the hsv2bin component. 
         hsv2bin_component : hsv2bin
@@ -271,6 +309,10 @@ architecture arch of image_processing is
 			  data_valid_out  =>  dilation_out_valid
 			  );
 			
+			--Export output signals
+			export_red<= hsv_out_red;
+			export_green<= hsv_out_green;
+			export_blue<= hsv_out_blue;
 			export_hue<= hsv_out_hue;
 			export_hsv_valid <= hsv_out_valid;
 			export_bin <= bin_out;
