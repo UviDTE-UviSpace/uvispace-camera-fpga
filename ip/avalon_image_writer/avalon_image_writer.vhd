@@ -335,6 +335,7 @@ begin
 				  if line_counter = (img_height - 1) then
 				    line_counter <= (others => '0');
 					 end_of_image := '1';
+					 image_counter <= image_counter+1;
 				  else 
 				  	 line_counter <= line_counter + 1;
 					 end_of_image := '0';
