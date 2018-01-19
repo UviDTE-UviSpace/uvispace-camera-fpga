@@ -271,6 +271,7 @@ architecture arch of image_processing is
 			  data_valid_out  =>  dilation_out_valid
 			  );
 			
+			export_hue<= hsv_out_hue;
 			export_hsv_valid <= hsv_out_valid;
 			export_bin <= bin_out;
 			export_bin_valid <= bin_out_valid;

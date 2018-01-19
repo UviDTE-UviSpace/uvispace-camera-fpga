@@ -21,7 +21,7 @@
    {
       datum _sortIndex
       {
-         value = "9";
+         value = "8";
          type = "int";
       }
    }
@@ -42,7 +42,7 @@
    {
       datum _sortIndex
       {
-         value = "8";
+         value = "7";
          type = "int";
       }
    }
@@ -58,7 +58,7 @@
    {
       datum _sortIndex
       {
-         value = "7";
+         value = "6";
          type = "int";
       }
    }
@@ -74,7 +74,7 @@
    {
       datum _sortIndex
       {
-         value = "6";
+         value = "5";
          type = "int";
       }
    }
@@ -84,14 +84,6 @@
       {
          value = "256";
          type = "String";
-      }
-   }
-   element avalon_write_bridge_0
-   {
-      datum _sortIndex
-      {
-         value = "5";
-         type = "int";
       }
    }
    element ccd_pixel_clock_bridge
@@ -138,7 +130,7 @@
    {
       datum _sortIndex
       {
-         value = "11";
+         value = "10";
          type = "int";
       }
    }
@@ -146,8 +138,24 @@
    {
       datum _sortIndex
       {
-         value = "10";
+         value = "9";
          type = "int";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element soc_system
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
       }
    }
    element soc_system
@@ -333,14 +341,6 @@
   <parameter name="PIX_WR" value="4" />
  </module>
  <module
-   name="avalon_write_bridge_0"
-   kind="avalon_write_bridge"
-   version="1.0"
-   enabled="1">
-  <parameter name="BURSCOUNT_SIZE" value="7" />
-  <parameter name="MASTER_ADDRESS_SIZE" value="32" />
- </module>
- <module
    name="ccd_pixel_clock_bridge"
    kind="altera_clock_bridge"
    version="16.0"
@@ -466,8 +466,8 @@
   <parameter name="EXPORT_AFI_HALF_CLK" value="false" />
   <parameter name="EXTRA_SETTINGS" value="" />
   <parameter name="F2H_AXI_CLOCK_FREQ" value="0" />
-  <parameter name="F2H_SDRAM0_CLOCK_FREQ" value="100" />
-  <parameter name="F2H_SDRAM1_CLOCK_FREQ" value="100" />
+  <parameter name="F2H_SDRAM0_CLOCK_FREQ" value="0" />
+  <parameter name="F2H_SDRAM1_CLOCK_FREQ" value="0" />
   <parameter name="F2H_SDRAM2_CLOCK_FREQ" value="100" />
   <parameter name="F2H_SDRAM3_CLOCK_FREQ" value="100" />
   <parameter name="F2H_SDRAM4_CLOCK_FREQ" value="100" />
@@ -479,8 +479,8 @@
   <parameter name="F2SCLK_SDRAMCLK_Enable" value="false" />
   <parameter name="F2SCLK_SDRAMCLK_FREQ" value="0" />
   <parameter name="F2SCLK_WARMRST_Enable" value="false" />
-  <parameter name="F2SDRAM_Type" value="" />
-  <parameter name="F2SDRAM_Width" value="" />
+  <parameter name="F2SDRAM_Type">Avalon-MM Write-Only,Avalon-MM Write-Only</parameter>
+  <parameter name="F2SDRAM_Width" value="128,128" />
   <parameter name="F2SINTERRUPT_Enable" value="true" />
   <parameter name="F2S_Width" value="3" />
   <parameter name="FIX_READ_LATENCY" value="8" />
@@ -1309,8 +1309,8 @@
  <connection
    kind="avalon"
    version="16.0"
-   start="avalon_img_writer_rgbgray.avalon_master"
-   end="avalon_write_bridge_0.avalon_slave">
+   start="avalon_img_writer_binary.avalon_master"
+   end="hps_0.f2h_axi_slave">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
@@ -1319,7 +1319,7 @@
    kind="avalon"
    version="16.0"
    start="avalon_img_writer_gray.avalon_master"
-   end="avalon_write_bridge_0.avalon_slave">
+   end="hps_0.f2h_sdram0_data">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
@@ -1327,8 +1327,8 @@
  <connection
    kind="avalon"
    version="16.0"
-   start="avalon_img_writer_binary.avalon_master"
-   end="hps_0.f2h_axi_slave">
+   start="avalon_img_writer_rgbgray.avalon_master"
+   end="hps_0.f2h_sdram1_data">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
@@ -1387,11 +1387,6 @@
    kind="clock"
    version="16.0"
    start="ccd_pixel_clock_bridge.out_clk"
-   end="avalon_img_writer_rgbgray.clock" />
- <connection
-   kind="clock"
-   version="16.0"
-   start="ccd_pixel_clock_bridge.out_clk"
    end="avalon_img_writer_gray.clock" />
  <connection
    kind="clock"
@@ -1407,17 +1402,27 @@
    kind="clock"
    version="16.0"
    start="ccd_pixel_clock_bridge.out_clk"
-   end="avalon_write_bridge_0.clock" />
- <connection
-   kind="clock"
-   version="16.0"
-   start="external_clock_50_bridge.out_clk"
    end="avalon_image_processing_0.clock" />
  <connection
    kind="clock"
    version="16.0"
    start="ccd_pixel_clock_bridge.out_clk"
+   end="avalon_img_writer_rgbgray.clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="ccd_pixel_clock_bridge.out_clk"
    end="hps_0.f2h_axi_clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="ccd_pixel_clock_bridge.out_clk"
+   end="hps_0.f2h_sdram0_clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="ccd_pixel_clock_bridge.out_clk"
+   end="hps_0.f2h_sdram1_clock" />
  <connection
    kind="clock"
    version="16.0"
@@ -1462,11 +1467,6 @@
    kind="reset"
    version="16.0"
    start="hps_0.h2f_reset"
-   end="avalon_img_writer_rgbgray.reset" />
- <connection
-   kind="reset"
-   version="16.0"
-   start="hps_0.h2f_reset"
    end="avalon_img_writer_gray.reset" />
  <connection
    kind="reset"
@@ -1477,12 +1477,12 @@
    kind="reset"
    version="16.0"
    start="hps_0.h2f_reset"
-   end="avalon_write_bridge_0.reset" />
+   end="avalon_image_processing_0.reset" />
  <connection
    kind="reset"
    version="16.0"
    start="hps_0.h2f_reset"
-   end="avalon_image_processing_0.reset" />
+   end="avalon_img_writer_rgbgray.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
 </system>
