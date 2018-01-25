@@ -4,20 +4,20 @@ boards. It is instantiated into the top module for each board and
 connected to their respective pins.
 
 In this file the Qsys system for the Uvispace project (soc_system)
-is instantiated. This system is responsible for having components 
+is instantiated. This system is responsible for having components
 that permit control on the camera capture module, the image processing
 and also has image_writers that can write rgb, gray and binary images
 into the HPS processor memories.
 
-In this file the camera_capture is implemented. It access directly to the 
+In this file the camera_capture is implemented. It access directly to the
 camera and sources the image as raw.Then raw2rgb converts raw into
 3 RGB components of 8-bits each. After reset or start-up the camera
 receives configuration by the camera_config component by I2C commands.
 
-RGB data gets synchronized in the frame_sync component. Sometimes(its 
+RGB data gets synchronized in the frame_sync component. Sometimes(its
 not clear in camera documentation) the camera can stop keep sending
-image until it finishes a line after a reset. This could produce a 
-desynchronization in the image_writers, erosion and dilation. This 
+image until it finishes a line after a reset. This could produce a
+desynchronization in the image_writers, erosion and dilation. This
 components waits few end of frames and ensuresthe rest of the system
 that the image starts in the first pixel after a reset.
 
@@ -26,138 +26,142 @@ This component transforms RGB to HSV and to Gray scale. Using
 the HSV binarizes the image to detect a color(usually red is the
 color of triangles over the uvispace cars). After it image gets
 eroded and dilated to erase noise.Binary, Gray and RGB are connected
-to soc_system who uses image_writers to write them into processor 
+to soc_system who uses image_writers to write them into processor
 memory.
 */
 
 
-//=======================================================
-//Top level entity. Contains the inputs and outputs wired to external pins.
-//=======================================================
+//============================================================================
+//Top level entity of Uvispace shared by different boards.
+//============================================================================
 module uvispace_top(
+
   ///////// CLOCK /////////
   input              CLOCK_50,
+
   ///////// HPS /////////
-    inout              HPS_CONV_USB_N,
-    output      [14:0] HPS_DDR3_ADDR,
-    output      [2:0]  HPS_DDR3_BA,
-    output             HPS_DDR3_CAS_N,
-    output             HPS_DDR3_CKE,
-    output             HPS_DDR3_CK_N,
-    output             HPS_DDR3_CK_P,
-    output             HPS_DDR3_CS_N,
-    output      [3:0]  HPS_DDR3_DM,
-    inout       [31:0] HPS_DDR3_DQ,
-    inout       [3:0]  HPS_DDR3_DQS_N,
-    inout       [3:0]  HPS_DDR3_DQS_P,
-    output             HPS_DDR3_ODT,
-    output             HPS_DDR3_RAS_N,
-    output             HPS_DDR3_RESET_N,
-    input              HPS_DDR3_RZQ,
-    output             HPS_DDR3_WE_N,
-    output             HPS_ENET_GTX_CLK,
-    inout              HPS_ENET_INT_N,
-    output             HPS_ENET_MDC,
-    inout              HPS_ENET_MDIO,
-    input              HPS_ENET_RX_CLK,
-    input       [3:0]  HPS_ENET_RX_DATA,
-    input              HPS_ENET_RX_DV,
-    output      [3:0]  HPS_ENET_TX_DATA,
-    output             HPS_ENET_TX_EN,
-    inout       [3:0]  HPS_FLASH_DATA,
-    output             HPS_FLASH_DCLK,
-    output             HPS_FLASH_NCSO,
-    inout              HPS_GSENSOR_INT,
-    inout              HPS_I2C1_SCLK,
-    inout              HPS_I2C1_SDAT,
-    inout              HPS_I2C2_SCLK,
-    inout              HPS_I2C2_SDAT,
-    inout              HPS_I2C_CONTROL,
-    inout              HPS_KEY,
-    inout              HPS_LED,
-    inout              HPS_LTC_GPIO,
-    output             HPS_SD_CLK,
-    inout              HPS_SD_CMD,
-    inout       [3:0]  HPS_SD_DATA,
-    output             HPS_SPIM_CLK,
-    input              HPS_SPIM_MISO,
-    output             HPS_SPIM_MOSI,
-    inout              HPS_SPIM_SS,
-    input              HPS_UART_RX,
-    output             HPS_UART_TX,
-    input              HPS_USB_CLKOUT,
-    inout       [7:0]  HPS_USB_DATA,
-    input              HPS_USB_DIR,
-    input              HPS_USB_NXT,
-    output             HPS_USB_STP,
-  ///////// CAMERA CONNECTOR /////////
-  inout       [35:0] CAM_CONNECTOR,
-  ////SIGNALS TO GENRATE VGA OUTPUT (ONLY IN DE1-SOC)///  
+  inout              HPS_CONV_USB_N,
+  output      [14:0] HPS_DDR3_ADDR,
+  output      [2:0]  HPS_DDR3_BA,
+  output             HPS_DDR3_CAS_N,
+  output             HPS_DDR3_CKE,
+  output             HPS_DDR3_CK_N,
+  output             HPS_DDR3_CK_P,
+  output             HPS_DDR3_CS_N,
+  output      [3:0]  HPS_DDR3_DM,
+  inout       [31:0] HPS_DDR3_DQ,
+  inout       [3:0]  HPS_DDR3_DQS_N,
+  inout       [3:0]  HPS_DDR3_DQS_P,
+  output             HPS_DDR3_ODT,
+  output             HPS_DDR3_RAS_N,
+  output             HPS_DDR3_RESET_N,
+  input              HPS_DDR3_RZQ,
+  output             HPS_DDR3_WE_N,
+  output             HPS_ENET_GTX_CLK,
+  inout              HPS_ENET_INT_N,
+  output             HPS_ENET_MDC,
+  inout              HPS_ENET_MDIO,
+  input              HPS_ENET_RX_CLK,
+  input       [3:0]  HPS_ENET_RX_DATA,
+  input              HPS_ENET_RX_DV,
+  output      [3:0]  HPS_ENET_TX_DATA,
+  output             HPS_ENET_TX_EN,
+  inout       [3:0]  HPS_FLASH_DATA,
+  output             HPS_FLASH_DCLK,
+  output             HPS_FLASH_NCSO,
+  inout              HPS_GSENSOR_INT,
+  inout              HPS_I2C1_SCLK,
+  inout              HPS_I2C1_SDAT,
+  inout              HPS_I2C2_SCLK,
+  inout              HPS_I2C2_SDAT,
+  inout              HPS_I2C_CONTROL,
+  inout              HPS_KEY,
+  inout              HPS_LED,
+  inout              HPS_LTC_GPIO,
+  output             HPS_SD_CLK,
+  inout              HPS_SD_CMD,
+  inout       [3:0]  HPS_SD_DATA,
+  output             HPS_SPIM_CLK,
+  input              HPS_SPIM_MISO,
+  output             HPS_SPIM_MOSI,
+  inout              HPS_SPIM_SS,
+  input              HPS_UART_RX,
+  output             HPS_UART_TX,
+  input              HPS_USB_CLKOUT,
+  inout       [7:0]  HPS_USB_DATA,
+  input              HPS_USB_DIR,
+  input              HPS_USB_NXT,
+  output             HPS_USB_STP,
+
+  ///////// CAMERA  /////////
+  inout      [35:0]   CAM_CONNECTOR,
+  input 				    camera_capture_en,
+  input               reset_stream_key,
+
+  //////// SIGNALS TO GENRATE VGA OUTPUT ///////
   //RGB image from the synchronyzer
-   output	[7:0]		export_sync_rgb_red,
-	output	[7:0]		export_sync_rgb_blue,
-	output	[7:0]		export_sync_rgb_green,
-	output				export_sync_rgb_dval,
+  output    [11:0]    export_sync_rgb_red,
+  output    [11:0]    export_sync_rgb_blue,
+  output	   [11:0]    export_sync_rgb_green,
+  output				    export_sync_rgb_dval,
   //Gray image
-   output	[7:0]		export_gray,
-	output				export_gray_valid,
+  output    [7:0]     export_gray,
+  output				    export_gray_valid,
   //Binarized image from the HSV to Binary converter
-   output	[7:0]		export_binarized_8bit,
-	output				export_bin_valid,
+  output    [7:0]     export_binarized_8bit,
+  output				    export_bin_valid,
   //Eroded binary image
-   output	[7:0]		export_eroded_8bit,
-	output				export_erosion_valid,
+  output    [7:0]     export_eroded_8bit,
+  output				    export_erosion_valid,
   //Eroded and dilated binary image
-   output	[7:0]		export_dilated_8bit,
-	output				export_dilation_valid,
+  output    [7:0]     export_dilated_8bit,
+  output				    export_dilation_valid,
   //clock and resets for the VGA
-   output 				export_ccd_pixel_clk,
-	output 				export_clk_25,
-	output 				export_hps2fpga_reset_n,
-	output 				export_video_stream_reset_n,
-	//////FRAME RATE IN BINARY, TO 7 SEGMENT DISPLAYS////
-	output 	[31:0] 	export_rate,
-	/////PULSE_LED////
-   output 				pulse_led,
-	/////RESET_STREAM_N/////
-	input					reset_stream_key,
-	////EN_CAM_CAPTURE/////
-	input 				camera_capture_en
+  output              export_ccd_pixel_clk,
+  output              export_clk_25,
+  output              export_hps2fpga_reset_n,
+  output              export_video_stream_reset_n,
+
+  //////FRAME RATE IN BINARY, TO 7 SEGMENT DISPLAYS////
+  output 	[31:0] 	 export_rate,
+
+  /////PULSE_LED////
+   output 				 pulse_led
   );
 
-//=======================================================
+//============================================================================
 //  REG/WIRE declarations
-//=======================================================
+//============================================================================
 
 //Resets
   //Comes from hps. Resets all the FPGA when HPS is reset.
   wire    hps2fpga_reset_n;
   //Comes from a register in avalon_camera. Permits reset
-  //of video stream from software. 
+  //of video stream from software.
   wire    camera_soft_reset_n;
   //Reset  video stream.(Components in FPGA outside Qsys).
   //It has 2 sources, camera_soft_reset_n and KEY[0].
   wire    video_stream_reset_n;
   assign video_stream_reset_n = (camera_soft_reset_n & reset_stream_key);
-  
-//Clocks
-	//Input camera clock. Generated in Qsys it is the source of clock 
-	//for the external camera. 
-	wire    clk_24;
-	//Main clock clocking all the FPGA. It comes from the external camera.
-	//All pixels and synchronizations signals from the external camera
-	//are clocked to this clock.
-	//The external camera generates it from the clk_24. 24x4=96
-	wire           ccd_pixel_clk;
-	//VGA clock for 640x480 resolution (currentlty used in Uvispace)
-	wire    clk_25;
-	//VGA clock for HD resolution (currentlty not used in Uvispace)
-	wire    clk_191;
-	
 
-//=======================================================
+//Clocks
+  //Input camera clock. Generated in Qsys it is the source of clock
+  //for the external camera.
+  wire    clk_24;
+  //Main clock clocking all the FPGA. It comes from the external camera.
+  //All pixels and synchronizations signals from the external camera
+  //are clocked to this clock.
+  //The external camera generates it from the clk_24. 24x4=96
+  wire           ccd_pixel_clk;
+  //VGA clock for 640x480 resolution (currentlty used in Uvispace)
+  wire    clk_25;
+  //VGA clock for HD resolution (currentlty not used in Uvispace)
+  wire    clk_191;
+
+
+//============================================================================
 //  Structural coding
-//=======================================================
+//============================================================================
 
 //---------------------Qsys System---------------------//
 soc_system u0 (
@@ -194,9 +198,9 @@ soc_system u0 (
   .gray_img_input_data                   ( gray ),
   .binary_img_data_valid                 ( bin_valid ),
   .binary_img_input_data                 ( dilated_8bit ),
-	//Export the signals to control the image processing
+  //Export the signals to control the image processing
   .img_processing_hue_thres_l            (hue_threshold_l),
-  .img_processing_hue_thres_h            (hue_threshold_h), 
+  .img_processing_hue_thres_h            (hue_threshold_h),
   .img_processing_bri_thres_l            (brightness_threshold_l),
   .img_processing_bri_thres_h            (brightness_threshold_h),
   .img_processing_sat_thres_l            (saturation_threshold_l),
@@ -285,8 +289,9 @@ soc_system u0 (
   .hps_0_hps_io_hps_io_gpio_inst_GPIO61  ( HPS_GSENSOR_INT )
   );
 
-//-----------Camera Configuration and Capture-----------//
-// Component for writing configuration to the camera peripheral.
+//-----------------Camera Configuration and Capture-----------------//
+// Component for writing configuration to the camera peripheral
+// after reset/start-up.
 camera_config #(
   .CLK_FREQ(25000000),  // 25 MHz
   .I2C_FREQ(20000)      // 20 kHz
@@ -330,7 +335,8 @@ camera_config #(
   wire  [15:0]  green1_gain;
   wire  [15:0]  green2_gain;
 
-
+//Gets image from camera connector and provides raw 12-bit pixels
+//Also implements a pixel, line and frame counter
 camera_capture u3(
   .out_data     (ccd_data_captured),    // component output data
   .out_valid    (ccd_dval),             // data valid signal
@@ -357,11 +363,9 @@ camera_capture u3(
   wire    [11:0] ccd_data_captured;   //output data from CCD_Capture
   wire        	  ccd_dval;            //valid output data
   wire    [31:0] Frame_Cont;
-  
+
   //CCD peripheral signal
   wire    [11:0] CCD_DATA;
-  // assign in_width = 11'd1280;
-  // assign in_height = 11'd960;
 
   // CCD_Capture external pinout conections.
   assign  CCD_DATA[0]  =  CAM_CONNECTOR[13]; //Pixel data Bit 0
@@ -392,10 +396,10 @@ camera_capture u3(
   end
 
 
-//---------------Raw 2 RGB 2 HSV 2 Binary--------------//
+//---------------Raw 2 RGB and Frame syncronization --------------//
 
-/* This component converts 'raw' data obtained in the CCD to RGB data.
-The output width  and height are half of the input ones, as, each pixel consists
+/* This component converts 'raw' data obtained in the CCD to RGB data. The
+output width  and height are half of the input ones, as, each pixel consists
 in 4 components(RGBG): The number of rows and columns are reduced to the half.
 One from every 2 rows are stored on a buffer for getting the components of the
 corresponding pixel afterwards.
@@ -422,8 +426,12 @@ raw2rgb u4(
   wire    [11:0] rgb_green;
   wire    [11:0] rgb_blue;
   wire           rgb_dval; //data valid
-  
-  
+
+/*Stops the frames comming from the camera after some of them
+have passed and ensures that its output always provides
+synchronized frames (starting from first pixel). This is
+crucial for image processing.
+*/
 frame_sync frame_sync1(
   .clk					(ccd_pixel_clk),
   .reset_n				(hps2fpga_reset_n & video_stream_reset_n),
@@ -445,7 +453,16 @@ frame_sync frame_sync1(
   wire    [11:0] sync_rgb_blue;
   wire           sync_rgb_dval;
   wire           sync_rgb_fval;
-  
+
+
+//--------------------Image processing -----------------//
+
+/*Contains the specific image processing for this application.
+In this case transforms RGB to gray for vilualization of the scene
+and RGB to Binary in 2 steps (RGB 2 HSV and HSV to Binary using
+thresholds on HSV levels).
+Changing to other application using the camera would imply touching
+only this component (and the Qsys system probably).*/
 image_processing img_proc(
   .clock(ccd_pixel_clk),
   .reset_n(hps2fpga_reset_n & video_stream_reset_n),
@@ -499,14 +516,13 @@ image_processing img_proc(
   wire        dilated;
   wire        dilation_valid;
   wire  [7:0] dilated_8bit;
-  
-  
+
   // Generate a 8 bit bin img with all 8 bits 0 or 1
   assign binarized_8bit = binarized ? 8'd255 : 8'd0;
   assign eroded_8bit = eroded ? 8'd255 : 8'd0;
   assign dilated_8bit = dilated ? 8'd255 : 8'd0;
-  
-  // Calculate the frame rate.
+
+  //---------------Calculate the frame rate--------------//
   // Seconds counter. The output will be 1 during one pulse after 1 second.
   reg   [31:0] count;
   reg   [31:0] rate;
@@ -527,8 +543,7 @@ image_processing img_proc(
   end
   assign pulse_led = pulse;
 
-//-------------------------VGA------------------------//
-//Export signals to show images through VGA
+//---------Export signals to show images through VGA--------//
   assign export_sync_rgb_red = sync_rgb_red;
   assign export_sync_rgb_green = sync_rgb_green;
   assign export_sync_rgb_blue = sync_rgb_blue;
@@ -546,5 +561,5 @@ image_processing img_proc(
   assign export_hps2fpga_reset_n = hps2fpga_reset_n;
   assign export_video_stream_reset_n= video_stream_reset_n;
   assign export_rate = rate;
-  
+
 endmodule

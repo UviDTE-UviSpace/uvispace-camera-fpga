@@ -46,10 +46,11 @@ pixel was reduced to 15 bits (1 zero and 5 bits per colour).
 
 `define ENABLE_HPS
 
-//=======================================================
-//Top level entity. Contains the inputs and outputs wired to external pins.
-//=======================================================
+//============================================================================
+//Top level entity for DE1-SoC board
+//============================================================================
 module uvispace_top_de1_soc(
+  //DE1-SoC pins:
   ///////// ADC /////////
   inout              ADC_CS_N,
   output             ADC_DIN,
@@ -183,129 +184,134 @@ module uvispace_top_de1_soc(
   output             VGA_VS
   );
 
+//============================================================================
+//  REG/WIRE declarations
+//============================================================================
+  wire          sync_rgb_dval;
+  wire  [11:0]  sync_rgb_red;
+  wire  [11:0]  sync_rgb_green;
+  wire  [11:0]  sync_rgb_blue;
+  wire  [7:0]   gray;
+  wire          gray_valid;
+  wire          bin_valid;
+  wire  [7:0]   binarized_8bit;
+  wire          erosion_valid;
+  wire  [7:0]   eroded_8bit;
+  wire          dilation_valid;
+  wire  [7:0]   dilated_8bit;
+  wire          video_stream_reset_n;
+  wire          hps2fpga_reset_n;
+  wire          clk_25;
+  wire          ccd_pixel_clk;
+  wire  [31:0]  rate;
+
+//============================================================================
+//  Structural coding
+//============================================================================
 
 uvispace_top u0 (
 
   ///////// CLOCK /////////
-	.CLOCK_50(CLOCK_50),
+  .CLOCK_50(CLOCK_50),
   ///////// HPS /////////
-	.HPS_CONV_USB_N(HPS_CONV_USB_N),
-	.HPS_DDR3_ADDR(HPS_DDR3_ADDR),
-	.HPS_DDR3_BA(HPS_DDR3_BA),
-	.HPS_DDR3_CAS_N(HPS_DDR3_CAS_N),
-	.HPS_DDR3_CKE(HPS_DDR3_CKE),
-	.HPS_DDR3_CK_N(HPS_DDR3_CK_N),
-	.HPS_DDR3_CK_P(HPS_DDR3_CK_P),
-	.HPS_DDR3_CS_N(HPS_DDR3_CS_N),
-	.HPS_DDR3_DM(HPS_DDR3_DM),
-	.HPS_DDR3_DQ(HPS_DDR3_DQ),
-	.HPS_DDR3_DQS_N(HPS_DDR3_DQS_N),
-	.HPS_DDR3_DQS_P(HPS_DDR3_DQS_P),
-	.HPS_DDR3_ODT(HPS_DDR3_ODT),
-	.HPS_DDR3_RAS_N(HPS_DDR3_RAS_N),
-	.HPS_DDR3_RESET_N(HPS_DDR3_RESET_N),
- 	.HPS_DDR3_RZQ(HPS_DDR3_RZQ),
-	.HPS_DDR3_WE_N(HPS_DDR3_WE_N),
-	.HPS_ENET_GTX_CLK(HPS_ENET_GTX_CLK),
-	.HPS_ENET_INT_N(HPS_ENET_INT_N),
-	.HPS_ENET_MDC(HPS_ENET_MDC),
-	.HPS_ENET_MDIO(HPS_ENET_MDIO),
-	.HPS_ENET_RX_CLK(HPS_ENET_RX_CLK),
-	.HPS_ENET_RX_DATA(HPS_ENET_RX_DATA),
-	.HPS_ENET_RX_DV(HPS_ENET_RX_DV),
-	.HPS_ENET_TX_DATA(HPS_ENET_TX_DATA),
-	.HPS_ENET_TX_EN(HPS_ENET_TX_EN),
-	.HPS_FLASH_DATA(HPS_FLASH_DATA),
-	.HPS_FLASH_DCLK(HPS_FLASH_DCLK),
-	.HPS_FLASH_NCSO(HPS_FLASH_NCSO),
-	.HPS_GSENSOR_INT(HPS_GSENSOR_INT),
-	.HPS_I2C1_SCLK(HPS_I2C1_SCLK),
-	.HPS_I2C1_SDAT(HPS_I2C1_SDAT),
-	.HPS_I2C2_SCLK(HPS_I2C2_SCLK),
-	.HPS_I2C2_SDAT(HPS_I2C2_SDAT),
-	.HPS_I2C_CONTROL(HPS_I2C_CONTROL),
-	.HPS_KEY(HPS_KEY),
-	.HPS_LED(HPS_LED),
-	.HPS_LTC_GPIO(HPS_LTC_GPIO),
-	.HPS_SD_CLK(HPS_SD_CLK),
-	.HPS_SD_CMD(HPS_SD_CMD),
-	.HPS_SD_DATA(HPS_SD_DATA),
-	.HPS_SPIM_CLK(HPS_SPIM_CLK),
-	.HPS_SPIM_MISO(HPS_SPIM_MISO),
-	.HPS_SPIM_MOSI(HPS_SPIM_MOSI),
-	.HPS_SPIM_SS(HPS_SPIM_SS),
-	.HPS_UART_RX(HPS_UART_RX),
-	.HPS_UART_TX(HPS_UART_TX),
-	.HPS_USB_CLKOUT(HPS_USB_CLKOUT),
-	.HPS_USB_DATA(HPS_USB_DATA),
-	.HPS_USB_DIR(HPS_USB_DIR),
-	.HPS_USB_NXT(HPS_USB_NXT),
-	.HPS_USB_STP(HPS_USB_STP),
-	
-	///////// CAMERA CONNECTOR ////////
-	.CAM_CONNECTOR(GPIO_1),
-	
+  .HPS_CONV_USB_N             (HPS_CONV_USB_N),
+  .HPS_DDR3_ADDR              (HPS_DDR3_ADDR),
+  .HPS_DDR3_BA                (HPS_DDR3_BA),
+  .HPS_DDR3_CAS_N             (HPS_DDR3_CAS_N),
+  .HPS_DDR3_CKE               (HPS_DDR3_CKE),
+  .HPS_DDR3_CK_N              (HPS_DDR3_CK_N),
+  .HPS_DDR3_CK_P              (HPS_DDR3_CK_P),
+  .HPS_DDR3_CS_N              (HPS_DDR3_CS_N),
+  .HPS_DDR3_DM                (HPS_DDR3_DM),
+  .HPS_DDR3_DQ                (HPS_DDR3_DQ),
+  .HPS_DDR3_DQS_N             (HPS_DDR3_DQS_N),
+  .HPS_DDR3_DQS_P             (HPS_DDR3_DQS_P),
+  .HPS_DDR3_ODT               (HPS_DDR3_ODT),
+  .HPS_DDR3_RAS_N             (HPS_DDR3_RAS_N),
+  .HPS_DDR3_RESET_N           (HPS_DDR3_RESET_N),
+  .HPS_DDR3_RZQ               (HPS_DDR3_RZQ),
+  .HPS_DDR3_WE_N              (HPS_DDR3_WE_N),
+  .HPS_ENET_GTX_CLK           (HPS_ENET_GTX_CLK),
+  .HPS_ENET_INT_N             (HPS_ENET_INT_N),
+  .HPS_ENET_MDC               (HPS_ENET_MDC),
+  .HPS_ENET_MDIO              (HPS_ENET_MDIO),
+  .HPS_ENET_RX_CLK            (HPS_ENET_RX_CLK),
+  .HPS_ENET_RX_DATA           (HPS_ENET_RX_DATA),
+  .HPS_ENET_RX_DV             (HPS_ENET_RX_DV),
+  .HPS_ENET_TX_DATA           (HPS_ENET_TX_DATA),
+  .HPS_ENET_TX_EN             (HPS_ENET_TX_EN),
+  .HPS_FLASH_DATA             (HPS_FLASH_DATA),
+  .HPS_FLASH_DCLK             (HPS_FLASH_DCLK),
+  .HPS_FLASH_NCSO             (HPS_FLASH_NCSO),
+  .HPS_GSENSOR_INT            (HPS_GSENSOR_INT),
+  .HPS_I2C1_SCLK              (HPS_I2C1_SCLK),
+  .HPS_I2C1_SDAT              (HPS_I2C1_SDAT),
+  .HPS_I2C2_SCLK              (HPS_I2C2_SCLK),
+  .HPS_I2C2_SDAT              (HPS_I2C2_SDAT),
+  .HPS_I2C_CONTROL            (HPS_I2C_CONTROL),
+  .HPS_KEY                    (HPS_KEY),
+  .HPS_LED                    (HPS_LED),
+  .HPS_LTC_GPIO               (HPS_LTC_GPIO),
+  .HPS_SD_CLK                 (HPS_SD_CLK),
+  .HPS_SD_CMD                 (HPS_SD_CMD),
+  .HPS_SD_DATA                (HPS_SD_DATA),
+  .HPS_SPIM_CLK               (HPS_SPIM_CLK),
+  .HPS_SPIM_MISO              (HPS_SPIM_MISO),
+  .HPS_SPIM_MOSI              (HPS_SPIM_MOSI),
+  .HPS_SPIM_SS                (HPS_SPIM_SS),
+  .HPS_UART_RX                (HPS_UART_RX),
+  .HPS_UART_TX                (HPS_UART_TX),
+  .HPS_USB_CLKOUT             (HPS_USB_CLKOUT),
+  .HPS_USB_DATA               (HPS_USB_DATA),
+  .HPS_USB_DIR                (HPS_USB_DIR),
+  .HPS_USB_NXT                (HPS_USB_NXT),
+  .HPS_USB_STP                (HPS_USB_STP),
+
+  ///////// CAMERA CONNECTOR ////////
+  .CAM_CONNECTOR              (GPIO_1),
+
   //----SIGNALS TO GENRATE VGA OUTPUT (ONLY IN DE1-SOC)----/
-  
+
   //RGB image from the synchronyzer
-  .export_sync_rgb_red								( sync_rgb_red ),
-  .export_sync_rgb_green						 	( sync_rgb_green ),
-  .export_sync_rgb_blue								( sync_rgb_blue ),
-  .export_sync_rgb_dval								( sync_rgb_dval ),
+  .export_sync_rgb_red         ( sync_rgb_red ),
+  .export_sync_rgb_green       ( sync_rgb_green ),
+  .export_sync_rgb_blue        ( sync_rgb_blue ),
+  .export_sync_rgb_dval        ( sync_rgb_dval ),
   //Gray image
-  .export_gray											( gray ),
-  .export_gray_valid									( gray_valid ),
+  .export_gray                 ( gray ),
+  .export_gray_valid           ( gray_valid ),
   //Binarized image from the HSV to Binary converter
-  .export_binarized_8bit							( binarized_8bit ),
-  .export_bin_valid									( bin_valid ),
+  .export_binarized_8bit       ( binarized_8bit ),
+  .export_bin_valid            ( bin_valid ),
   //Eroded binary image
-  .export_eroded_8bit								( eroded_8bit ),
-  .export_erosion_valid								( erosion_valid ),
+  .export_eroded_8bit          ( eroded_8bit ),
+  .export_erosion_valid        ( erosion_valid ),
   //Eroded and dilated binary image
-  .export_dilated_8bit								( dilated_8bit ),
-  .export_dilation_valid							( dilation_valid ),
+  .export_dilated_8bit         ( dilated_8bit ),
+  .export_dilation_valid       ( dilation_valid ),
   //clock and resets for the VGA
-  .export_ccd_pixel_clk								( ccd_pixel_clk ),
-  .export_clk_25										( clk_25 ),
-  .export_hps2fpga_reset_n 						( hps2fpga_reset_n ),
-  .export_video_stream_reset_n 					( video_stream_reset_n ),
-  
+  .export_ccd_pixel_clk        ( ccd_pixel_clk ),
+  .export_clk_25               ( clk_25 ),
+  .export_hps2fpga_reset_n     ( hps2fpga_reset_n ),
+  .export_video_stream_reset_n ( video_stream_reset_n ),
+
   //////FRAME RATE IN BINARY, TO 7 SEGMENT DISPLAYS////
-  .export_rate											( rate ),
+  .export_rate                 ( rate ),
   /////PULSE_LED////
-  .pulse_led											( LEDR[0] ),
+  .pulse_led                   ( LEDR[0] ),
   /////RESET_STREAM_N/////
-  .reset_stream_key									( KEY[0] ),
-	////EN_CAM_CAPTURE/////
-  .camera_capture_en									( SW[9] )
+  .reset_stream_key            ( KEY[0] ),
+  ////EN_CAM_CAPTURE/////
+  .camera_capture_en           ( !SW[9] )
   );
-  
-  
-//=======================================================
-//  REG/WIRE declarations
-//=======================================================
-  wire         sync_rgb_dval;
-  wire  [11:0] sync_rgb_red;
-  wire  [11:0] sync_rgb_green;
-  wire  [11:0] sync_rgb_blue;
-  wire  [7:0] gray;
-  wire        gray_valid;
-  wire        bin_valid;
-  wire  [7:0] binarized_8bit;
-  wire        erosion_valid;
-  wire  [7:0] eroded_8bit;
-  wire        dilation_valid;
-  wire  [7:0] dilated_8bit;
-  wire    video_stream_reset_n;
-  wire    hps2fpga_reset_n;
-  wire    clk_25;
-  wire    ccd_pixel_clk;
-  wire 	 rate;
- 
+
+
+
+
 //=======================================================
 //  Structural coding
-//======================================================= 
-  
+//=======================================================
+
   //-------------------------VGA------------------------//
 // On each camera cycle (defined by the pixel clock), the 3 components (RGB)
   // of a pixel are written to 2 FIFOs on the SDRAM memory. As the VGA controller
@@ -323,16 +329,16 @@ uvispace_top u0 (
                             sync_rgb_blue[11:7]};
         fifo_write_enable <= sync_rgb_dval;
       end
-		else if (SW[4])
-		begin
+    else if (SW[4])
+    begin
         fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
         fifo_write_enable <= bin_valid;
-		end 
-		else if (SW[5])
-		begin
+    end
+    else if (SW[5])
+    begin
         fifo1_writedata <= {8'h00, eroded_8bit[7:0]};
         fifo_write_enable <= erosion_valid;
-		end 
+    end
       else begin
         fifo1_writedata <= {8'h00, dilated_8bit[7:0]};
         fifo_write_enable <= dilation_valid;
@@ -434,12 +440,7 @@ vga_controller vga_component(
 
 //------------------7 segments Displays----------------//
 /*
-Instantiation of the 7-segment displays module.
-Depending on the status of the 8th switch (SW[8]), it will display the
-exposure value (if SW[8] = 1) or the frame rate (if SW[8] = 0).
-For getting the frame rate, a 1 second temporizer is created, and the
-number of frames between pulses is displayed. Moreover, a seconds pulse
-is wired to the first led of the board (LEDR[0])
+Instantiation of the 7-segment displays moduleto showframe rate
 */
 SEG7_LUT_8 u5(
   .oSEG0        (HEX0),
