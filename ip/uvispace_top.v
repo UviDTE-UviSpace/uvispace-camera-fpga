@@ -1,104 +1,43 @@
 /*
-This is the top level design for the DE1-SoC boards of UviSpace project.
-The ghrd_top() module; hps processor instantiation and connection; and
-the connection of the module's input/output signals to the corresponding
-pins were obtained from the Terasic DE1-SoC Golden Hardware Reference
-Design (GHRD) project. For more information about this basic project and
-the board, you can visit their website (http://www.terasic.com/).
-Some of the remaining modules are based on demonstrations provided by
-Terasic for the DE1-Soc and the DM5 Camera.
-The purpose of the design is to provide an FPGA circuit for configuring
-and acquiring images from a camera attached to the GPIO1 port. Hence,
-the following modules are used:
-- soc_system_u0: This module provides an interface with the Qsys design.
-The main component is the interface with the HPS processor and its main
-peripherals. Moreover, there are the following Qsys components: led_pio,
-dipsw_pio (for the switches), button_pio, clk_0, and pll_vga_clks.
-- CCD_Capture: This module serves as an interface with the attached
-camera. It reads pixels values and control inputs. Besides, it allows to
-decide when to start and stop acquiring images. The clock input is fed
-by the pixel clock.
-- RAW2RGB: It formats the raw data obtained from the camera peripheral
-to RGB values. Each pixel contains 3 components (Red, Green and Blue),
-defined by 12 bits each one.
-- rgb2hue: Gets the Hue component of the pixels from an RGB input. The
-Hue is a very useful value for evaluating the colour properties of an
-image, and thus for getting a red triangle in the image.
-- Sdram_Control: This module is used for connecting to the external DRAM
-memory and use it as a buffer between the camera input and the VGA
-output, as both are run with different clock rates. For this purpose,
-FIFO memories allowing simultaneous read and write operations are used.
-- vga_controller: Module for sending control bits to the VGA peripheral.
-The module has a set of parameters that defines the output resolution,
-being by default 640x480.
-- SEG7_LUT_8: This componet is used for showing the fram rate on the
-hexadecimal 8-segments peripherals.
-- camera_config: This module sends the default configuration to the
-camera using the I2C standard.
-NOTE: The desired design should have 2 FIFOs, in order to send 8 bits
-per component to the VGA controller. However, there is a synchronization
-error, and the values obtained in the second FIFO have an offset
-relative to the first one i.e. The component sent by the second FIFO
-corresponds to the one that was sent by the first one several iterations
-ago, resulting on an horizontal shift. For this reason, the size per
-pixel was reduced to 15 bits (1 zero and 5 bits per colour).
+uvispace top is the highest entity shared by DE1-SoC and DE0-nano-SoC
+boards. It is instantiated into the top module for each board and
+connected to their respective pins.
+
+In this file the Qsys system for the Uvispace project (soc_system)
+is instantiated. This system is responsible for having components 
+that permit control on the camera capture module, the image processing
+and also has image_writers that can write rgb, gray and binary images
+into the HPS processor memories.
+
+In this file the camera_capture is implemented. It access directly to the 
+camera and sources the image as raw.Then raw2rgb converts raw into
+3 RGB components of 8-bits each. After reset or start-up the camera
+receives configuration by the camera_config component by I2C commands.
+
+RGB data gets synchronized in the frame_sync component. Sometimes(its 
+not clear in camera documentation) the camera can stop keep sending
+image until it finishes a line after a reset. This could produce a 
+desynchronization in the image_writers, erosion and dilation. This 
+components waits few end of frames and ensuresthe rest of the system
+that the image starts in the first pixel after a reset.
+
+Lastly the synchronized RGB is sourced to image_processing component.
+This component transforms RGB to HSV and to Gray scale. Using
+the HSV binarizes the image to detect a color(usually red is the
+color of triangles over the uvispace cars). After it image gets
+eroded and dilated to erase noise.Binary, Gray and RGB are connected
+to soc_system who uses image_writers to write them into processor 
+memory.
 */
 
-`define ENABLE_HPS
 
 //=======================================================
 //Top level entity. Contains the inputs and outputs wired to external pins.
 //=======================================================
 module uvispace_top(
-  ///////// ADC /////////
-  inout              ADC_CS_N,
-  output             ADC_DIN,
-  input              ADC_DOUT,
-  output             ADC_SCLK,
-  ///////// AUD /////////
-  input              AUD_ADCDAT,
-  inout              AUD_ADCLRCK,
-  inout              AUD_BCLK,
-  output             AUD_DACDAT,
-  inout              AUD_DACLRCK,
-  output             AUD_XCK,
-  ///////// CLOCK2 /////////
-  input              CLOCK2_50,
-  ///////// CLOCK3 /////////
-  input              CLOCK3_50,
-  ///////// CLOCK4 /////////
-  input              CLOCK4_50,
   ///////// CLOCK /////////
   input              CLOCK_50,
-  ///////// DRAM /////////
-  output      [12:0] DRAM_ADDR,   //Address Bus
-  output      [1:0]  DRAM_BA,     //Bank address
-  output             DRAM_CAS_N,  //Column address strobe
-  output             DRAM_CKE,    //Clock enable
-  output             DRAM_CLK,    //Clock
-  output             DRAM_CS_N,   //Chip select
-  inout       [15:0] DRAM_DQ,     //Data Bus
-  output             DRAM_LDQM,   //Low-byte data mask
-  output             DRAM_RAS_N,  //Row adress strobe
-  output             DRAM_UDQM,   //High-byte data mask
-  output             DRAM_WE_N,   //Write enable
-  ///////// FAN /////////
-  output             FAN_CTRL,
-  ///////// FPGA /////////
-  output             FPGA_I2C_SCLK,
-  inout              FPGA_I2C_SDAT,
-  ///////// GPIO /////////
-  inout       [35:0] GPIO_0,
-  inout       [35:0] GPIO_1,
-  ///////// HEX /////////
-  output      [6:0]  HEX0,
-  output      [6:0]  HEX1,
-  output      [6:0]  HEX2,
-  output      [6:0]  HEX3,
-  output      [6:0]  HEX4,
-  output      [6:0]  HEX5,
   ///////// HPS /////////
-  `ifdef ENABLE_HPS
     inout              HPS_CONV_USB_N,
     output      [14:0] HPS_DDR3_ADDR,
     output      [2:0]  HPS_DDR3_BA,
@@ -151,36 +90,39 @@ module uvispace_top(
     input              HPS_USB_DIR,
     input              HPS_USB_NXT,
     output             HPS_USB_STP,
-  `endif /*ENABLE_HPS*/
-  ///////// IRDA /////////
-  input              IRDA_RXD,
-  output             IRDA_TXD,
-  ///////// KEY /////////
-  input       [3:0]  KEY,
-  ///////// LEDR /////////
-  output      [9:0]  LEDR,
-  ///////// PS2 /////////
-  inout              PS2_CLK,
-  inout              PS2_CLK2,
-  inout              PS2_DAT,
-  inout              PS2_DAT2,
-  ///////// SW /////////
-  input       [9:0]  SW,
-  ///////// TD /////////
-  input              TD_CLK27,
-  input       [7:0]  TD_DATA,
-  input              TD_HS,
-  output             TD_RESET_N,
-  input              TD_VS,
-  ///////// VGA /////////
-  output      [7:0]  VGA_B,
-  output             VGA_BLANK_N,
-  output             VGA_CLK,
-  output      [7:0]  VGA_G,
-  output             VGA_HS,
-  output      [7:0]  VGA_R,
-  output             VGA_SYNC_N,
-  output             VGA_VS
+  ///////// CAMERA CONNECTOR /////////
+  inout       [35:0] CAM_CONNECTOR,
+  ////SIGNALS TO GENRATE VGA OUTPUT (ONLY IN DE1-SOC)///  
+  //RGB image from the synchronyzer
+   output	[7:0]		export_sync_rgb_red,
+	output	[7:0]		export_sync_rgb_blue,
+	output	[7:0]		export_sync_rgb_green,
+	output				export_sync_rgb_dval,
+  //Gray image
+   output	[7:0]		export_gray,
+	output				export_gray_valid,
+  //Binarized image from the HSV to Binary converter
+   output	[7:0]		export_binarized_8bit,
+	output				export_bin_valid,
+  //Eroded binary image
+   output	[7:0]		export_eroded_8bit,
+	output				export_erosion_valid,
+  //Eroded and dilated binary image
+   output	[7:0]		export_dilated_8bit,
+	output				export_dilation_valid,
+  //clock and resets for the VGA
+   output 				export_ccd_pixel_clk,
+	output 				export_clk_25,
+	output 				export_hps2fpga_reset_n,
+	output 				export_video_stream_reset_n,
+	//////FRAME RATE IN BINARY, TO 7 SEGMENT DISPLAYS////
+	output 	[31:0] 	export_rate,
+	/////PULSE_LED////
+   output 				pulse_led,
+	/////RESET_STREAM_N/////
+	input					reset_stream_key,
+	////EN_CAM_CAPTURE/////
+	input 				camera_capture_en
   );
 
 //=======================================================
@@ -196,7 +138,7 @@ module uvispace_top(
   //Reset  video stream.(Components in FPGA outside Qsys).
   //It has 2 sources, camera_soft_reset_n and KEY[0].
   wire    video_stream_reset_n;
-  assign video_stream_reset_n = (camera_soft_reset_n & KEY[0]);
+  assign video_stream_reset_n = (camera_soft_reset_n & reset_stream_key);
   
 //Clocks
 	//Input camera clock. Generated in Qsys it is the source of clock 
@@ -369,8 +311,8 @@ camera_config #(
   // Ready signal
   .out_ready(ready),
   // I2C Side
-  .I2C_SCLK(GPIO_1[24]),
-  .I2C_SDAT(GPIO_1[23])
+  .I2C_SCLK(CAM_CONNECTOR[24]),
+  .I2C_SDAT(CAM_CONNECTOR[23])
   );
   // Camera config (I2C)
   wire          ready;
@@ -398,7 +340,7 @@ camera_capture u3(
   .in_data      (ccd_data_raw),         // 12-bit data
   .in_frame_valid (ccd_fval_raw),       // Frame valid signal
   .in_line_valid  (ccd_lval_raw),       // Line valid signal
-  .in_start     (SW[9]),
+  .in_start     (camera_capture_en),    // Enable camera capture
   .clock        (ccd_pixel_clk),
   // Negative logic reset
   .reset_n      (hps2fpga_reset_n & video_stream_reset_n),
@@ -422,27 +364,24 @@ camera_capture u3(
   // assign in_height = 11'd960;
 
   // CCD_Capture external pinout conections.
-  assign  CCD_DATA[0]  =  GPIO_1[13]; //Pixel data Bit 0
-  assign  CCD_DATA[1]  =  GPIO_1[12]; //Pixel data Bit 1
-  assign  CCD_DATA[2]  =  GPIO_1[11]; //Pixel data Bit 2
-  assign  CCD_DATA[3]  =  GPIO_1[10]; //Pixel data Bit 3
-  assign  CCD_DATA[4]  =  GPIO_1[9];  //Pixel data Bit 4
-  assign  CCD_DATA[5]  =  GPIO_1[8];  //Pixel data Bit 5
-  assign  CCD_DATA[6]  =  GPIO_1[7];  //Pixel data Bit 6
-  assign  CCD_DATA[7]  =  GPIO_1[6];  //Pixel data Bit 7
-  assign  CCD_DATA[8]  =  GPIO_1[5];  //Pixel data Bit 8
-  assign  CCD_DATA[9]  =  GPIO_1[4];  //Pixel data Bit 9
-  assign  CCD_DATA[10] =  GPIO_1[3];  //Pixel data Bit 10
-  assign  CCD_DATA[11] =  GPIO_1[1];  //Pixel data Bit 11
-  assign  GPIO_1[16]   =  clk_24;    //External input clock
-  assign  CCD_FVAL     =  GPIO_1[22]; //frame valid
-  assign  CCD_LVAL     =  GPIO_1[21]; //line valid
-  assign  ccd_pixel_clk=  GPIO_1[0];  //Pixel clock
-  assign  GPIO_1[19]   =  1'b1;       //trigger
-  assign  GPIO_1[17]   =  hps2fpga_reset_n & video_stream_reset_n;
-
-  assign  GPIO_0[0]   =  hps2fpga_reset_n & video_stream_reset_n;
-  assign  GPIO_0[1]   =  ccd_pixel_clk;
+  assign  CCD_DATA[0]  =  CAM_CONNECTOR[13]; //Pixel data Bit 0
+  assign  CCD_DATA[1]  =  CAM_CONNECTOR[12]; //Pixel data Bit 1
+  assign  CCD_DATA[2]  =  CAM_CONNECTOR[11]; //Pixel data Bit 2
+  assign  CCD_DATA[3]  =  CAM_CONNECTOR[10]; //Pixel data Bit 3
+  assign  CCD_DATA[4]  =  CAM_CONNECTOR[9];  //Pixel data Bit 4
+  assign  CCD_DATA[5]  =  CAM_CONNECTOR[8];  //Pixel data Bit 5
+  assign  CCD_DATA[6]  =  CAM_CONNECTOR[7];  //Pixel data Bit 6
+  assign  CCD_DATA[7]  =  CAM_CONNECTOR[6];  //Pixel data Bit 7
+  assign  CCD_DATA[8]  =  CAM_CONNECTOR[5];  //Pixel data Bit 8
+  assign  CCD_DATA[9]  =  CAM_CONNECTOR[4];  //Pixel data Bit 9
+  assign  CCD_DATA[10] =  CAM_CONNECTOR[3];  //Pixel data Bit 10
+  assign  CCD_DATA[11] =  CAM_CONNECTOR[1];  //Pixel data Bit 11
+  assign  CAM_CONNECTOR[16]   =  clk_24;    //External input clock
+  assign  CCD_FVAL     =  CAM_CONNECTOR[22]; //frame valid
+  assign  CCD_LVAL     =  CAM_CONNECTOR[21]; //line valid
+  assign  ccd_pixel_clk=  CAM_CONNECTOR[0];  //Pixel clock
+  assign  CAM_CONNECTOR[19]   =  1'b1;       //trigger
+  assign  CAM_CONNECTOR[17]   =  hps2fpga_reset_n & video_stream_reset_n;
 
   // Refreshes the data on the CCD camera on every pixel clock pulse.
   always@(posedge ccd_pixel_clk)
@@ -567,164 +506,12 @@ image_processing img_proc(
   assign eroded_8bit = eroded ? 8'd255 : 8'd0;
   assign dilated_8bit = dilated ? 8'd255 : 8'd0;
   
-
-//-------------------------VGA------------------------//
-// On each camera cycle (defined by the pixel clock), the 3 components (RGB)
-  // of a pixel are written to 2 FIFOs on the SDRAM memory. As the VGA controller
-  // can take only 1 byte per component, only the 8 most significative bits of
-  // each 'raw' component are sent to the 2 FIFOs created in the SDRAM.
-  // In case that only one FIFO memory is used, only the 5 most significative
-  // bits of each component are sent to the SDRAM.
-  always @(posedge ccd_pixel_clk) begin
-    if (!hps2fpga_reset_n & video_stream_reset_n) begin
-      // if reset, do nothing.
-    end
-    else begin
-      if (SW[3]) begin
-        fifo1_writedata <= {1'b0, sync_rgb_red[11:7], sync_rgb_green[11:7],
-                            sync_rgb_blue[11:7]};
-        fifo_write_enable <= sync_rgb_dval;
-      end
-		else if (SW[4])
-		begin
-        fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
-        fifo_write_enable <= bin_valid;
-		end 
-		else if (SW[5])
-		begin
-        fifo1_writedata <= {8'h00, eroded_8bit[7:0]};
-        fifo_write_enable <= erosion_valid;
-		end 
-      else begin
-        fifo1_writedata <= {8'h00, dilated_8bit[7:0]};
-        fifo_write_enable <= dilation_valid;
-      end
-    end
-  end
-
-// Dual clock SDRAM controller, based on DE1-SOC demonstration
-Sdram_Control u1(
-  // HOST Side
-  .REF_CLK(CLOCK_50),
-  .RESET_N(1'b1),
-  // FIFO Write Side 1
-  .WR1_DATA(fifo1_writedata),         //data bus size: 16 bits
-  .WR1(fifo_write_enable),
-  .WR1_ADDR(0),
-  .WR1_MAX_ADDR(640*480),             //address bus size: 25 bits
-  .WR1_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  .WR1_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
-  .WR1_CLK(~ccd_pixel_clk),
-  // FIFO Write Side 2 (Unused. Needed if 8 bits per pixel are used)
-  .WR2_DATA(fifo1_writedata),         //data bus size: 16 bits
-  .WR2(fifo_write_enable),
-  .WR2_ADDR(22'h100000),
-  .WR2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
-  .WR2_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  .WR2_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
-  .WR2_CLK(~ccd_pixel_clk),
-  // FIFO Read Side 1
-  .RD1_DATA(fifo1_readdata),          //data bus size: 16 bits
-  .RD1(vga_enable),                   //Read enable
-  .RD1_ADDR(0),
-  .RD1_MAX_ADDR(640*480),             //address bus size: 25 bits
-  .RD1_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  .RD1_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
-  .RD1_CLK(~clk_25),
-  // FIFO Read Side 2 (Unused. Needed if 8 bits per pixel are used)
-  .RD2_DATA(fifo2_readdata),          //data bus size: 16 bits
-  .RD2(vga_enable),                   //Read enable
-  .RD2_ADDR(22'h100000),
-  .RD2_MAX_ADDR(22'h100000+640*480),  //address bus size: 25 bits
-  .RD2_LENGTH(9'h80),                 //Max allowed size: 8 bits
-  .RD2_LOAD(!(hps2fpga_reset_n & video_stream_reset_n)),
-  .RD2_CLK(~clk_25),
-  // SDRAM Side
-  .SA(DRAM_ADDR),
-  .BA(DRAM_BA),
-  .CS_N(DRAM_CS_N),
-  .CKE(DRAM_CKE),
-  .RAS_N(DRAM_RAS_N),
-  .CAS_N(DRAM_CAS_N),
-  .WE_N(DRAM_WE_N),
-  .DQ(DRAM_DQ),
-  .DQM({DRAM_UDQM,DRAM_LDQM}),
-  .SDR_CLK(DRAM_CLK)
-  );
-  reg    fifo_write_enable;
-  //SDRAM FIFOs data
-  reg     [15:0] fifo1_writedata;
-  reg     [15:0] fifo2_writedata;
-  wire    [15:0] fifo1_readdata;
-  wire    [15:0] fifo2_readdata;
-
-// VGA controller component.
-vga_controller vga_component(
-  .pixel_clk  ( clk_25 ),
-  .reset_n    ( hps2fpga_reset_n & video_stream_reset_n ),
-  .h_sync     ( VGA_HS ),
-  .v_sync     ( VGA_VS ),
-  .disp_ena   ( vga_enable ),
-  .column     (),
-  .row        (),
-  .n_blank    ( VGA_BLANK_N ),
-  .n_sync     ( VGA_SYNC_N ),
-  .data_req   ( vga_request )
-  );
-  //VGA signals
-  wire    vga_enable;
-  //not used now
-  integer vga_row;
-  integer vga_col;
-
-  // Send the data on the FIFO memory to the VGA outputs.
-  assign VGA_R = (!vga_enable) ? 0 :
-                 (!SW[3])      ? fifo1_readdata[7:0] :
-                 (SW[0])       ? {fifo1_readdata[14:10], 3'd0} :
-                 0;
-  assign VGA_G = (!vga_enable) ? 0 :
-                 (!SW[3])      ? fifo1_readdata[7:0] :
-                 (SW[1])       ? {fifo1_readdata[9:5], 3'd0} :
-                 0;
-  assign VGA_B = (!vga_enable) ? 0 :
-                 (!SW[3])      ? fifo1_readdata[7:0] :
-                 (SW[2])       ? {fifo1_readdata[4:0], 3'd0} :
-                 0;
-  // Set the VGA clock to 25 MHz.
-  assign  VGA_CLK = clk_25;
-
-
-//------------------7 segments Displays----------------//
-/*
-Instantiation of the 7-segment displays module.
-Depending on the status of the 8th switch (SW[8]), it will display the
-exposure value (if SW[8] = 1) or the frame rate (if SW[8] = 0).
-For getting the frame rate, a 1 second temporizer is created, and the
-number of frames between pulses is displayed. Moreover, a seconds pulse
-is wired to the first led of the board (LEDR[0])
-*/
-SEG7_LUT_8 u5(
-  .oSEG0        (HEX0),
-  .oSEG1        (HEX1),
-  .oSEG2        (HEX2),
-  .oSEG3        (HEX3),
-  .oSEG4        (HEX4),
-  .oSEG5        (HEX5),
-  .oSEG6        (),
-  .oSEG7        (),
-  .iDIG         (display)
-  );
-  wire  [31:0] display;
+  // Calculate the frame rate.
+  // Seconds counter. The output will be 1 during one pulse after 1 second.
   reg   [31:0] count;
   reg   [31:0] rate;
   reg   [31:0] _Frame_Cont;
-  reg          seconds_pulse;
   reg          pulse;
-  assign LEDR[0] = pulse;
-  assign LEDR[1] = pulse;
-  assign display = (SW[8]) ? {16'h0, in_exposure} : rate;
-  // Calculate the frame rate.
-  // Seconds counter. The output will be 1 during one pulse after 1 second.
   always @(posedge CLOCK_50) begin
     if (count < 50000000) begin
       count = count + 1;
@@ -738,4 +525,26 @@ SEG7_LUT_8 u5(
       _Frame_Cont = Frame_Cont;
     end
   end
+  assign pulse_led = pulse;
+
+//-------------------------VGA------------------------//
+//Export signals to show images through VGA
+  assign export_sync_rgb_red = sync_rgb_red;
+  assign export_sync_rgb_green = sync_rgb_green;
+  assign export_sync_rgb_blue = sync_rgb_blue;
+  assign export_sync_rgb_dval = sync_rgb_dval;
+  assign export_gray = gray;
+  assign export_gray_valid = gray_valid;
+  assign export_binarized_8bit = binarized_8bit;
+  assign export_bin_valid = bin_valid;
+  assign export_eroded_8bit = eroded_8bit;
+  assign export_erosion_valid = erosion_valid;
+  assign export_dilated_8bit = dilated_8bit;
+  assign export_dilation_valid = dilation_valid;
+  assign export_ccd_pixel_clk = ccd_pixel_clk;
+  assign export_clk_25 = clk_25;
+  assign export_hps2fpga_reset_n = hps2fpga_reset_n;
+  assign export_video_stream_reset_n= video_stream_reset_n;
+  assign export_rate = rate;
+  
 endmodule
