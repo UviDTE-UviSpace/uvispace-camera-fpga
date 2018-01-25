@@ -1,7 +1,7 @@
 #Quartus II files
 *.qsys_edit/
 soc_system/
-*hps_isw_handoff/**
+*/hps_isw_handoff/**
 *db/
 *.bak
 incremental_db/
@@ -16,7 +16,6 @@ incremental_db/
 *.sopcinfo
 *.sld
 *.qws
-*.qdf
 *.sof
 *.rbf
 *.cdf

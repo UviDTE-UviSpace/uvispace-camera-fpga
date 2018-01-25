@@ -5,7 +5,7 @@
 
 set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CSEMA5F31C6
-set_global_assignment -name TOP_LEVEL_ENTITY uvispace_top
+set_global_assignment -name TOP_LEVEL_ENTITY uvispace_top_de1_soc
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 13
 set_global_assignment -name LAST_QUARTUS_VERSION 16.0.2
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "MON JUN 17 20:35:29 2013"
@@ -369,6 +369,23 @@ set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+
+
+set_global_assignment -name QIP_FILE ../ip/image_processing/image_processing.qip
+set_global_assignment -name VERILOG_FILE uvispace_top_de1_soc.v
+set_global_assignment -name QIP_FILE ../ip/sdram_control/Sdram_Control.qip
+set_global_assignment -name QIP_FILE "../ip/7-segment_displays/7-segment_displays.qip"
+set_global_assignment -name QIP_FILE ../ip/camera_controller/camera_core.qip
+set_global_assignment -name VERILOG_FILE ../ip/GHRD_IPs/edge_detect/altera_edge_detector.v
+set_global_assignment -name VERILOG_FILE ../ip/GHRD_IPs/debounce/debounce.v
+set_global_assignment -name QIP_FILE ../ip/GHRD_IPs/altsource_probe/hps_reset.qip
+set_global_assignment -name VHDL_FILE ../ip/vga_controller/vga_controller.vhd
+set_global_assignment -name QIP_FILE soc_system/synthesis/soc_system.qip
+set_global_assignment -name VERILOG_FILE ../ip/uvispace_top.v
+
+set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
+set_global_assignment -name VHDL_SHOW_LMF_MAPPING_MESSAGES OFF
+set_global_assignment -name ENABLE_SIGNALTAP OFF
 
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
@@ -941,25 +958,4 @@ set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|hps_0|hps_io|border|hps_s
 set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|hps_0|hps_io|border|hps_sdram_inst|p0|umemphy|uread_datapath|reset_n_fifo_wraddress[3] -tag __hps_sdram_p0
 set_instance_assignment -name ENABLE_BENEFICIAL_SKEW_OPTIMIZATION_FOR_NON_GLOBAL_CLOCKS ON -to u0|hps_0|hps_io|border|hps_sdram_inst -tag __hps_sdram_p0
 set_instance_assignment -name PLL_COMPENSATION_MODE DIRECT -to u0|hps_0|hps_io|border|hps_sdram_inst|pll0|fbout -tag __hps_sdram_p0
-set_global_assignment -name QIP_FILE ip/image_processing/image_processing.qip
-set_global_assignment -name VERILOG_FILE uvispace_top.v
-set_global_assignment -name QIP_FILE ip/sdram_control/Sdram_Control.qip
-set_global_assignment -name QIP_FILE "ip/7-segment_displays/7-segment_displays.qip"
-set_global_assignment -name QIP_FILE ip/camera_controller/camera_core.qip
-set_global_assignment -name VERILOG_FILE ip/GHRD_IPs/edge_detect/altera_edge_detector.v
-set_global_assignment -name VERILOG_FILE ip/GHRD_IPs/debounce/debounce.v
-set_global_assignment -name QIP_FILE ip/GHRD_IPs/altsource_probe/hps_reset.qip
-set_global_assignment -name VHDL_FILE ip/vga_controller/vga_controller.vhd
-set_global_assignment -name QIP_FILE soc_system/synthesis/soc_system.qip
-
-set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-set_global_assignment -name VHDL_SHOW_LMF_MAPPING_MESSAGES OFF
-set_global_assignment -name VHDL_FILE ip/camera_controller/avalon_image_writer.vhd
-set_global_assignment -name VHDL_FILE simulations/avalon_image_writer/avalon_image_writer.vhd
-set_global_assignment -name VHDL_FILE ip/image_processing/avalon_image_processing.vhd
-set_global_assignment -name ENABLE_SIGNALTAP OFF
-set_global_assignment -name USE_SIGNALTAP_FILE "/media/hdd/git/uvispace-camera-fpga/stp2.stp"
-set_global_assignment -name SIGNALTAP_FILE stp1.stp
-set_global_assignment -name SIGNALTAP_FILE "/media/hdd/git/uvispace-camera-fpga/stp2.stp"
-set_global_assignment -name VHDL_FILE "/media/hdd/git/uvispace-camera-fpga/ip/image_processing/rgb2gray.vhd"
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
