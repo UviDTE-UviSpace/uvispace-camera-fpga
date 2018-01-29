@@ -27,11 +27,6 @@
    }
    element avalon_image_processing_0.avalon_slave
    {
-      datum _tags
-      {
-         value = "";
-         type = "String";
-      }
       datum baseAddress
       {
          value = "1024";
@@ -142,74 +137,10 @@
          type = "int";
       }
    }
-   element soc_system
-   {
-      datum _originalDeviceFamily
-      {
-         value = "Cyclone V";
-         type = "String";
-      }
-   }
-   element soc_system
-   {
-      datum _originalDeviceFamily
-      {
-         value = "Cyclone V";
-         type = "String";
-      }
-   }
-   element soc_system
-   {
-      datum _originalDeviceFamily
-      {
-         value = "Cyclone V";
-         type = "String";
-      }
-   }
-   element soc_system
-   {
-      datum _originalDeviceFamily
-      {
-         value = "Cyclone V";
-         type = "String";
-      }
-   }
-   element soc_system
-   {
-      datum _originalDeviceFamily
-      {
-         value = "Cyclone V";
-         type = "String";
-      }
-   }
-   element soc_system
-   {
-      datum _originalDeviceFamily
-      {
-         value = "Cyclone V";
-         type = "String";
-      }
-   }
-   element soc_system
-   {
-      datum _originalDeviceFamily
-      {
-         value = "Cyclone V";
-         type = "String";
-      }
-   }
-   element soc_system
-   {
-      datum _originalDeviceFamily
-      {
-         value = "Cyclone V";
-         type = "String";
-      }
-   }
 }
 ]]></parameter>
  <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
- <parameter name="device" value="5CSEMA5F31C6" />
+ <parameter name="device" value="5CSEMA4U23C6" />
  <parameter name="deviceFamily" value="Cyclone V" />
  <parameter name="deviceSpeedGrade" value="6" />
  <parameter name="fabricMode" value="QSYS" />
@@ -257,6 +188,7 @@
    internal="export_hps_reset_bridge.out_reset"
    type="reset"
    dir="start" />
+ <interface name="hps_0_h2f_user0_clock" internal="hps_0.h2f_user0_clock" />
  <interface name="hps_0_hps_io" internal="hps_0.hps_io" type="conduit" dir="end" />
  <interface
    name="img_processing"
@@ -366,7 +298,7 @@
    version="16.0"
    enabled="1">
   <parameter name="DERIVED_CLOCK_RATE" value="0" />
-  <parameter name="EXPLICIT_CLOCK_RATE" value="50000000" />
+  <parameter name="EXPLICIT_CLOCK_RATE" value="0" />
   <parameter name="NUM_CLOCK_OUTPUTS" value="1" />
  </module>
  <module name="hps_0" kind="altera_hps" version="16.0" enabled="1">
@@ -568,7 +500,7 @@
   <parameter name="MEM_DLL_EN" value="true" />
   <parameter name="MEM_DQ_PER_DQS" value="8" />
   <parameter name="MEM_DQ_WIDTH" value="32" />
-  <parameter name="MEM_DRV_STR" value="RZQ/7" />
+  <parameter name="MEM_DRV_STR" value="RZQ/6" />
   <parameter name="MEM_FORMAT" value="DISCRETE" />
   <parameter name="MEM_GUARANTEED_WRITE_INIT" value="false" />
   <parameter name="MEM_IF_BOARD_BASE_DELAY" value="10" />
@@ -584,27 +516,27 @@
   <parameter name="MEM_PD" value="DLL off" />
   <parameter name="MEM_RANK_MULTIPLICATION_FACTOR" value="1" />
   <parameter name="MEM_ROW_ADDR_WIDTH" value="15" />
-  <parameter name="MEM_RTT_NOM" value="RZQ/4" />
-  <parameter name="MEM_RTT_WR" value="RZQ/4" />
+  <parameter name="MEM_RTT_NOM" value="RZQ/6" />
+  <parameter name="MEM_RTT_WR" value="Dynamic ODT off" />
   <parameter name="MEM_SRT" value="Normal" />
-  <parameter name="MEM_TCL" value="11" />
-  <parameter name="MEM_TFAW_NS" value="30.0" />
+  <parameter name="MEM_TCL" value="7" />
+  <parameter name="MEM_TFAW_NS" value="37.5" />
   <parameter name="MEM_TINIT_US" value="500" />
   <parameter name="MEM_TMRD_CK" value="4" />
   <parameter name="MEM_TRAS_NS" value="35.0" />
   <parameter name="MEM_TRCD_NS" value="13.75" />
   <parameter name="MEM_TREFI_US" value="7.8" />
-  <parameter name="MEM_TRFC_NS" value="260.0" />
+  <parameter name="MEM_TRFC_NS" value="300.0" />
   <parameter name="MEM_TRP_NS" value="13.75" />
   <parameter name="MEM_TRRD_NS" value="7.5" />
   <parameter name="MEM_TRTP_NS" value="7.5" />
   <parameter name="MEM_TWR_NS" value="15.0" />
   <parameter name="MEM_TWTR" value="4" />
   <parameter name="MEM_USER_LEVELING_MODE" value="Leveling" />
-  <parameter name="MEM_VENDOR" value="Micron" />
+  <parameter name="MEM_VENDOR" value="Other" />
   <parameter name="MEM_VERBOSE" value="true" />
   <parameter name="MEM_VOLTAGE" value="1.5V DDR3" />
-  <parameter name="MEM_WTCL" value="8" />
+  <parameter name="MEM_WTCL" value="7" />
   <parameter name="MPU_EVENTS_Enable" value="false" />
   <parameter name="MRS_MIRROR_PING_PONG_ATSO" value="false" />
   <parameter name="MULTICAST_EN" value="false" />
@@ -766,7 +698,7 @@
   <parameter name="TIMING_BOARD_AC_EYE_REDUCTION_SU" value="0.0" />
   <parameter name="TIMING_BOARD_AC_SKEW" value="0.02" />
   <parameter name="TIMING_BOARD_AC_SLEW_RATE" value="1.0" />
-  <parameter name="TIMING_BOARD_AC_TO_CK_SKEW" value="0.01" />
+  <parameter name="TIMING_BOARD_AC_TO_CK_SKEW" value="0.0" />
   <parameter name="TIMING_BOARD_CK_CKN_SLEW_RATE" value="2.0" />
   <parameter name="TIMING_BOARD_DELTA_DQS_ARRIVAL_TIME" value="0.0" />
   <parameter name="TIMING_BOARD_DELTA_READ_DQS_ARRIVAL_TIME" value="0.0" />
@@ -774,36 +706,36 @@
   <parameter name="TIMING_BOARD_DQS_DQSN_SLEW_RATE" value="2.0" />
   <parameter name="TIMING_BOARD_DQ_EYE_REDUCTION" value="0.0" />
   <parameter name="TIMING_BOARD_DQ_SLEW_RATE" value="1.0" />
-  <parameter name="TIMING_BOARD_DQ_TO_DQS_SKEW" value="0.05" />
+  <parameter name="TIMING_BOARD_DQ_TO_DQS_SKEW" value="0.0" />
   <parameter name="TIMING_BOARD_ISI_METHOD" value="AUTO" />
-  <parameter name="TIMING_BOARD_MAX_CK_DELAY" value="0.03" />
-  <parameter name="TIMING_BOARD_MAX_DQS_DELAY" value="0.02" />
+  <parameter name="TIMING_BOARD_MAX_CK_DELAY" value="0.6" />
+  <parameter name="TIMING_BOARD_MAX_DQS_DELAY" value="0.6" />
   <parameter name="TIMING_BOARD_READ_DQ_EYE_REDUCTION" value="0.0" />
   <parameter name="TIMING_BOARD_SKEW_BETWEEN_DIMMS" value="0.05" />
-  <parameter name="TIMING_BOARD_SKEW_BETWEEN_DQS" value="0.06" />
-  <parameter name="TIMING_BOARD_SKEW_CKDQS_DIMM_MAX" value="0.12" />
-  <parameter name="TIMING_BOARD_SKEW_CKDQS_DIMM_MIN" value="0.06" />
-  <parameter name="TIMING_BOARD_SKEW_WITHIN_DQS" value="0.01" />
+  <parameter name="TIMING_BOARD_SKEW_BETWEEN_DQS" value="0.02" />
+  <parameter name="TIMING_BOARD_SKEW_CKDQS_DIMM_MAX" value="0.01" />
+  <parameter name="TIMING_BOARD_SKEW_CKDQS_DIMM_MIN" value="-0.01" />
+  <parameter name="TIMING_BOARD_SKEW_WITHIN_DQS" value="0.02" />
   <parameter name="TIMING_BOARD_TDH" value="0.0" />
   <parameter name="TIMING_BOARD_TDS" value="0.0" />
   <parameter name="TIMING_BOARD_TIH" value="0.0" />
   <parameter name="TIMING_BOARD_TIS" value="0.0" />
-  <parameter name="TIMING_TDH" value="65" />
-  <parameter name="TIMING_TDQSCK" value="255" />
+  <parameter name="TIMING_TDH" value="125" />
+  <parameter name="TIMING_TDQSCK" value="400" />
   <parameter name="TIMING_TDQSCKDL" value="1200" />
   <parameter name="TIMING_TDQSCKDM" value="900" />
   <parameter name="TIMING_TDQSCKDS" value="450" />
   <parameter name="TIMING_TDQSH" value="0.35" />
-  <parameter name="TIMING_TDQSQ" value="125" />
+  <parameter name="TIMING_TDQSQ" value="120" />
   <parameter name="TIMING_TDQSS" value="0.25" />
-  <parameter name="TIMING_TDS" value="30" />
+  <parameter name="TIMING_TDS" value="50" />
   <parameter name="TIMING_TDSH" value="0.2" />
   <parameter name="TIMING_TDSS" value="0.2" />
-  <parameter name="TIMING_TIH" value="140" />
-  <parameter name="TIMING_TIS" value="180" />
+  <parameter name="TIMING_TIH" value="250" />
+  <parameter name="TIMING_TIS" value="175" />
   <parameter name="TIMING_TQH" value="0.38" />
   <parameter name="TIMING_TQHS" value="300" />
-  <parameter name="TIMING_TQSH" value="0.4" />
+  <parameter name="TIMING_TQSH" value="0.38" />
   <parameter name="TPIUFPGA_Enable" value="false" />
   <parameter name="TPIUFPGA_alt" value="false" />
   <parameter name="TRACE_Mode" value="N/A" />
@@ -846,11 +778,11 @@
   <parameter name="desired_l4_sp_clk_mhz" value="100.0" />
   <parameter name="desired_mpu_clk_mhz" value="800.0" />
   <parameter name="desired_nand_clk_mhz" value="12.5" />
-  <parameter name="desired_qspi_clk_mhz" value="400.0" />
+  <parameter name="desired_qspi_clk_mhz" value="370.0" />
   <parameter name="desired_sdmmc_clk_mhz" value="200.0" />
   <parameter name="desired_spi_m_clk_mhz" value="200.0" />
   <parameter name="desired_usb_mp_clk_mhz" value="200.0" />
-  <parameter name="device_name" value="5CSEMA5F31C6" />
+  <parameter name="device_name" value="5CSEMA4U23C6" />
   <parameter name="device_pll_info_manual">{320000000 1600000000} {320000000 1000000000} {800000000 400000000 400000000}</parameter>
   <parameter name="eosc1_clk_mhz" value="25.0" />
   <parameter name="eosc2_clk_mhz" value="25.0" />
@@ -903,7 +835,7 @@
  <module name="pll_camera_clks" kind="altera_pll" version="16.0" enabled="1">
   <parameter name="debug_print_output" value="false" />
   <parameter name="debug_use_rbc_taf_method" value="false" />
-  <parameter name="device" value="5CSEMA5F31C6" />
+  <parameter name="device" value="5CSEMA4U23C6" />
   <parameter name="device_family" value="Cyclone V" />
   <parameter name="gui_active_clk" value="false" />
   <parameter name="gui_actual_output_clock_frequency0" value="0 MHz" />
@@ -1106,7 +1038,7 @@
  <module name="pll_vga_clks" kind="altera_pll" version="16.0" enabled="1">
   <parameter name="debug_print_output" value="false" />
   <parameter name="debug_use_rbc_taf_method" value="false" />
-  <parameter name="device" value="5CSEMA5F31C6" />
+  <parameter name="device" value="5CSEMA4U23C6" />
   <parameter name="device_family" value="Cyclone V" />
   <parameter name="gui_active_clk" value="false" />
   <parameter name="gui_actual_output_clock_frequency0" value="0 MHz" />
@@ -1387,6 +1319,16 @@
    kind="clock"
    version="16.0"
    start="ccd_pixel_clock_bridge.out_clk"
+   end="avalon_camera_0.clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="ccd_pixel_clock_bridge.out_clk"
+   end="avalon_img_writer_rgbgray.clock" />
+ <connection
+   kind="clock"
+   version="16.0"
+   start="ccd_pixel_clock_bridge.out_clk"
    end="avalon_img_writer_gray.clock" />
  <connection
    kind="clock"
@@ -1397,17 +1339,7 @@
    kind="clock"
    version="16.0"
    start="ccd_pixel_clock_bridge.out_clk"
-   end="avalon_camera_0.clock" />
- <connection
-   kind="clock"
-   version="16.0"
-   start="ccd_pixel_clock_bridge.out_clk"
    end="avalon_image_processing_0.clock" />
- <connection
-   kind="clock"
-   version="16.0"
-   start="ccd_pixel_clock_bridge.out_clk"
-   end="avalon_img_writer_rgbgray.clock" />
  <connection
    kind="clock"
    version="16.0"
@@ -1437,12 +1369,12 @@
    kind="clock"
    version="16.0"
    start="external_clock_50_bridge.out_clk"
-   end="pll_camera_clks.refclk" />
+   end="pll_vga_clks.refclk" />
  <connection
    kind="clock"
    version="16.0"
    start="external_clock_50_bridge.out_clk"
-   end="pll_vga_clks.refclk" />
+   end="pll_camera_clks.refclk" />
  <connection
    kind="reset"
    version="16.0"
@@ -1452,17 +1384,12 @@
    kind="reset"
    version="16.0"
    start="hps_0.h2f_reset"
-   end="pll_vga_clks.reset" />
- <connection
-   kind="reset"
-   version="16.0"
-   start="hps_0.h2f_reset"
-   end="pll_camera_clks.reset" />
- <connection
-   kind="reset"
-   version="16.0"
-   start="hps_0.h2f_reset"
    end="avalon_camera_0.reset" />
+ <connection
+   kind="reset"
+   version="16.0"
+   start="hps_0.h2f_reset"
+   end="avalon_img_writer_rgbgray.reset" />
  <connection
    kind="reset"
    version="16.0"
@@ -1482,7 +1409,12 @@
    kind="reset"
    version="16.0"
    start="hps_0.h2f_reset"
-   end="avalon_img_writer_rgbgray.reset" />
+   end="pll_vga_clks.reset" />
+ <connection
+   kind="reset"
+   version="16.0"
+   start="hps_0.h2f_reset"
+   end="pll_camera_clks.reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
 </system>
