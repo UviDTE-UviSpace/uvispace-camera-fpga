@@ -1,16 +1,19 @@
 /*
-RGB to Hue module
------------------
+------------------------------------------------------------------
+   rgb2hsv component
+------------------------------------------------------------------
 
-This module convert the RGB values of the input to its Hue.
+This module convert the RGB values of the input to its HSV.
 
 The processing is divided in a 6 stages pipeline, in order to optimize
 the hardware, as the system works in streaming i.e. one pixel is
 processed at each clock cycle.
 
-NOTE: The Hue is the H component from the HSV image format.
+NOTE: The Hue is the H component from the HSV image format,
+the Saturation is the S component,
+and the Brightness is the V component.
 */
-module rgb2hue(
+module rgb2hsv(
         input clock,
         input reset_n,
         // Data input
@@ -26,6 +29,8 @@ module rgb2hue(
         output [7:0] out_green,
         output [7:0] out_blue,
         output [7:0] out_hue,
+        output [7:0] out_saturation,
+        output [7:0] out_brightness,
         output out_visual,
         output out_done
     );
@@ -260,6 +265,7 @@ module rgb2hue(
     // Color
     reg [11:0] hue4;
     reg [7:0] dif4;
+    reg [7:0] max_value4;
     reg [1:0] max_index4;
     always @(posedge clock)
     begin
@@ -271,6 +277,7 @@ module rgb2hue(
             visual4 <= visual3;
             done4 <= done3;          
             dif4[7:0] <= dif3[7:0];
+            max_value4[7:0] <= max_value3[7:0];
             max_index4 <= max_index3;
             // Division
             hue4[11:0] <= (hue3 / dif3);
@@ -284,6 +291,7 @@ module rgb2hue(
             done4 <= 1'b0;
             hue4[11:0] <= 12'd0;
             dif4[7:0] <= 8'd0;
+            max_value4 <= 8'd0;
             max_index4[1:0] <= 2'd0;
         end
     end
@@ -301,6 +309,8 @@ module rgb2hue(
     reg done5;
     // Color
     reg [11:0] hue5;
+    reg [7:0] dif5;
+    reg [7:0] max_value5;
     always @(posedge clock)
     begin
         if (reset_n) begin
@@ -310,6 +320,8 @@ module rgb2hue(
             blue5[7:0] <= blue4[7:0];
             visual5 <= visual4;
             done5 <= done4;
+            dif5[7:0] <= dif4[7:0];
+            max_value5[7:0] <= max_value4[7:0];
             if (dif4 > 0) begin
                 if (max_index4 == 1) begin
                     if (green4 < blue4) begin
@@ -347,13 +359,22 @@ module rgb2hue(
             blue5[7:0] <= 8'b0;
             visual5 <= 1'b0;
             done5 <= 1'b0;
+            dif5[7:0] <= 8'd0;
+            max_value5[7:0] <= 8'd0;
             hue5[11:0] <= 12'd0;
         end
     end
     
     // STAGE 6
-    // Calculates the hue value of the current pixel.
+    // Calculates the final hue value of the current pixel.
     // It is the product of the result of the previous stage (hue5) and 85.
+    //
+    // Calculates the pixel saturation, defined as the coefficient between the
+    // difference of the 2 smallest components and the highest component value.
+    //
+    // Assigns the brightness output value, corresponding to the highest
+    // component value.
+    //
     // Propagates as well the rest of the values used in the previous stages.
     // The result register has a size of 18 bits, and it is cropped to 8.
     reg valid;
@@ -364,6 +385,8 @@ module rgb2hue(
     reg done;
     // Color
     reg [18:0] hue;
+    reg [7:0] saturation;
+    reg [7:0] max_value;
     always @(posedge clock)
     begin
         if (reset_n) begin
@@ -373,7 +396,14 @@ module rgb2hue(
             blue[7:0] <= blue5[7:0];
             visual <= visual5;
             done <= done5;
+            max_value[7:0] <= max_value5[7:0];
             hue[18:0] <= (85 * hue5);
+            if (max_value5 == 0) begin
+                saturation[7:0] = 8'd0;
+            end
+            else begin
+                saturation[7:0] = 255 * dif5 / max_value5;
+            end
         end
         else begin 
             valid <= 1'b0;
@@ -382,7 +412,9 @@ module rgb2hue(
             blue[7:0] <= 8'b0;
             visual <= 1'b0;
             done <= 1'b0;
+            max_value[7:0] <= 8'd0;
             hue[18:0] <= 19'd0;
+            saturation [7:0] <= 8'd0;
         end
     end
     assign out_valid = valid;
@@ -390,6 +422,8 @@ module rgb2hue(
     assign out_green[7:0] = green[7:0];  
     assign out_blue[7:0] = blue[7:0];
     assign out_hue[7:0] = hue[12:5];
+    assign out_saturation[7:0] = saturation[7:0];
+    assign out_brightness[7:0] = max_value[7:0];
     assign out_visual = visual;
     assign out_done = done;
     

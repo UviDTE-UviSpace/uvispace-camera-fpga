@@ -48,6 +48,12 @@ module camera_config #(
         input [15:0] column_size,
         input [15:0] row_mode,
         input [15:0] column_mode,
+		  input [15:0] h_blanking,
+		  input [15:0] v_blanking,
+		  input [15:0] red_gain,
+		  input [15:0] green1_gain,
+		  input [15:0] green2_gain,
+		  input [15:0] blue_gain,
         // Ready output
         output out_ready,
         // I2C Side
@@ -159,13 +165,13 @@ module camera_config #(
             0: LUT_DATA <= 24'h000000;
             1: LUT_DATA <= 24'h20c000; // Mirror Row and Columns
             2: LUT_DATA	<= {8'h09, exposure}; // Exposure
-            3: LUT_DATA <= 24'h050000; // H_Blanking
-            4: LUT_DATA <= 24'h060019; // V_Blanking
+				3: LUT_DATA <= {8'h05, h_blanking}; // H_Blanking
+            4: LUT_DATA <= {8'h06, v_blanking}; // V_Blanking
             5: LUT_DATA <= 24'h0A8000; // Change latch
-            6: LUT_DATA <= 24'h2B0013; // Green 1 Gain
-            7: LUT_DATA <= 24'h2C009A; // Blue Gain
-            8: LUT_DATA <= 24'h2D019C; // Red Gain
-            9: LUT_DATA <= 24'h2E0013; // Green 2 Gain
+            6: LUT_DATA <= {8'h2B, green1_gain}; // Green 1 Gain
+            7: LUT_DATA <= {8'h2C, blue_gain}; // Blue Gain
+            8: LUT_DATA <= {8'h2D, red_gain}; // Red Gain
+            9: LUT_DATA <= {8'h2E, green2_gain}; // Green 2 Gain
             10: LUT_DATA <= 24'h100051; // Set up PLL power on
             // PLL_m_Factor << 8 + PLL_n_Divider. Default = h111807
             11: LUT_DATA <= 24'h112003; 
