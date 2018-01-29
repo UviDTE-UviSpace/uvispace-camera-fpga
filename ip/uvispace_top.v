@@ -5,27 +5,32 @@ connected to their respective pins.
 
 In this file the Qsys system for the Uvispace project (soc_system)
 is instantiated. This system is responsible for having components
-that permit control on the camera capture module, the image processing
-and also has image_writers that can write rgb, gray and binary images
-into the HPS processor memories.
+that permit control on the camera capture modul(avalon_camera)e
+and the image processing(avalon_image_processin).It also has 3
+image_writers that can write rgb, gray and binary images into the
+HPS processor memories so they can be read from processor.
 
-In this file the camera_capture is implemented. It access directly to the
-camera and sources the image as raw.Then raw2rgb converts raw into
-3 RGB components of 8-bits each. After reset or start-up the camera
-receives configuration by the camera_config component by I2C commands.
+Later in this file the camera_capture is implemented. It access
+directly to the camera and sources the image as raw.Then raw2rgb
+converts raw into 3 RGB components of 8-bits each combining single
+color pixels (from the camera) into one single pixel with 3 components
+After reset or start-up the camera receives configuration by the
+camera_config component by I2C commands. Inside this component commands
+can be easily changed to modify the behaviour of the camera.
 
 RGB data gets synchronized in the frame_sync component. Sometimes(its
-not clear in camera documentation) the camera can stop keep sending
+not clear in camera documentation), the camera can stop keep sending
 image until it finishes a line after a reset. This could produce a
-desynchronization in the image_writers, erosion and dilation. This
-components waits few end of frames and ensuresthe rest of the system
-that the image starts in the first pixel after a reset.
+desynchronization in the image_writers, erosion and dilation. frame_sync
+components waits few end of frames and ensures thatin  the rest of the
+system the image starts in the first pixel after a reset (needed by
+dilation and erosion and image writers to keep synchronized).
 
 Lastly the synchronized RGB is sourced to image_processing component.
 This component transforms RGB to HSV and to Gray scale. Using
 the HSV binarizes the image to detect a color(usually red is the
 color of triangles over the uvispace cars). After it image gets
-eroded and dilated to erase noise.Binary, Gray and RGB are connected
+eroded and dilated to erase noise. Binary, Gray and RGB are connected
 to soc_system who uses image_writers to write them into processor
 memory.
 */

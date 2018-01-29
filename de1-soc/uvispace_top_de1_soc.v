@@ -1,47 +1,29 @@
 /*
 This is the top level design for the DE1-SoC boards of UviSpace project.
-The ghrd_top() module; hps processor instantiation and connection; and
-the connection of the module's input/output signals to the corresponding
-pins were obtained from the Terasic DE1-SoC Golden Hardware Reference
-Design (GHRD) project. For more information about this basic project and
-the board, you can visit their website (http://www.terasic.com/).
-Some of the remaining modules are based on demonstrations provided by
-Terasic for the DE1-Soc and the DM5 Camera.
-The purpose of the design is to provide an FPGA circuit for configuring
-and acquiring images from a camera attached to the GPIO1 port. Hence,
-the following modules are used:
-- soc_system_u0: This module provides an interface with the Qsys design.
-The main component is the interface with the HPS processor and its main
-peripherals. Moreover, there are the following Qsys components: led_pio,
-dipsw_pio (for the switches), button_pio, clk_0, and pll_vga_clks.
-- CCD_Capture: This module serves as an interface with the attached
-camera. It reads pixels values and control inputs. Besides, it allows to
-decide when to start and stop acquiring images. The clock input is fed
-by the pixel clock.
-- RAW2RGB: It formats the raw data obtained from the camera peripheral
-to RGB values. Each pixel contains 3 components (Red, Green and Blue),
-defined by 12 bits each one.
-- rgb2hue: Gets the Hue component of the pixels from an RGB input. The
-Hue is a very useful value for evaluating the colour properties of an
-image, and thus for getting a red triangle in the image.
+
+In instantiates uvispace_top component that contains all code common to 
+different board. Later, since the DE1-SoC has VGA, it implements the
+components needed to visualize the different images (rgb, raw binary,
+binary after erosion and binary after erosion and dilation)through
+VGA:
 - Sdram_Control: This module is used for connecting to the external DRAM
 memory and use it as a buffer between the camera input and the VGA
-output, as both are run with different clock rates. For this purpose,
-FIFO memories allowing simultaneous read and write operations are used.
+output, as both are run with different clock rates (camera runs at 96MHz
+while VGA part at 25.125MHz). For this purpose,
+FIFO memories allowing simultaneous read and write operations are used
+The camera goes writing at one side and tyhe VGA goes reading and printing
+in the screen from the other.There are 2 fifos of 16bits each so up
+to 32-bit pixels can be saved here. However the second fifo doesnt work for
+unknown reason so only the 1st is used. This is no problem for gray and 
+binary images that are 8-bit each but it is a problem for RGA cause
+3 components x 8-bit = 24-bit. To visualize RGB a trick was used saving
+only 5 of the 8 bits of each RGB componentcause 3 x 5 = 15 and fit in the
+16-bit of the 1st fifo.
 - vga_controller: Module for sending control bits to the VGA peripheral.
 The module has a set of parameters that defines the output resolution,
 being by default 640x480.
-- SEG7_LUT_8: This componet is used for showing the fram rate on the
+- SEG7_LUT_8: This componet is used for showing the frame rate on the
 hexadecimal 8-segments peripherals.
-- camera_config: This module sends the default configuration to the
-camera using the I2C standard.
-NOTE: The desired design should have 2 FIFOs, in order to send 8 bits
-per component to the VGA controller. However, there is a synchronization
-error, and the values obtained in the second FIFO have an offset
-relative to the first one i.e. The component sent by the second FIFO
-corresponds to the one that was sent by the first one several iterations
-ago, resulting on an horizontal shift. For this reason, the size per
-pixel was reduced to 15 bits (1 zero and 5 bits per colour).
 */
 
 `define ENABLE_HPS

@@ -1,5 +1,14 @@
+/*
+This is the top level design for the DE0-nano-SoC boards of UviSpace project.
 
+In instantiates uvispace_top component that contains all code common to 
+different boards. Later, since the DE0-nano SoC hasnot VGA, it is not 
+implemented (like in DE1-SoC)
+*/
 
+//============================================================================
+//Top level entity for DE0-nano-SoC board
+//============================================================================
 `define ENABLE_HPS
 //`define ENABLE_CLK
 
