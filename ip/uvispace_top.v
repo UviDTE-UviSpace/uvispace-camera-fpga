@@ -461,8 +461,8 @@ image_processing img_proc(
   .sat_h_threshold(saturation_threshold_h),
   .bri_l_threshold(brightness_threshold_l),
   .bri_h_threshold(brightness_threshold_h),
-  .img_width({4'h0,img_width}),
-  .img_height({4'h0,img_height}),
+  .img_width(img_width),
+  .img_height(img_height),
   .in_valid(sync_rgb_dval),
   // Data output
   .export_red(hsv_red),

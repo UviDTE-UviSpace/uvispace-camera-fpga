@@ -68,8 +68,8 @@ entity avalon_image_writer is
         reset_n         : in STD_LOGIC;
 		  
 		  -- Image size
-		  img_width			: in STD_LOGIC_VECTOR(23 downto 0);
-		  img_height		: in STD_LOGIC_VECTOR(23 downto 0);
+		  img_width			: in STD_LOGIC_VECTOR(15 downto 0);
+		  img_height		: in STD_LOGIC_VECTOR(15 downto 0);
         
         -- Signals from the video stream representing one pixel
         input_data		: in STD_LOGIC_VECTOR((NUMBER_COMPONENTS*COMPONENT_SIZE - 1) downto 0);
@@ -172,8 +172,8 @@ architecture arch of avalon_image_writer is
                                     downto 0);
 	 signal condition_2_to_1     : STD_LOGIC; 
     --counters.
-    signal pix_counter          : STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
-	 signal line_counter         : STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+    signal pix_counter          : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
+	 signal line_counter         : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
     signal pix_wr_counter       : STD_LOGIC_VECTOR(integer(
                                     ceil(log2(real(PIX_WR+1)))) downto 0);
 	 signal downsamp_counter_pixels : STD_LOGIC_VECTOR(6 downto 0);
