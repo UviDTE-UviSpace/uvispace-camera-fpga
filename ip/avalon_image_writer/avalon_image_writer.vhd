@@ -172,8 +172,8 @@ architecture arch of avalon_image_writer is
                                     downto 0);
 	 signal condition_2_to_1     : STD_LOGIC; 
     --counters.
-    signal pix_counter          : STD_LOGIC_VECTOR(23 downto 0);
-	 signal line_counter         : STD_LOGIC_VECTOR(23 downto 0);
+    signal pix_counter          : STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
+	 signal line_counter         : STD_LOGIC_VECTOR(23 downto 0) := (others => '0');
     signal pix_wr_counter       : STD_LOGIC_VECTOR(integer(
                                     ceil(log2(real(PIX_WR+1)))) downto 0);
 	 signal downsamp_counter_pixels : STD_LOGIC_VECTOR(6 downto 0);
@@ -300,38 +300,42 @@ begin
 		variable end_of_line : std_ulogic;
     begin
       if rising_edge(clk) then
-        if (current_state = 0) then
-		    image_counter <= (others => '0');
-		  elsif (current_state = 1) then
-          pix_counter <= (others => '0');
+		    
+		  --Always count with pix and line counters
+		  if (current_state = 0) then
+		    pix_counter <= (others => '0');
 			 line_counter <= (others => '0');
+			 image_counter <= (others => '0');
+			 end_of_image := '0';
+			 end_of_line := '0';
+		  elsif (data_valid = '1') then --new pixel in the input
+			 if pix_counter = (img_width - 1) then 
+			   pix_counter <= (others => '0'); 
+				end_of_line := '1';
+				if line_counter = (img_height - 1) then
+				  line_counter <= (others => '0');
+				  end_of_image := '1';
+				  image_counter <= image_counter+1;
+				else 
+				  line_counter <= line_counter + 1;
+				  end_of_image := '0';
+				end if;
+			 else
+			   pix_counter <= pix_counter + 1;
+				end_of_image := '0';
+				end_of_line := '0';
+		    end if;
+		  end if;
+		
+        if (current_state = 1) then
 			 downsamp_counter_pixels <= (others => '0');
 			 downsamp_counter_lines <= (others => '0');
 			 pix_wr_counter <= (others => '0');
 			 condition_2_to_1 <= '0';
 			 reset_buffer_address <= '0';
 			 enable_saving <= '0';
-			 end_of_line := '0';
-			 end_of_image := '0';
         else
 		    if (data_valid = '1') then --new pixel in the input
-            --Always count with pix and line counters
-				if pix_counter = (img_width - 1) then 
-				  pix_counter <= (others => '0'); 
-				  end_of_line := '1';
-				  if line_counter = (img_height - 1) then
-				    line_counter <= (others => '0');
-					 end_of_image := '1';
-					 image_counter <= image_counter+1;
-				  else 
-				  	 line_counter <= line_counter + 1;
-					 end_of_image := '0';
-				  end if;
-			   else
-				  pix_counter <= pix_counter + 1;
-				  end_of_image := '0';
-				  end_of_line := '0';
-				end if;
 				--Generate the conditions to change state
 				if (synchronized = '1') --at least 1 image captured at this point
 				and (end_of_image = '1') 
