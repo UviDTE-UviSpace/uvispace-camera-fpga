@@ -106,34 +106,34 @@ architecture arch of avalon_image_writer is
 	   --A 0 in this register (default) selects "SINGLE SHOT" mode.
 		--A 1 in this register selects "CONTINUOUS" mode.
 	 constant MODE_ADDRESS            : integer := 0;
-	 constant BUFF0_ADDRESS           : integer := 3;
-	 constant BUFF1_ADDRESS           : integer := 4;
+	 constant BUFF0_ADDRESS           : integer := 1;
+	 constant BUFF1_ADDRESS           : integer := 2;
 	 --In continuous mode selects saving in 1 buffer (write a 0 here, 
 	 --the default after reset) or 2 buffers (write a 1 here)
-	 constant CONT_DOUBLE_BUFF_ADDRESS: integer := 5;
+	 constant CONT_DOUBLE_BUFF_ADDRESS: integer := 3;
 	 --Number of the buffer where you wanna write next image (0 or 1)
 	 --In CONTINUOUS mode writing in 2 buffers it is ignored cause
 	 --the component alternates buff0 and buff1.
-	 constant BUFFER_SELECT_ADDRESS  : integer  := 6;
+	 constant BUFFER_SELECT_ADDRESS  : integer  := 4;
 	 -- Start the capure of image (SINGLE SHOT) or images (CONTINUOUS).
 	 -- In SINGLE SHOT write a 1 here to save 1 image to memory. It 
 	 -- automatically goes to 0 after writing a 1.
 	 -- In CONTINUOUS MODE write a 1 here to start capturing all images
 	 -- and write a 0 to stop the capture. 
-	 constant START_CAPTURE_ADDRESS  : integer  := 7;
+	 constant START_CAPTURE_ADDRESS  : integer  := 5;
 	 -- Signal indicating standby state 
     --(outside of reset, waiting for flank in start_capture)
 	 --In SINGLE_SHOT mode it can be used after setting start_capture to 
 	 --check if writting the image to memory finished
-	 constant STANDBY_ADDRESS        : integer  := 8;
+	 constant STANDBY_ADDRESS        : integer  := 6;
 	 --Last buffer indicates which buffer was the last one written (0 or 1)
-	 constant LAST_BUFFER_ADDRESS    : integer  := 9;
+	 constant LAST_BUFFER_ADDRESS    : integer  := 7;
 	 --Downsampling rate (1=get all image, 2=half of rows and columns so
 	 --size is reduced by four, 4= one fourth of cols and rows are capture, 
 	 --so on...)
-	 constant DOWNSAMPLING_ADDRESS   : integer  := 10;
+	 constant DOWNSAMPLING_ADDRESS   : integer  := 8;
 	 --Image counter
-	 constant IMAGE_COUNTER_ADDRESS  : integer  := 11;
+	 constant IMAGE_COUNTER_ADDRESS  : integer  := 9;
 	 
 
 	 
