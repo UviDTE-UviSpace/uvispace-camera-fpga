@@ -171,8 +171,8 @@ soc_system u0 (
   //HPS reset output
   .h2f_reset_reset_n                     ( hps2fpga_reset_n ),
   // Avalon camera camera_config signals
-  .avalon_camera_export_width            ( in_width ),
-  .avalon_camera_export_height           ( in_height ),
+  .avalon_camera_export_width            ( img_width ),
+  .avalon_camera_export_height           ( img_height ),
   .avalon_camera_export_startrow         ( start_row ),
   .avalon_camera_export_startcol         ( start_column ),
   .avalon_camera_export_colmode          ( in_column_mode ),
@@ -190,10 +190,16 @@ soc_system u0 (
   // Import images in Qsys for the avalon_image_writers
   .rgbgray_img_data_valid                ( hsv_valid ),
   .rgbgray_img_input_data                ( {gray, hsv_blue, hsv_green, hsv_red} ),
+  .rgbgray_img_img_width                 ( {4'd0, img_width} ),
+  .rgbgray_img_img_height                ( {4'd0, img_height} ),              
   .gray_img_data_valid                   ( gray_valid ),
   .gray_img_input_data                   ( gray ),
+  .gray_img_img_width                 	  ( {4'd0, img_width} ),
+  .gray_img_img_height               	  ( {4'd0, img_height} ),  
   .binary_img_data_valid                 ( bin_valid ),
   .binary_img_input_data                 ( dilated_8bit ),
+  .binary_img_img_width                  ( {4'd0, img_width} ),
+  .binary_img_img_height                 ( {4'd0, img_height} ),  
   //Export the signals to control the image processing
   .img_processing_hue_thres_l            (hue_threshold_l),
   .img_processing_hue_thres_h            (hue_threshold_h),
@@ -329,14 +335,14 @@ camera_capture u3(
   .clock        (ccd_pixel_clk),
   // Negative logic reset
   .reset_n      (hps2fpga_reset_n & video_stream_reset_n),
-  .in_width     (in_width[11:0]),
-  .in_height    (in_height[11:0])
+  .in_width     (img_width[11:0]),
+  .in_height    (img_height[11:0])
   );
   reg     [11:0] ccd_data_raw;        //input raw data to CCD_Capture
   reg            ccd_fval_raw;        //frame valid
   reg            ccd_lval_raw;        //line valid
-  wire    [15:0] in_width;
-  wire    [15:0] in_height;
+  wire    [15:0] img_width;
+  wire    [15:0] img_height;
   wire    [11:0] X_Cont_raw;
   wire    [11:0] Y_Cont_raw;
   wire    [11:0] ccd_data_captured;   //output data from CCD_Capture
@@ -455,8 +461,8 @@ image_processing img_proc(
   .sat_h_threshold(saturation_threshold_h),
   .bri_l_threshold(brightness_threshold_l),
   .bri_h_threshold(brightness_threshold_h),
-  .img_width({4'h0,in_width}),
-  .img_height({4'h0,in_height}),
+  .img_width({4'h0,img_width}),
+  .img_height({4'h0,img_height}),
   .in_valid(sync_rgb_dval),
   // Data output
   .export_red(hsv_red),

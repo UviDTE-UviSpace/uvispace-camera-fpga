@@ -66,6 +66,10 @@ entity avalon_image_writer is
         -- Clock and reset.
         clk             : in STD_LOGIC;
         reset_n         : in STD_LOGIC;
+		  
+		  -- Image size
+		  img_width			: in STD_LOGIC_VECTOR(23 downto 0);
+		  img_height		: in STD_LOGIC_VECTOR(23 downto 0);
         
         -- Signals from the video stream representing one pixel
         input_data		: in STD_LOGIC_VECTOR((NUMBER_COMPONENTS*COMPONENT_SIZE - 1) downto 0);
@@ -102,11 +106,6 @@ architecture arch of avalon_image_writer is
 	   --A 0 in this register (default) selects "SINGLE SHOT" mode.
 		--A 1 in this register selects "CONTINUOUS" mode.
 	 constant MODE_ADDRESS            : integer := 0;
-	 --Image width size (typically 640 pixels)
-	 constant IMG_WIDTH_ADDRESS       : integer := 1;
-	 --Image height (typically 480 pixels)
-	 constant IMG_HEIGHT_ADDRESS      : integer := 2;
-	 --(addresses where the images will be written)
 	 constant BUFF0_ADDRESS           : integer := 3;
 	 constant BUFF1_ADDRESS           : integer := 4;
 	 --In continuous mode selects saving in 1 buffer (write a 0 here, 
@@ -140,8 +139,6 @@ architecture arch of avalon_image_writer is
 	 
   --Associated registers
 	 signal mode         	:STD_LOGIC;
-	 signal img_width 		:STD_LOGIC_VECTOR(23 downto 0);
-	 signal img_height 		:STD_LOGIC_VECTOR(23 downto 0);
 	 signal buff0 		      :STD_LOGIC_VECTOR(31 downto 0);
 	 signal buff1 		      :STD_LOGIC_VECTOR(31 downto 0);
 	 signal cont_double_buff:STD_LOGIC;
@@ -206,8 +203,6 @@ begin
 		if reset_n = '0' then --synchronous reset
 		   --reset only the registers only written from bus
 			mode <= '0';
-			img_width <= (others => '0');
-			img_height <= (others => '0');
 			buff0 <= (others => '0');
 			buff1 <= (others => '0');
 			cont_double_buff  <= '0';
@@ -216,10 +211,6 @@ begin
 		elsif S_write ='1' then --write operation
 			if cs(MODE_ADDRESS)='1' then 
 				mode <= S_writedata(0);
-			elsif cs(IMG_WIDTH_ADDRESS)='1' then 
-				img_width <= S_writedata(23 downto 0);
-			elsif cs(IMG_HEIGHT_ADDRESS)='1' then 
-				img_height <= S_writedata(23 downto 0);
 			elsif cs(BUFF0_ADDRESS)='1' then 
 				buff0 <= S_writedata(31 downto 0);
 			elsif cs(BUFF1_ADDRESS)='1' then 
@@ -236,10 +227,6 @@ begin
 	if S_read ='1' then --read operation
 		if cs(MODE_ADDRESS)='1' then 
 			S_readdata <= (31 downto 1 => '0') & mode;
-		elsif cs(IMG_WIDTH_ADDRESS)='1' then 
-			S_readdata <= (31 downto 24 => '0') & img_width;
-		elsif cs(IMG_HEIGHT_ADDRESS)='1' then 
-			S_readdata <= (31 downto 24 => '0') & img_height;
 		elsif cs(BUFF0_ADDRESS)='1' then 
 			S_readdata <= buff0;
 		elsif cs(BUFF1_ADDRESS)='1' then 
