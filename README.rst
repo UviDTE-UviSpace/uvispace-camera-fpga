@@ -39,6 +39,7 @@ Loading design into board
 
 The file soc_system.sof is created in the project folder. This file can be loaded
 into the FPGA using Quartus Programmer. To do this:
+
 * Open Programmer: Quartus > Tools > Programmer.
 * Connect the board using the USB cable close to Power connector (USB blaster).
 * Click in Hardware Setup and select the board connected (if the board does not appear make sure that USB blaster drivers were installed during Quartus compilation)
@@ -46,6 +47,7 @@ into the FPGA using Quartus Programmer. To do this:
 * Click Start (Progress bar should go till 100%).
 
 If we want to configure the FPGA from SD card on start-up we need a .rbf file to put in the FAT32 partition of the SD-card.
+
 * Open Quartus > File > Convert Programming Files.
 * Choose Programming File Type: rbf.
 * Name the file soc_system.rbf. Thats the name that the U-boot installed in the SD-card will look for during start-up.
