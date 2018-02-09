@@ -288,25 +288,29 @@ uvispace_top u0 (
       // if reset, do nothing.
     end
     else begin
-      if (SW[3]) begin
-        fifo1_writedata <= {1'b0, sync_rgb_red[11:7], sync_rgb_green[11:7],
-                            sync_rgb_blue[11:7]};
-        fifo_write_enable <= sync_rgb_dval;
+      if (SW[5]) begin
+        fifo1_writedata <= {8'h00, dilated_8bit[7:0]};
+        fifo_write_enable <= dilation_valid;
+		  rgb_in_vga <= 1'b0;
       end
     else if (SW[4])
     begin
-        fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
-        fifo_write_enable <= bin_valid;
-    end
-    else if (SW[5])
-    begin
-        fifo1_writedata <= {8'h00, eroded_8bit[7:0]};
+	     fifo1_writedata <= {8'h00, eroded_8bit[7:0]};
         fifo_write_enable <= erosion_valid;
+		  rgb_in_vga <= 1'b0;
     end
-      else begin
-        fifo1_writedata <= {8'h00, dilated_8bit[7:0]};
-        fifo_write_enable <= dilation_valid;
-      end
+    else if (SW[3])
+    begin
+       fifo1_writedata <= {8'h00, binarized_8bit[7:0]};
+       fifo_write_enable <= bin_valid;
+		 rgb_in_vga <= 1'b0;
+    end
+    else begin
+		 fifo1_writedata <= {1'b0, sync_rgb_red[11:7], sync_rgb_green[11:7],
+                            sync_rgb_blue[11:7]};
+       fifo_write_enable <= sync_rgb_dval;
+		 rgb_in_vga <= 1'b1;
+    end
     end
   end
 
@@ -381,21 +385,19 @@ vga_controller vga_component(
   );
   //VGA signals
   wire    vga_enable;
-  //not used now
-  integer vga_row;
-  integer vga_col;
+  reg 	 rgb_in_vga;
 
   // Send the data on the FIFO memory to the VGA outputs.
   assign VGA_R = (!vga_enable) ? 0 :
-                 (!SW[3])      ? fifo1_readdata[7:0] :
+                 (!rgb_in_vga) ? fifo1_readdata[7:0] :
                  (SW[0])       ? {fifo1_readdata[14:10], 3'd0} :
                  0;
   assign VGA_G = (!vga_enable) ? 0 :
-                 (!SW[3])      ? fifo1_readdata[7:0] :
+                 (!rgb_in_vga) ? fifo1_readdata[7:0] :
                  (SW[1])       ? {fifo1_readdata[9:5], 3'd0} :
                  0;
   assign VGA_B = (!vga_enable) ? 0 :
-                 (!SW[3])      ? fifo1_readdata[7:0] :
+                 (!rgb_in_vga) ? fifo1_readdata[7:0] :
                  (SW[2])       ? {fifo1_readdata[4:0], 3'd0} :
                  0;
   // Set the VGA clock to 25 MHz.
