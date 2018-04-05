@@ -1,12 +1,12 @@
 ------------------------------------------------------------------
 -- image_processing component
 ------------------------------------------------------------------
--- This component is used to condense all application-related 
+-- This component is used to condense all application-related
 -- image processing.
 -- In this case it converts RGB signal in HSV to ease a
--- binarization by color. The the image is binarized using a range 
+-- binarization by color. The the image is binarized using a range
 -- in hue, saturation and brightness. The binary image is then
--- eroded and dilated to erase small noise remaining. 
+-- eroded and dilated to erase small noise remaining.
 ------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
@@ -58,7 +58,7 @@ entity image_processing is
 		    --Binary signal after dilation
 		  export_dilation      : out STD_LOGIC;
 		  export_dilation_valid: out STD_LOGIC
-		  
+
     );
 end image_processing;
 
@@ -93,7 +93,7 @@ architecture arch of image_processing is
             out_done        : out STD_LOGIC
             );
     end component;
-	 
+
 	 --Transforms RGB into Gray image
 	 component rgb2gray
     port(
@@ -106,8 +106,8 @@ architecture arch of image_processing is
         B	   	: in STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
 		  in_valid 	: in STD_LOGIC;
         -- Data output
-		  Gray		: out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0); 
-		  out_valid	: out STD_LOGIC 
+		  Gray		: out STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
+		  out_valid	: out STD_LOGIC
         );
 	end component;
 
@@ -137,7 +137,7 @@ architecture arch of image_processing is
     end component;
 
 	 -- Component to provoke a 3x3 erosion  to the binary image
-	 component erosion_bin 
+	 component erosion_bin
     generic (
 			 KERN_SIZE : integer := 3;
 			 KERNEL : array2D_of_int(2 downto 0)(2 downto 0) := ((0,1,0),
@@ -151,14 +151,14 @@ architecture arch of image_processing is
 		  img_width      :in STD_LOGIC_VECTOR(15 downto 0);
 		  img_height     :in STD_LOGIC_VECTOR(15 downto 0);
         pix		        : in STD_LOGIC;--binary pixels of the input image
-		  data_valid     : in STD_LOGIC; 
+		  data_valid     : in STD_LOGIC;
 		  pix_out        : out STD_LOGIC;--binary pixels of the output eroded img
 		  data_valid_out : out STD_LOGIC
     );
     end component;
-	 
+
 	 -- Component to provoke a 3x3 dilation  to the binary image
-	 component dilation_bin 
+	 component dilation_bin
     generic (
 			 KERN_SIZE : integer := 3;
 			 KERNEL : array2D_of_int(2 downto 0)(2 downto 0) := ((0,1,0),
@@ -172,12 +172,12 @@ architecture arch of image_processing is
 		  img_width      :in STD_LOGIC_VECTOR(15 downto 0);
 		  img_height     :in STD_LOGIC_VECTOR(15 downto 0);
         pix		        : in STD_LOGIC;--binary pixels of the input image
-		  data_valid     : in STD_LOGIC; 
+		  data_valid     : in STD_LOGIC;
 		  pix_out        : out STD_LOGIC;--binary pixels of the output dilated img
 		  data_valid_out : out STD_LOGIC
     );
     end component;
-	 
+
     -- Intermediate signals declaration
     signal hsv_out_valid        : STD_LOGIC;
 	 signal hsv_out_red          : STD_LOGIC_VECTOR(COMPONENT_SIZE-1 downto 0);
@@ -221,7 +221,7 @@ architecture arch of image_processing is
                 out_visual      => open,
                 out_done        => open
                 );
-					 
+
 		  -- Instantiation and mappingof rgb2gray component
 		  rgb2gray_component : rgb2gray
 		  port map(
@@ -237,8 +237,8 @@ architecture arch of image_processing is
 				 Gray				=> export_gray,
 				 out_valid		=> export_gray_valid
 				 );
-					 
-        -- Instantiation and mapping of the hsv2bin component. 
+
+        -- Instantiation and mapping of the hsv2bin component.
         hsv2bin_component : hsv2bin
         port map(
                 -- Control signals
@@ -259,8 +259,8 @@ architecture arch of image_processing is
                 out_bin         => bin_out,
                 out_valid       => bin_out_valid
                 );
-					 
-					 
+
+
 		  -- Instantiation and mapping of the dilation and erosion components.
 		  -- Together they delete small noise dots of the binarization
 		  erosion_component : erosion_bin
@@ -270,7 +270,7 @@ architecture arch of image_processing is
                       (1,1,1),
                       (0,1,0)),
 			  MAX_IMG_WIDTH => 640)
-			  
+
 		  port map(
 			  -- Clock and reset.
 			  clk             => clock,
@@ -285,7 +285,7 @@ architecture arch of image_processing is
 			  pix_out         =>  erosion_out,
 			  data_valid_out  =>  erosion_out_valid
 			  );
-			
+
 		  dilation_component : dilation_bin
 		  generic map(
 		     KERN_SIZE => 3,
@@ -293,7 +293,7 @@ architecture arch of image_processing is
                       (1,1,1),
                       (0,1,0)),
 			  MAX_IMG_WIDTH => 640)
-			  
+
 		  port map(
 			  -- Clock and reset.
 			  clk             => clock,
@@ -308,7 +308,7 @@ architecture arch of image_processing is
 			  pix_out         =>  dilation_out,
 			  data_valid_out  =>  dilation_out_valid
 			  );
-			
+
 			--Export output signals
 			export_red<= hsv_out_red;
 			export_green<= hsv_out_green;
