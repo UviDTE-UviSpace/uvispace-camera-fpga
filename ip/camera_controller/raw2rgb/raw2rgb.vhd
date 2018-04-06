@@ -122,18 +122,16 @@ begin
 	--ANSWER: No, it returns the pixel (2,2) of the kernel (change iX_Cont for X_Kernel ...)
 	--you didn´t modificate the conditions yet,
 
+window_move:for i in 0 to (KERN_SIZE-1) generate
+		window_move2: for j in 0 to (KERN_SIZE-1) generate
+			mf_moving_window(i)(j) <= '0' & '0' & mf_moving_window2(i)(j);
+		end generate;
+end generate;
 
 ------------ Evaluation and update pix_counter and line counter-------------
 raw2rgb_proc: process(clk) begin
 		if rising_edge(clk) then
-			for i in 0 to (KERN_SIZE-1) loop
-				for j in 0 to (KERN_SIZE-1) loop
-					mf_moving_window(i)(j) <= '0' & '0' & mf_moving_window2(i)(j);
-				end loop;
-			end loop;
-			if (reset_n = '0') then
-				-- this condition probably is not necessary
-			elsif (data_valid='1') then
+			if (data_valid='1') then
 					if mf_window_valid(1)(0) = '0' then -- (image's pixel in the) first column
 						if mf_window_valid(0)(1) = '0' then -- first column & first row
 							sum_R <= mf_moving_window(1)(2);
@@ -238,7 +236,7 @@ raw2rgb_proc: process(clk) begin
 							pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 						end if;
 					else -- image's internal area
-						if (iX_Cont(0) = '0' and iY_Cont(0) = '0') then --even row % even column
+						if (iX_Cont(0) = '1' and iY_Cont(0) = '1') then --even row % even column
 							-- G1 pixel (Red Green row)
 							sum_R <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
 							sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
@@ -247,7 +245,7 @@ raw2rgb_proc: process(clk) begin
 							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
 							pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 							--we do not add the central green pixel to divide between 4 and not 5
-						elsif (iX_Cont(0) = '0' and iY_Cont(0) = '1') then --even row % odd col.
+						elsif (iX_Cont(0) = '1' and iY_Cont(0) = '0') then --even row % odd col.
 							-- R pixel
 							sum_R <= mf_moving_window(1)(1);
 							sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2) + mf_moving_window(0)(1) + mf_moving_window(2)(1);
@@ -255,7 +253,7 @@ raw2rgb_proc: process(clk) begin
 							pix_R <= sum_R;
 							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
 							pix_B <= '0' & '0' & sum_B((PIX_SIZE + 1) downto 2);
-						elsif (iX_Cont(0) = '1' and iY_Cont(0) = '0') then --odd row % even col.
+						elsif (iX_Cont(0) = '0' and iY_Cont(0) = '1') then --odd row % even col.
 							-- B pixel
 							sum_R <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
 							sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2) + mf_moving_window(0)(1) + mf_moving_window(2)(1);

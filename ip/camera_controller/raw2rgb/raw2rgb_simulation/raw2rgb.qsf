@@ -59,4 +59,11 @@ set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_RO
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
 set_global_assignment -name VHDL_SHOW_LMF_MAPPING_MESSAGES OFF
+set_global_assignment -name EDA_TEST_BENCH_ENABLE_STATUS TEST_BENCH_MODE -section_id eda_simulation
+set_global_assignment -name EDA_NATIVELINK_SIMULATION_TEST_BENCH raw2rgb_vhd_tst -section_id eda_simulation
+set_global_assignment -name EDA_TEST_BENCH_NAME raw2rgb_vhd_tst -section_id eda_simulation
+set_global_assignment -name EDA_DESIGN_INSTANCE_NAME i1 -section_id raw2rgb_vhd_tst
+set_global_assignment -name EDA_TEST_BENCH_RUN_SIM_FOR "100 ns" -section_id raw2rgb_vhd_tst
+set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME raw2rgb_vhd_tst -section_id raw2rgb_vhd_tst
+set_global_assignment -name EDA_TEST_BENCH_FILE simulation/modelsim/raw2rgb.vht -section_id raw2rgb_vhd_tst
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
