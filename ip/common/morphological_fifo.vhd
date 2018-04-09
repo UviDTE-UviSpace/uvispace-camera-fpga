@@ -104,10 +104,12 @@ begin
 						pix_counter <= pix_counter + 1;
 					end if;
 				end if;
-				pix_col <= pix_counter(12 downto 0);
-				pix_row <= line_counter(12 downto 0);
+				--pix_col <= pix_counter(12 downto 0);
+				--pix_row <= line_counter(12 downto 0);
 			end if;
     end process;
+		pix_col <= pix_counter(12 downto 0);
+		pix_row <= line_counter(12 downto 0);
 
 ---------------------------SAVE DATA IN MEMORY------------------
 		--Save the previous (KERN_SIZE) lines in memory

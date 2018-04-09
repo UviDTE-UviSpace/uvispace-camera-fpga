@@ -89,12 +89,12 @@ architecture arch of raw2rgb is
 	SIGNAL mf_moving_window : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE + 1) downto 0);
 	SIGNAL mf_window_valid  : array2D_of_std_logic((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0);
 	SIGNAL mf_data_valid    : STD_LOGIC;
-	SIGNAL sum_R	: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL sum_G	: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL sum_B	: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL pix_R	: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL pix_G	: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL pix_B	: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL sum_R		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL sum_G		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL sum_B		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL pix_R		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL pix_G		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL pix_B		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
 	SIGNAL iX_Cont 	: STD_LOGIC_VECTOR (12 DOWNTO 0);
 	SIGNAL iY_Cont	: STD_LOGIC_VECTOR (12 DOWNTO 0);
 
@@ -114,9 +114,10 @@ begin
 								data_valid 			=> data_valid,
 								moving_window 	=> mf_moving_window2,
 								window_valid 		=> mf_window_valid,
-								data_valid_out 	=> mf_data_valid,
-								pix_row					=> iX_Cont,
-								pix_col					=> iY_Cont);
+								data_valid_out 	=> mf_data_valid--,
+								--pix_col					=> iX_Cont,
+								--pix_row					=> iY_Cont
+								);
 
 --IMPORTANT: -prove that iX and iY return the positon of the pixel (1,1) of the kernel
 	--ANSWER: No, it returns the pixel (2,2) of the kernel (change iX_Cont for X_Kernel ...)
@@ -128,10 +129,33 @@ window_move:for i in 0 to (KERN_SIZE-1) generate
 		end generate;
 end generate;
 
+pix_counter_proc:process (clk)
+begin
+	if rising_edge(clk) then
+		if (reset_n = '0') then
+			-- reset the pixel counter
+			iX_Cont <= (others => '0');
+			iY_Cont <= (others => '0');
+		elsif (mf_data_valid = '1') then
+			-- Increment the pixel counter
+			if iX_Cont = (img_width - 1) then
+				iX_Cont <= (others => '0');
+				if iY_Cont = (img_height - 1) then
+					iY_Cont <= (others => '0');
+				else
+					iY_Cont <= iY_Cont + 1;
+				end if;
+			else
+				iX_Cont <= iX_Cont + 1;
+			end if;
+		end if;
+		--pix_col <= pix_counter(12 downto 0);
+		--pix_row <= line_counter(12 downto 0);
+	end if;
+end process;
+
 ------------ Evaluation and update pix_counter and line counter-------------
-raw2rgb_proc: process(clk) begin
-		if rising_edge(clk) then
-			if (data_valid='1') then
+raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 					if mf_window_valid(1)(0) = '0' then -- (image's pixel in the) first column
 						if mf_window_valid(0)(1) = '0' then -- first column & first row
 							sum_R <= mf_moving_window(1)(2);
@@ -146,8 +170,9 @@ raw2rgb_proc: process(clk) begin
 							sum_B <= mf_moving_window(1)(1);
 							pix_R <= sum_R;
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
-							pix_B <= sum_B;				else -- first column & no corner
-							if (iX_Cont(0) = '0') then
+							pix_B <= sum_B;
+						else -- first column & no corner
+							if (iY_Cont(0) = '0') then --if (iX_Cont(0) = '0') then
 								--G1 pixel
 								sum_R <= mf_moving_window(1)(2);
 								sum_G <= mf_moving_window(0)(2) + mf_moving_window(2)(2);
@@ -181,10 +206,10 @@ raw2rgb_proc: process(clk) begin
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 							pix_B <= sum_B;
 						else -- last column & no corner
-							if (iX_Cont(0) = '0') then
+							if (iY_Cont(0) = '0') then --if (iX_Cont(0) = '0') then
 								--R pixel
 								sum_R <= mf_moving_window(1)(1);
-								sum_G <= mf_moving_window(1)(0) + mf_moving_window(2)(1);-- + mf_moving_window(0)(1)
+								sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1);-- + mf_moving_window(0)(1)
 								sum_B <= mf_moving_window(0)(0) + mf_moving_window(2)(0);
 								pix_R <= sum_R;
 								pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
@@ -238,9 +263,9 @@ raw2rgb_proc: process(clk) begin
 					else -- image's internal area
 						if (iX_Cont(0) = '1' and iY_Cont(0) = '1') then --even row % even column
 							-- G1 pixel (Red Green row)
-							sum_R <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
 							sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
-							sum_B <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
 							pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
 							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
 							pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
@@ -248,7 +273,7 @@ raw2rgb_proc: process(clk) begin
 						elsif (iX_Cont(0) = '1' and iY_Cont(0) = '0') then --even row % odd col.
 							-- R pixel
 							sum_R <= mf_moving_window(1)(1);
-							sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2) + mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1) + mf_moving_window(1)(0) + mf_moving_window(1)(2);
 							sum_B <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
 							pix_R <= sum_R;
 							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
@@ -272,11 +297,13 @@ raw2rgb_proc: process(clk) begin
 							--we do not add the central green pixel to divide between 4 and not 5
 						end if;
 					end if;
+	end process;
+outputs_proc: process(clk) begin
+		if rising_edge(clk) then
 					oRed		<= pix_R(11 downto 0);
 					oGreen	<= pix_G(11 downto 0);
 					oBlue		<= pix_B(11 downto 0);
 					oDVAL	 <= mf_data_valid;
-				end if;
 		end if;
 	end process;
 end arch;
