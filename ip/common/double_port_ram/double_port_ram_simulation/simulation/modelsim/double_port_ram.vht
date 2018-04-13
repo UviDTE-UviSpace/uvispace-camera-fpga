@@ -62,7 +62,6 @@ END COMPONENT;
 BEGIN
 	i1 : double_port_ram
 	PORT MAP (
--- list connections between master ports and signals
 	clock => clock,
 	data => data,
 	q => q,
@@ -76,13 +75,9 @@ BEGIN
   -------------------------------------------------------------
   ----------------    CLOCK PROCESS    ------------------------
   	simulation_clock : process
-  		-- repeat the counters edge_rise & edge_fall
   		constant max_cycles    	: integer   := 140;
   	begin
-  		-- set sim_clk signal
   		sim_clk <= not(sim_clk);
-  		-- adjust
-      -- simular lectura escritura y lectura/escrura a un ciclo y a la vez
   		if (sim_clk = '0') then
   			edge_rise := edge_rise + 1;
   		else
@@ -105,39 +100,23 @@ BEGIN
   stimuli : process (sim_trig)
   	variable  sample_count : integer := 0;
   begin
-  	--Initialization
+  	--Initialization:
 		if ( edge_rise = 0 ) then
-  		--sim_reset 	<= '0';	-- reset
   		data 	<= B"0000000000000001";
       wraddress <= B"00000000000";
       rdaddress <= B"00000000000";
       wren <= '1';
   	end if;
-  	if ( edge_rise = 1 ) then
-  		--sim_reset 	<= '1';	-- stop reset
-  	end if;
 
 		if ( edge_rise = 1 ) then
 			wren <= '0';
   	end if;
-    -- 1. Write
-    -- 2. Read
-    -- 3. Write/Read simultaneously
-
-  	-- Write
   	if ( edge_rise = 5 ) then
 	  	rdaddress <= B"01111001111";
   	end if;
-		-- if ( edge_rise = 10 ) then
-    --  wraddress <= B"01111001111";
-		-- 	rdaddress
-		-- 	data 	<= B"1111001111001111";
-    --   wren <= '1';
-  	-- end if;
   	if ( edge_rise = 6 ) then
       rdaddress <= B"00000000000";
     end if;
-  	--Read
   	if ( edge_rise = 7 ) then
   		rdaddress <= B"01111001111";
   	end if;
@@ -163,72 +142,4 @@ BEGIN
 	    rdaddress <= B"00000000000";
   	end if;
   end process stimuli;
-  -- 	if ( edge_rise = 0 ) then
-  -- 		--sim_reset 	<= '0';	-- reset
-  -- 		data 	<= B"0000000000000000";
-  --     wraddress <= B"00000000000";
-  --     rdaddress <= B"00000000000";
-  --     wren <= '0';
-	--
-  -- 	end if;
-  -- 	if ( edge_rise = 1 ) then
-  -- 		--sim_reset 	<= '1';	-- stop reset
-  -- 	end if;
-	--
-  --   -- 1. Write
-  --   -- 2. Read
-  --   -- 3. Write/Read simultaneously
-	--
-  -- 	-- Write
-  -- 	if ( edge_rise = 5 ) then
-  --     wraddress <= B"01111001111";
-  --     data 	<= B"1111001111001111";
-  --     wren <= '1';
-	--   	rdaddress <= B"01111001111";
-	-- 		wren <= '1';
-  -- 	end if;
-	-- 	-- if ( edge_rise = 10 ) then
-  --   --   wraddress <= B"01111001111";
-	-- 	-- 	rdaddress
-	-- 	-- 	data 	<= B"1111001111001111";
-  --   --   wren <= '1';
-  -- 	-- end if;
-  -- 	if ( edge_rise = 6 ) then
-  --     wren <= '0';
-  --   end if;
-  -- 	--Read
-  -- 	if ( edge_rise = 9 ) then
-  -- 		rdaddress <= B"00000000000";
-  -- 	end if;
-	-- 	if ( edge_rise = 15 ) then
-	-- 		wraddress <= B"00000000000";
-	-- 	end if;
-	-- 	if ( edge_rise = 19 ) then
-  -- 		--sim_reset 	<= '0';	-- reset
-  -- 		data 	<= B"0000000000000000";
-  --     wraddress <= B"00000000000";
-	-- 		wren <= '1';
-  --     rdaddress <= B"00000000000";
-	--
-  -- 	end if;
-  -- 	if ( edge_rise = 20 ) then
-  --     wraddress <= B"01111001111";
-  --     data 	<= B"1111001111001111";
-  --     wren <= '0';
-  -- 	end if;
-  -- 	if ( edge_rise = 21 ) then
-  -- 	end if;
-  --   --wren <= '0';
-  -- 	--Read
-  -- 		if ( edge_rise = 22 ) then
-  -- 		rdaddress <= B"01111001111";
-  -- 	end if;
-  -- 	if ( edge_rise = 23 ) then
-  -- 		--wren <= '1';
-  -- 	end if;
-  -- 	--Write/Read
-	-- 	if ( edge_rise = 24 ) then
-	--     data 	<= B"0000000000000000";
-  -- 	end if;
-  -- end process stimuli;
 END double_port_ram_arch;
