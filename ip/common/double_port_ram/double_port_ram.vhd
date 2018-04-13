@@ -46,6 +46,7 @@ ENTITY double_port_ram IS
 		clock		: IN STD_LOGIC  := '1';
 		data		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 		rdaddress		: IN STD_LOGIC_VECTOR (10 DOWNTO 0);
+		rden		: IN STD_LOGIC  := '1';
 		wraddress		: IN STD_LOGIC_VECTOR (10 DOWNTO 0);
 		wren		: IN STD_LOGIC  := '0';
 		q		: OUT STD_LOGIC_VECTOR (15 DOWNTO 0)
@@ -73,9 +74,10 @@ BEGIN
 		numwords_b => 2048,
 		operation_mode => "DUAL_PORT",
 		outdata_aclr_b => "NONE",
-		outdata_reg_b => "CLOCK0",
+		outdata_reg_b => "UNREGISTERED",
 		power_up_uninitialized => "FALSE",
 		ram_block_type => "M10K",
+		rdcontrol_reg_b => "CLOCK0",
 		read_during_write_mode_mixed_ports => "DONT_CARE",
 		widthad_a => 11,
 		widthad_b => 11,
@@ -88,6 +90,7 @@ BEGIN
 		address_b => rdaddress,
 		clock0 => clock,
 		data_a => data,
+		rden_b => rden,
 		wren_a => wren,
 		q_b => sub_wire0
 	);
@@ -134,7 +137,7 @@ END SYN;
 -- Retrieval info: PRIVATE: MIFfilename STRING ""
 -- Retrieval info: PRIVATE: OPERATION_MODE NUMERIC "2"
 -- Retrieval info: PRIVATE: OUTDATA_ACLR_B NUMERIC "0"
--- Retrieval info: PRIVATE: OUTDATA_REG_B NUMERIC "1"
+-- Retrieval info: PRIVATE: OUTDATA_REG_B NUMERIC "0"
 -- Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "2"
 -- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_MIXED_PORTS NUMERIC "2"
 -- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_PORT_A NUMERIC "3"
@@ -157,7 +160,7 @@ END SYN;
 -- Retrieval info: PRIVATE: WRADDR_REG_B NUMERIC "0"
 -- Retrieval info: PRIVATE: WRCTRL_ACLR_B NUMERIC "0"
 -- Retrieval info: PRIVATE: enable NUMERIC "0"
--- Retrieval info: PRIVATE: rden NUMERIC "0"
+-- Retrieval info: PRIVATE: rden NUMERIC "1"
 -- Retrieval info: LIBRARY: altera_mf altera_mf.altera_mf_components.all
 -- Retrieval info: CONSTANT: ADDRESS_ACLR_B STRING "NONE"
 -- Retrieval info: CONSTANT: ADDRESS_REG_B STRING "CLOCK0"
@@ -170,9 +173,10 @@ END SYN;
 -- Retrieval info: CONSTANT: NUMWORDS_B NUMERIC "2048"
 -- Retrieval info: CONSTANT: OPERATION_MODE STRING "DUAL_PORT"
 -- Retrieval info: CONSTANT: OUTDATA_ACLR_B STRING "NONE"
--- Retrieval info: CONSTANT: OUTDATA_REG_B STRING "CLOCK0"
+-- Retrieval info: CONSTANT: OUTDATA_REG_B STRING "UNREGISTERED"
 -- Retrieval info: CONSTANT: POWER_UP_UNINITIALIZED STRING "FALSE"
 -- Retrieval info: CONSTANT: RAM_BLOCK_TYPE STRING "M10K"
+-- Retrieval info: CONSTANT: RDCONTROL_REG_B STRING "CLOCK0"
 -- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_MIXED_PORTS STRING "DONT_CARE"
 -- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "11"
 -- Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "11"
@@ -183,12 +187,14 @@ END SYN;
 -- Retrieval info: USED_PORT: data 0 0 16 0 INPUT NODEFVAL "data[15..0]"
 -- Retrieval info: USED_PORT: q 0 0 16 0 OUTPUT NODEFVAL "q[15..0]"
 -- Retrieval info: USED_PORT: rdaddress 0 0 11 0 INPUT NODEFVAL "rdaddress[10..0]"
+-- Retrieval info: USED_PORT: rden 0 0 0 0 INPUT VCC "rden"
 -- Retrieval info: USED_PORT: wraddress 0 0 11 0 INPUT NODEFVAL "wraddress[10..0]"
 -- Retrieval info: USED_PORT: wren 0 0 0 0 INPUT GND "wren"
 -- Retrieval info: CONNECT: @address_a 0 0 11 0 wraddress 0 0 11 0
 -- Retrieval info: CONNECT: @address_b 0 0 11 0 rdaddress 0 0 11 0
 -- Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: @data_a 0 0 16 0 data 0 0 16 0
+-- Retrieval info: CONNECT: @rden_b 0 0 0 0 rden 0 0 0 0
 -- Retrieval info: CONNECT: @wren_a 0 0 0 0 wren 0 0 0 0
 -- Retrieval info: CONNECT: q 0 0 16 0 @q_b 0 0 16 0
 -- Retrieval info: GEN_FILE: TYPE_NORMAL double_port_ram.vhd TRUE

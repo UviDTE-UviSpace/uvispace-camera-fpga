@@ -112,7 +112,7 @@ BEGIN
 			sim_reset 	<= '0';	-- reset
 			data_valid 	<= '0';
 			data_in <= X"00";
-			depth <= X"0003";
+			depth <= X"0005";
 		end if;
 		if ( edge_rise = 1 ) then
 			sim_reset 	<= '1';	-- stop reset
@@ -149,19 +149,15 @@ BEGIN
       data_valid 	<= '1';
       data_in <= X"04";
 		end if;
-		if ( edge_rise = 16 ) then
+		if ( edge_rise = 15 ) then
 			data_in <= X"05";
 		end if;
-    if ( edge_rise = 17 ) then
-      data_valid 	<= '0';
-    end if;
-		if ( edge_rise = 18 ) then
-      data_valid 	<= '1';
+		if ( edge_rise = 16 ) then
       data_in <= X"06";
 		end if;
-    if ( edge_rise = 19 ) then
-      data_valid 	<= '0';
-    end if;
+		if ( edge_rise = 17 ) then
+			data_valid 	<= '0';
+		end if;
 		if ( edge_rise = 20 ) then
       data_valid <= '1';
       data_in <= X"07";
@@ -173,5 +169,66 @@ BEGIN
       data_valid <= '1';
       data_in <= X"08";
 		end if;
+		if ( edge_rise = 28 ) then
+			data_valid <= '0';
+		end if;
+
+		if ( edge_rise = 30 ) then
+			data_valid 	<= '1';
+			data_in <= X"09";
+		end if;
+		if ( edge_rise = 31 ) then
+			data_valid 	<= '0';
+		end if;
+		if ( edge_rise = 32 ) then
+			data_valid 	<= '1';
+			data_in <= X"0A";
+		end if;
+		if ( edge_rise = 33 ) then
+			data_valid 	<= '0';
+		end if;
+		if ( edge_rise = 34 ) then
+			data_valid 	<= '1';
+			data_in <= X"0B";
+		end if;
+		if ( edge_rise = 35 ) then
+			data_valid 	<= '0';
+		end if;
+		if ( edge_rise = 36 ) then
+			data_valid 	<= '1';
+			data_in <= X"0C";
+		end if;
+		if ( edge_rise = 37 ) then
+			data_valid 	<= '0';
+		end if;
+		if ( edge_rise = 38 ) then
+			data_valid 	<= '1';
+			data_in <= X"0D";
+		end if;
+		if ( edge_rise = 39 ) then
+			data_in <= X"0E";
+		end if;
+		if ( edge_rise = 40 ) then
+			data_in <= X"10";
+		end if;
+		if ( edge_rise = 41 ) then
+			data_valid 	<= '0';
+		end if;
+		if ( edge_rise = 42 ) then
+			data_valid <= '1';
+			data_in <= X"11";
+		end if;
+		if ( edge_rise = 43 ) then
+			data_valid 	<= '0';
+		end if;
+		if ( edge_rise = 44 ) then
+			data_valid <= '1';
+			data_in <= X"12";
+		end if;
+		if ( edge_rise =45 ) then
+			data_valid <= '0';
+		end if;
+
+
   end process stimuli;
 END shift_reg_ram_arch;
