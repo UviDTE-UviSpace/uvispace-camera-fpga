@@ -75,8 +75,8 @@ architecture arch of raw2rgb is
 			data_valid	: in STD_LOGIC; --there is a valid pixel in pix
 
 			-- Output signal is the row and the column of the current pixel:
-			pix_row				: out STD_LOGIC_VECTOR(12 downto 0);
-			pix_col				: out STD_LOGIC_VECTOR(12 downto 0);
+			--pix_row				: out STD_LOGIC_VECTOR(12 downto 0);
+			--pix_col				: out STD_LOGIC_VECTOR(12 downto 0);
 			-- Output signal is the moving window to do the morphological operation
 			moving_window		: out array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
 			window_valid		: out array2D_of_std_logic((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0);
