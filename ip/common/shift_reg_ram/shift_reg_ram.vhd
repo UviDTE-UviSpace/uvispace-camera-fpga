@@ -1,7 +1,10 @@
 ------------------------------------------------------------------------
 -- shift_reg_ram
 ------------------------------------------------------------------------
--- Main fuction of this component (one sentence).
+-- This component implements a line of shift registers using 10kb memory
+--blocks.
+--Min depth = 4
+--Max depth = 2048
 
 -- Description of the component (10-15 lines)
 ------------------------------------------------------------------------
