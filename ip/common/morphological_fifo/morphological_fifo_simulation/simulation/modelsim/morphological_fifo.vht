@@ -1,44 +1,44 @@
 -- Copyright (C) 1991-2014 Altera Corporation. All rights reserved.
--- Your use of Altera Corporation's design tools, logic functions 
--- and other software and tools, and its AMPP partner logic 
--- functions, and any output files from any of the foregoing 
--- (including device programming or simulation files), and any 
--- associated documentation or information are expressly subject 
--- to the terms and conditions of the Altera Program License 
+-- Your use of Altera Corporation's design tools, logic functions
+-- and other software and tools, and its AMPP partner logic
+-- functions, and any output files from any of the foregoing
+-- (including device programming or simulation files), and any
+-- associated documentation or information are expressly subject
+-- to the terms and conditions of the Altera Program License
 -- Subscription Agreement, the Altera Quartus II License Agreement,
--- the Altera MegaCore Function License Agreement, or other 
--- applicable license agreement, including, without limitation, 
--- that your use is for the sole purpose of programming logic 
--- devices manufactured by Altera and sold by Altera or its 
--- authorized distributors.  Please refer to the applicable 
+-- the Altera MegaCore Function License Agreement, or other
+-- applicable license agreement, including, without limitation,
+-- that your use is for the sole purpose of programming logic
+-- devices manufactured by Altera and sold by Altera or its
+-- authorized distributors.  Please refer to the applicable
 -- agreement for further details.
 
 -- ***************************************************************************
--- This file contains a Vhdl test bench template that is freely editable to   
--- suit user's needs .Comments are provided in each section to help the user  
--- fill out necessary details.                                                
+-- This file contains a Vhdl test bench template that is freely editable to
+-- suit user's needs .Comments are provided in each section to help the user
+-- fill out necessary details.
 -- ***************************************************************************
 -- Generated on "12/09/2017 16:38:11"
-                                                            
--- Vhdl Test Bench template for design  :  morphological_fifo
--- 
--- Simulation tool : ModelSim-Altera (VHDL)
--- 
 
-LIBRARY ieee;                                               
-USE ieee.std_logic_1164.all;                                
+-- Vhdl Test Bench template for design  :  morphological_fifo
+--
+-- Simulation tool : ModelSim-Altera (VHDL)
+--
+
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
 
 LIBRARY work;
 	use work.array_package.all;
 
---PACKAGE morphological_fifo_data_type IS 
+--PACKAGE morphological_fifo_data_type IS
 --TYPE window_valid_2_0_type IS ARRAY (2 DOWNTO 0) OF STD_LOGIC;
 --TYPE window_valid_2_0_2_0_type IS ARRAY (2 DOWNTO 0) OF window_valid_2_0_type;
 --SUBTYPE window_valid_type IS window_valid_2_0_2_0_type;
 --END morphological_fifo_data_type;
 
-LIBRARY ieee;                                               
-USE ieee.std_logic_1164.all;                                
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
 
 --library work;
 --use work.morphological_fifo_data_type.all;
@@ -46,8 +46,8 @@ USE ieee.std_logic_1164.all;
 ENTITY morphological_fifo_vhd_tst IS
 END morphological_fifo_vhd_tst;
 ARCHITECTURE morphological_fifo_arch OF morphological_fifo_vhd_tst IS
--- constants                                                 
--- signals                                                   
+-- constants
+-- signals
 SIGNAL clk : STD_LOGIC;
 SIGNAL data_valid : STD_LOGIC;
 SIGNAL data_valid_out : STD_LOGIC;
@@ -92,20 +92,20 @@ BEGIN
 	reset_n => reset_n,
 	window_valid => window_valid
 	);
-	
+
 	-------------------------------------------------------------
-----------------    CLOCK & RESET SIGNALS    ----------------  
+----------------    CLOCK & RESET SIGNALS    ----------------
 	clk 	<= sim_clk;
 	reset_n <= sim_reset;
 -------------------------------------------------------------
-----------------    CLOCK PROCESS    ------------------------     
+----------------    CLOCK PROCESS    ------------------------
 	simulation_clock : process
 		-- repeat the counters edge_rise & edge_fall
 		constant max_cycles    	: integer   := 130;
 	begin
 		-- set sim_clk signal
 		sim_clk <= not(sim_clk);
-		-- adjust 
+		-- adjust
 		if (sim_clk = '0') then
 			edge_rise := edge_rise + 1;
 		else
@@ -114,16 +114,16 @@ BEGIN
 		if( edge_fall = max_cycles ) then
 			edge_rise := 0;
 			edge_fall := 0;
-		end if;  
+		end if;
 		-- trigger the stimuli process
 		wait for 0.05 ns;
 		sim_trig <= not(sim_trig);
 		-- wait until end of 1/2 period
 		wait for 0.45 ns;
 	end process simulation_clock;
-	
+
 -------------------------------------------------------------
-----------------    STIMULI PROCESS    ---------------------- 
+----------------    STIMULI PROCESS    ----------------------
 	stimuli : process (sim_trig)
 		variable  sample_count : integer := 0;
 	begin
@@ -131,22 +131,20 @@ BEGIN
 		if ( edge_rise = 0 ) then
 			sim_reset 	<= '0';	-- reset
 			data_valid 	<= '0';
-			img_height <= X"0006";
-			img_width <= X"0006";
+			img_height <= X"0004";
+			img_width <= X"000A";
 			pix <= X"00";
 		end if;
 		if ( edge_rise = 1 ) then
 			sim_reset 	<= '1';	-- stop reset
 		end if;
-	
+
 		--Now put the following image in the imput and see the output
-	   --  1  2  3  4  5  6
-		--  7  8  9 10 11 12
-		-- 13 14 15 16 17 18
-		-- 19 20 21 22 23 24
-		-- 25 26 27 28 29 30
-		-- 31 32 33 34 35 36
-		
+	  --   1   2   3   4   5   6   7   8   9  10
+    --  11  12  13  14  15  16  17  18  19  20
+    --  21  22  23  24  25  26  27  28  29  30
+    --  31  32  33  34  35  36  37  38  39  40
+
 		-------------Line 1
 		--1
 		if ( edge_rise = 6 ) then
@@ -196,8 +194,6 @@ BEGIN
 		if ( edge_rise = 17 ) then
 			data_valid 	<= '0';
 		end if;
-		
-		----------Line 2
 		--7
 		if ( edge_rise = 26 ) then
 			data_valid 	<= '1';
@@ -206,7 +202,6 @@ BEGIN
 		if ( edge_rise = 27 ) then
 			data_valid 	<= '0';
 		end if;
-		
 		--8
 		if ( edge_rise = 28 ) then
 			data_valid 	<= '1';
@@ -215,7 +210,6 @@ BEGIN
 		if ( edge_rise = 29 ) then
 			data_valid 	<= '0';
 		end if;
-		
 		--9
 		if ( edge_rise = 30 ) then
 			data_valid 	<= '1';
@@ -224,7 +218,6 @@ BEGIN
 		if ( edge_rise = 31 ) then
 			data_valid 	<= '0';
 		end if;
-		
 		--10
 		if ( edge_rise = 32 ) then
 			data_valid 	<= '1';
@@ -233,7 +226,8 @@ BEGIN
 		if ( edge_rise = 32 ) then
 			data_valid 	<= '0';
 		end if;
-		
+
+    ----------Line 2
 		--11
 		if ( edge_rise = 34 ) then
 			data_valid 	<= '1';
@@ -250,8 +244,6 @@ BEGIN
 		if ( edge_rise = 37 ) then
 			data_valid 	<= '0';
 		end if;
-		
-		-------------Line 3
 		--13
 		if ( edge_rise = 46 ) then
 			data_valid 	<= '1';
@@ -300,8 +292,6 @@ BEGIN
 		if ( edge_rise = 57 ) then
 			data_valid 	<= '0';
 		end if;
-		
-		----------Line 4
 		--19
 		if ( edge_rise = 66 ) then
 			data_valid 	<= '1';
@@ -318,6 +308,7 @@ BEGIN
 		if ( edge_rise = 69 ) then
 			data_valid 	<= '0';
 		end if;
+    -------------Line 3
 		--21
 		if ( edge_rise = 70 ) then
 			data_valid 	<= '1';
@@ -350,8 +341,6 @@ BEGIN
 		if ( edge_rise = 77 ) then
 			data_valid 	<= '0';
 		end if;
-		
-		-------------Line 5
 		--25
 		if ( edge_rise = 86 ) then
 			data_valid 	<= '1';
@@ -400,8 +389,7 @@ BEGIN
 		if ( edge_rise = 97 ) then
 			data_valid 	<= '0';
 		end if;
-		
-		----------Line 6
+		----------Line 4
 		--31
 		if ( edge_rise = 106 ) then
 			data_valid 	<= '1';
@@ -450,8 +438,41 @@ BEGIN
 		if ( edge_rise = 117 ) then
 			data_valid 	<= '0';
 		end if;
-		-- End of the pixels of image 1
-		
+    --37
+		if ( edge_rise = 116 ) then
+			data_valid 	<= '1';
+			pix <= X"25";
+		end if;
+		if ( edge_rise = 117 ) then
+			data_valid 	<= '0';
+		end if;
+    --38
+		if ( edge_rise = 116 ) then
+			data_valid 	<= '1';
+			pix <= X"26";
+		end if;
+		if ( edge_rise = 117 ) then
+			data_valid 	<= '0';
+		end if;
+    --39
+		if ( edge_rise = 116 ) then
+			data_valid 	<= '1';
+			pix <= X"27";
+		end if;
+		if ( edge_rise = 117 ) then
+			data_valid 	<= '0';
+		end if;
+    --40
+		if ( edge_rise = 116 ) then
+			data_valid 	<= '1';
+			pix <= X"28";
+		end if;
+		if ( edge_rise = 117 ) then
+			data_valid 	<= '0';
+		end if;
+
+    -- End of the pixels of image 1
+
 		--Now put some pixels more to see the behaviour with second image
 		if ( edge_rise = 124 ) then
 			data_valid 	<= '1';
@@ -472,6 +493,6 @@ BEGIN
 		if ( edge_rise = 128 ) then
 			data_valid 	<= '0';
 		end if;
-		
-	end process stimuli;                          
+
+	end process stimuli;
 END morphological_fifo_arch;
