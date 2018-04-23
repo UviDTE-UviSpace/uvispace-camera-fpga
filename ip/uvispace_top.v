@@ -191,15 +191,15 @@ soc_system u0 (
   .rgbgray_img_data_valid                ( hsv_valid ),
   .rgbgray_img_input_data                ( {gray, hsv_blue, hsv_green, hsv_red} ),
   .rgbgray_img_img_width                 ( img_width ),
-  .rgbgray_img_img_height                ( img_height ),              
+  .rgbgray_img_img_height                ( img_height ),
   .gray_img_data_valid                   ( gray_valid ),
   .gray_img_input_data                   ( gray ),
   .gray_img_img_width                 	  ( img_width ),
-  .gray_img_img_height               	  ( img_height ),  
+  .gray_img_img_height               	  ( img_height ),
   .binary_img_data_valid                 ( bin_valid ),
   .binary_img_input_data                 ( dilated_8bit ),
   .binary_img_img_width                  ( img_width ),
-  .binary_img_img_height                 ( img_height ),  
+  .binary_img_img_height                 ( img_height ),
   //Export the signals to control the image processing
   .img_processing_hue_thres_l            (hue_threshold_l),
   .img_processing_hue_thres_h            (hue_threshold_h),
@@ -389,18 +389,20 @@ in 4 components(RGBG): The number of rows and columns are reduced to the half.
 One from every 2 rows are stored on a buffer for getting the components of the
 corresponding pixel afterwards.
 */
-raw2rgb u4(
-  .iCLK         (ccd_pixel_clk),
+raw2rgb  #(
+  .PIX_SIZE(12)
+  ) u4(
+  .clk         (ccd_pixel_clk),
   // Negative logic reset
-  .iRST         (hps2fpga_reset_n & video_stream_reset_n),
-  .iDATA        (ccd_data_captured),  // Component input data
-  .iDVAL        (ccd_dval),           // Data valid signal
+  .reset_n      (hps2fpga_reset_n & video_stream_reset_n),
+  .pix          (ccd_data_captured),  // Component input data
+  .data_valid   (ccd_dval),           // Data valid signal
   .oRed         (rgb_red),        // Output red component
   .oGreen       (rgb_green),      // Output green component
   .oBlue        (rgb_blue),       // Output blue component
   .oDVAL        (rgb_dval),       // Pixel value available
-  .iX_Cont      (X_Cont),
-  .iY_Cont      (Y_Cont)
+  .img_width    (img_width),
+  .img_height   (img_height)
   );
   wire    [15:0] X_Cont;
   wire    [15:0] Y_Cont;

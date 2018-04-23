@@ -25,6 +25,9 @@
 -- Simulation tool : ModelSim-Altera (VHDL)
 --
 
+
+--**WARNING! Edit the explanation of the test, including the new 2 pixels added in each row
+
 LIBRARY ieee;
 USE ieee.std_logic_1164.all;
 
@@ -123,7 +126,7 @@ BEGIN
 			sim_reset 	<= '0';	-- reset
 			data_valid 	<= '0';
 			img_height <= X"0004";
-			img_width <= X"0004";
+			img_width <= X"000A";
 			pix <= B"000000000100";
 		end if;
 		if ( edge_rise = 1 ) then
@@ -175,239 +178,622 @@ BEGIN
 		if ( edge_rise = 17 ) then
 			data_valid 	<= '0';
 		end if;
-		--Line 2
-    --1
- 		if ( edge_rise = 18 ) then
+		--5
+		if ( edge_rise = 18 ) then
 			data_valid 	<= '1';
-			pix <= B"000100101100";--300
+			pix <= B"110010000000";--3200
 		end if;
 		if ( edge_rise = 19 ) then
 			data_valid 	<= '0';
 		end if;
-		--2
- 		if ( edge_rise = 20 ) then
+		--6
+		if ( edge_rise = 20 ) then
 			data_valid 	<= '1';
-			pix <= B"011111010000";--2000
+			pix <= B"001110000100";--900
 		end if;
 		if ( edge_rise = 21 ) then
 			data_valid 	<= '0';
 		end if;
-    --3
+		--7
 		if ( edge_rise = 22 ) then
 			data_valid 	<= '1';
-			pix <= B"001001011000";--600
+			pix <= B"111100111100";--3900
 		end if;
 		if ( edge_rise = 23 ) then
 			data_valid 	<= '0';
 		end if;
-		--4
+		--8
  		if ( edge_rise = 24 ) then
 			data_valid 	<= '1';
-			pix <= B"010111011100";--1500
+			pix <= B"001100100000";--800
 		end if;
 		if ( edge_rise = 25 ) then
 			data_valid 	<= '0';
 		end if;
-		--Line 3:
-    --1
+		--9
  		if ( edge_rise = 26 ) then
 			data_valid 	<= '1';
-			pix <= B"111001110100";--3700
+			pix <= B"111110100000";--4000
 		end if;
 		if ( edge_rise = 27 ) then
 			data_valid 	<= '0';
 		end if;
-		--2
+		--10
 		if ( edge_rise = 28 ) then
 			data_valid 	<= '1';
-			pix <= B"001001011000";--600
+			pix <= B"001010111100";--700
 		end if;
 		if ( edge_rise = 29 ) then
 			data_valid 	<= '0';
 		end if;
-		--3
+		--Line 2
+    --1
  		if ( edge_rise = 30 ) then
 			data_valid 	<= '1';
-			pix <= B"110110101100";--3500
+			pix <= B"000100101100";--300
 		end if;
 		if ( edge_rise = 31 ) then
 			data_valid 	<= '0';
 		end if;
-		--4
+		--2
  		if ( edge_rise = 32 ) then
 			data_valid 	<= '1';
-			pix <= B"000111110100";--500
+			pix <= B"011111010000";--2000
 		end if;
 		if ( edge_rise = 33 ) then
 			data_valid 	<= '0';
 		end if;
-		-------------Line 4
-		--1
+    --3
 		if ( edge_rise = 34 ) then
 			data_valid 	<= '1';
-			pix <= B"000110010000";--400
+			pix <= B"001001011000";--600
 		end if;
 		if ( edge_rise = 35 ) then
 			data_valid 	<= '0';
 		end if;
-		--2
+		--4
  		if ( edge_rise = 36 ) then
 			data_valid 	<= '1';
-			pix <= B"100000110100";--2100
+			pix <= B"010111011100";--1500
 		end if;
 		if ( edge_rise = 37 ) then
 			data_valid 	<= '0';
 		end if;
-		--3
+		--5
  		if ( edge_rise = 38 ) then
 			data_valid 	<= '1';
-			pix <= B"000111110100";
+			pix <= B"000001100100";--100
 		end if;
 		if ( edge_rise = 39 ) then
 			data_valid 	<= '0';
 		end if;
-		--4
-		if ( edge_rise = 40 ) then
+		--6
+ 		if ( edge_rise = 40 ) then
 			data_valid 	<= '1';
-			pix <= B"100011111100";
+			pix <= B"011100001000";--1800
 		end if;
 		if ( edge_rise = 41 ) then
+			data_valid 	<= '0';
+		end if;
+		--7
+ 		if ( edge_rise = 42 ) then
+			data_valid 	<= '1';
+			pix <= B"000100101100";--300
+		end if;
+		if ( edge_rise = 43 ) then
+			data_valid 	<= '0';
+		end if;
+		--8
+ 		if ( edge_rise = 44 ) then
+			data_valid 	<= '1';
+			pix <= B"011111010000";--2000
+		end if;
+		if ( edge_rise = 45 ) then
+			data_valid 	<= '0';
+		end if;
+    --9
+		if ( edge_rise = 46 ) then
+			data_valid 	<= '1';
+			pix <= B"001001011000";--600
+		end if;
+		if ( edge_rise = 47 ) then
+			data_valid 	<= '0';
+		end if;
+		--10
+ 		if ( edge_rise = 48 ) then
+			data_valid 	<= '1';
+			pix <= B"010111011100";--1500
+		end if;
+		if ( edge_rise = 49 ) then
+			data_valid 	<= '0';
+		end if;
+		--Line 3:
+    --1
+ 		if ( edge_rise = 50 ) then
+			data_valid 	<= '1';
+			pix <= B"111001110100";--3700
+		end if;
+		if ( edge_rise = 51 ) then
+			data_valid 	<= '0';
+		end if;
+		--2
+		if ( edge_rise = 52 ) then
+			data_valid 	<= '1';
+			pix <= B"001001011000";--600
+		end if;
+		if ( edge_rise = 53 ) then
+			data_valid 	<= '0';
+		end if;
+		--3
+ 		if ( edge_rise = 54 ) then
+			data_valid 	<= '1';
+			pix <= B"110110101100";--3500
+		end if;
+		if ( edge_rise = 55 ) then
+			data_valid 	<= '0';
+		end if;
+		--4
+ 		if ( edge_rise = 56 ) then
+			data_valid 	<= '1';
+			pix <= B"000111110100";--500
+		end if;
+		if ( edge_rise = 57 ) then
+			data_valid 	<= '0';
+		end if;
+		--5
+		if ( edge_rise = 58 ) then
+			data_valid 	<= '1';
+			pix <= B"101101010100";--2900
+		end if;
+		if ( edge_rise = 59 ) then
+			data_valid 	<= '0';
+		end if;
+		--6
+		if ( edge_rise = 60 ) then
+			data_valid 	<= '1';
+			pix <= B"000011001000";--200
+		end if;
+		if ( edge_rise = 61 ) then
+			data_valid 	<= '0';
+		end if;
+		--7
+ 		if ( edge_rise = 62 ) then
+			data_valid 	<= '1';
+			pix <= B"111001110100";--3700
+		end if;
+		if ( edge_rise = 63 ) then
+			data_valid 	<= '0';
+		end if;
+		--8
+		if ( edge_rise = 64 ) then
+			data_valid 	<= '1';
+			pix <= B"001001011000";--600
+		end if;
+		if ( edge_rise = 65 ) then
+			data_valid 	<= '0';
+		end if;
+		--9
+ 		if ( edge_rise = 66 ) then
+			data_valid 	<= '1';
+			pix <= B"110110101100";--3500
+		end if;
+		if ( edge_rise = 67 ) then
+			data_valid 	<= '0';
+		end if;
+		--10
+ 		if ( edge_rise = 68 ) then
+			data_valid 	<= '1';
+			pix <= B"000111110100";--500
+		end if;
+		if ( edge_rise = 69 ) then
+			data_valid 	<= '0';
+		end if;
+		-------------Line 4
+		--1
+		if ( edge_rise = 70 ) then
+			data_valid 	<= '1';
+			pix <= B"000110010000";--400
+		end if;
+		if ( edge_rise = 71 ) then
+			data_valid 	<= '0';
+		end if;
+		--2
+ 		if ( edge_rise = 72 ) then
+			data_valid 	<= '1';
+			pix <= B"100000110100";--2100
+		end if;
+		if ( edge_rise = 73 ) then
+			data_valid 	<= '0';
+		end if;
+		--3
+ 		if ( edge_rise = 74 ) then
+			data_valid 	<= '1';
+			pix <= B"000111110100";--500
+		end if;
+		if ( edge_rise = 75 ) then
+			data_valid 	<= '0';
+		end if;
+		--4
+		if ( edge_rise = 76 ) then
+			data_valid 	<= '1';
+			pix <= B"100011111100";--2300
+		end if;
+		if ( edge_rise = 77 ) then
+			data_valid 	<= '0';
+		end if;
+		--5
+		if ( edge_rise = 78 ) then
+			data_valid 	<= '1';
+			pix <= B"000100101100";--300
+		end if;
+		if ( edge_rise = 79 ) then
+			data_valid 	<= '0';
+		end if;
+		--6
+		if ( edge_rise = 80 ) then
+			data_valid 	<= '1';
+			pix <= B"100111000100";--2500
+		end if;
+		if ( edge_rise = 81 ) then
+			data_valid 	<= '0';
+		end if;
+		--7
+		if ( edge_rise = 82 ) then
+			data_valid 	<= '1';
+			pix <= B"000110010000";--400
+		end if;
+		if ( edge_rise = 83 ) then
+			data_valid 	<= '0';
+		end if;
+		--8
+ 		if ( edge_rise = 84 ) then
+			data_valid 	<= '1';
+			pix <= B"100000110100";--2100
+		end if;
+		if ( edge_rise = 85 ) then
+			data_valid 	<= '0';
+		end if;
+		--9
+ 		if ( edge_rise = 86 ) then
+			data_valid 	<= '1';
+			pix <= B"000111110100";--500
+		end if;
+		if ( edge_rise = 87 ) then
+			data_valid 	<= '0';
+		end if;
+		--10
+		if ( edge_rise = 88 ) then
+			data_valid 	<= '1';
+			pix <= B"100011111100";--2300
+		end if;
+		if ( edge_rise = 89 ) then
 			data_valid 	<= '0';
 		end if;
 
 		---------------------------START IMAGE 2 SO IMAGE 1 IS FULLY PUSHED OUT
 		-------------Line 1
+		--1
+		if ( edge_rise = 110 ) then
+			data_valid 	<= '1';
+			pix <= B"111100111100";--3900
+		end if;
+		if ( edge_rise = 111 ) then
+			data_valid 	<= '0';
+		end if;
+		--2
+ 		if ( edge_rise = 112 ) then
+			data_valid 	<= '1';
+			pix <= B"001100100000";--800
+		end if;
+		if ( edge_rise = 113 ) then
+			data_valid 	<= '0';
+		end if;
+		--3
+ 		if ( edge_rise = 114 ) then
+			data_valid 	<= '1';
+			pix <= B"111110100000";--4000
+		end if;
+		if ( edge_rise = 115 ) then
+			data_valid 	<= '0';
+		end if;
+		--4
+		if ( edge_rise = 116 ) then
+			data_valid 	<= '1';
+			pix <= B"001010111100";--700
+		end if;
+		if ( edge_rise = 117 ) then
+			data_valid 	<= '0';
+		end if;
+		--5
+		if ( edge_rise = 118 ) then
+			data_valid 	<= '1';
+			pix <= B"110010000000";--3200
+		end if;
+		if ( edge_rise = 119 ) then
+			data_valid 	<= '0';
+		end if;
+		--6
+		if ( edge_rise = 120 ) then
+			data_valid 	<= '1';
+			pix <= B"001110000100";--900
+		end if;
+		if ( edge_rise = 121 ) then
+			data_valid 	<= '0';
+		end if;
+		--7
+		if ( edge_rise = 122 ) then
+			data_valid 	<= '1';
+			pix <= B"111100111100";--3900
+		end if;
+		if ( edge_rise = 123 ) then
+			data_valid 	<= '0';
+		end if;
+		--8
+ 		if ( edge_rise = 124 ) then
+			data_valid 	<= '1';
+			pix <= B"001100100000";--800
+		end if;
+		if ( edge_rise = 125 ) then
+			data_valid 	<= '0';
+		end if;
+		--9
+ 		if ( edge_rise = 126 ) then
+			data_valid 	<= '1';
+			pix <= B"111110100000";--4000
+		end if;
+		if ( edge_rise = 127 ) then
+			data_valid 	<= '0';
+		end if;
+		--10
+		if ( edge_rise = 128 ) then
+			data_valid 	<= '1';
+			pix <= B"001010111100";--700
+		end if;
+		if ( edge_rise = 129 ) then
+			data_valid 	<= '0';
+		end if;
+		--Line 2
     --1
-    if ( edge_rise = 42 ) then
-      data_valid 	<= '1';
-      pix <= B"111100111100";--3900
-    end if;
-    if ( edge_rise = 43 ) then
-      data_valid 	<= '0';
-    end if;
-    --2
-    if ( edge_rise = 44 ) then
-      data_valid 	<= '1';
-      pix <= B"001100100000";--800
-    end if;
-    if ( edge_rise = 45 ) then
-      data_valid 	<= '0';
-    end if;
+ 		if ( edge_rise = 130 ) then
+			data_valid 	<= '1';
+			pix <= B"000100101100";--300
+		end if;
+		if ( edge_rise = 131 ) then
+			data_valid 	<= '0';
+		end if;
+		--2
+ 		if ( edge_rise = 132 ) then
+			data_valid 	<= '1';
+			pix <= B"011111010000";--2000
+		end if;
+		if ( edge_rise = 133 ) then
+			data_valid 	<= '0';
+		end if;
     --3
-    if ( edge_rise = 46 ) then
-      data_valid 	<= '1';
-      pix <= B"111110100000";--4000
-    end if;
-    if ( edge_rise = 47 ) then
-      data_valid 	<= '0';
-    end if;
-    --4
-    if ( edge_rise = 48 ) then
-      data_valid 	<= '1';
-      pix <= B"001010111100";--700
-    end if;
-    if ( edge_rise = 49 ) then
-      data_valid 	<= '0';
-    end if;
-    --Line 2
+		if ( edge_rise = 134 ) then
+			data_valid 	<= '1';
+			pix <= B"001001011000";--600
+		end if;
+		if ( edge_rise = 135 ) then
+			data_valid 	<= '0';
+		end if;
+		--4
+ 		if ( edge_rise = 136 ) then
+			data_valid 	<= '1';
+			pix <= B"010111011100";--1500
+		end if;
+		if ( edge_rise = 137 ) then
+			data_valid 	<= '0';
+		end if;
+		--5
+ 		if ( edge_rise = 138 ) then
+			data_valid 	<= '1';
+			pix <= B"000001100100";--100
+		end if;
+		if ( edge_rise = 139 ) then
+			data_valid 	<= '0';
+		end if;
+		--6
+ 		if ( edge_rise = 140 ) then
+			data_valid 	<= '1';
+			pix <= B"011100001000";--1800
+		end if;
+		if ( edge_rise = 141 ) then
+			data_valid 	<= '0';
+		end if;
+		--7
+ 		if ( edge_rise = 142 ) then
+			data_valid 	<= '1';
+			pix <= B"000100101100";--300
+		end if;
+		if ( edge_rise = 143 ) then
+			data_valid 	<= '0';
+		end if;
+		--8
+ 		if ( edge_rise = 144 ) then
+			data_valid 	<= '1';
+			pix <= B"011111010000";--2000
+		end if;
+		if ( edge_rise = 145 ) then
+			data_valid 	<= '0';
+		end if;
+    --9
+		if ( edge_rise = 146 ) then
+			data_valid 	<= '1';
+			pix <= B"001001011000";--600
+		end if;
+		if ( edge_rise = 147 ) then
+			data_valid 	<= '0';
+		end if;
+		--10
+ 		if ( edge_rise = 148 ) then
+			data_valid 	<= '1';
+			pix <= B"010111011100";--1500
+		end if;
+		if ( edge_rise = 149 ) then
+			data_valid 	<= '0';
+		end if;
+		--Line 3:
     --1
-    if ( edge_rise = 50 ) then
-      data_valid 	<= '1';
-      pix <= B"000100101100";--300
-    end if;
-    if ( edge_rise = 51 ) then
-      data_valid 	<= '0';
-    end if;
-    --2
-    if ( edge_rise = 52 ) then
-      data_valid 	<= '1';
-      pix <= B"011111010000";--2000
-    end if;
-    if ( edge_rise = 53 ) then
-      data_valid 	<= '0';
-    end if;
-    --3
-    if ( edge_rise = 54 ) then
-      data_valid 	<= '1';
-      pix <= B"001001011000";--600
-    end if;
-    if ( edge_rise = 55 ) then
-      data_valid 	<= '0';
-    end if;
-    --4
-    if ( edge_rise = 56 ) then
-      data_valid 	<= '1';
-      pix <= B"010111011100";--1500
-    end if;
-    if ( edge_rise = 57 ) then
-      data_valid 	<= '0';
-    end if;
-    --Line 3:
-    --1
-    if ( edge_rise = 58 ) then
-      data_valid 	<= '1';
-      pix <= B"111001110100";--3700
-    end if;
-    if ( edge_rise = 59 ) then
-      data_valid 	<= '0';
-    end if;
-    --2
-    if ( edge_rise = 60 ) then
-      data_valid 	<= '1';
-      pix <= B"001001011000";--600
-    end if;
-    if ( edge_rise = 61 ) then
-      data_valid 	<= '0';
-    end if;
-    --3
-    if ( edge_rise = 62 ) then
-      data_valid 	<= '1';
-      pix <= B"110110101100";--3500
-    end if;
-    if ( edge_rise = 63 ) then
-      data_valid 	<= '0';
-    end if;
-    --4
-    if ( edge_rise = 64 ) then
-      data_valid 	<= '1';
-      pix <= B"000111110100";--500
-    end if;
-    if ( edge_rise = 65 ) then
-      data_valid 	<= '0';
-    end if;
-    -------------Line 4
-    --1
-    if ( edge_rise = 66 ) then
-      data_valid 	<= '1';
-      pix <= B"000110010000";--400
-    end if;
-    if ( edge_rise = 67 ) then
-      data_valid 	<= '0';
-    end if;
-    --2
-    if ( edge_rise = 68 ) then
-      data_valid 	<= '1';
-      pix <= B"100000110100";--2100
-    end if;
-    if ( edge_rise = 69 ) then
-      data_valid 	<= '0';
-    end if;
-    --3
-    if ( edge_rise = 70 ) then
-      data_valid 	<= '1';
-      pix <= B"000111110100";
-    end if;
-    if ( edge_rise = 71 ) then
-      data_valid 	<= '0';
-    end if;
-    --4
-    if ( edge_rise = 72 ) then
-      data_valid 	<= '1';
-      pix <= B"100011111100";
-    end if;
-    if ( edge_rise = 73 ) then
-      data_valid 	<= '0';
-    end if;
-
+ 		if ( edge_rise = 150 ) then
+			data_valid 	<= '1';
+			pix <= B"111001110100";--3700
+		end if;
+		if ( edge_rise = 151 ) then
+			data_valid 	<= '0';
+		end if;
+		--2
+		if ( edge_rise = 152 ) then
+			data_valid 	<= '1';
+			pix <= B"001001011000";--600
+		end if;
+		if ( edge_rise = 153 ) then
+			data_valid 	<= '0';
+		end if;
+		--3
+ 		if ( edge_rise = 154 ) then
+			data_valid 	<= '1';
+			pix <= B"110110101100";--3500
+		end if;
+		if ( edge_rise = 155 ) then
+			data_valid 	<= '0';
+		end if;
+		--4
+ 		if ( edge_rise = 156 ) then
+			data_valid 	<= '1';
+			pix <= B"000111110100";--500
+		end if;
+		if ( edge_rise = 157 ) then
+			data_valid 	<= '0';
+		end if;
+		--5
+		if ( edge_rise = 158 ) then
+			data_valid 	<= '1';
+			pix <= B"101101010100";--2900
+		end if;
+		if ( edge_rise = 159 ) then
+			data_valid 	<= '0';
+		end if;
+		--6
+		if ( edge_rise = 160 ) then
+			data_valid 	<= '1';
+			pix <= B"000011001000";--200
+		end if;
+		if ( edge_rise = 161 ) then
+			data_valid 	<= '0';
+		end if;
+		--7
+ 		if ( edge_rise = 162 ) then
+			data_valid 	<= '1';
+			pix <= B"111001110100";--3700
+		end if;
+		if ( edge_rise = 163 ) then
+			data_valid 	<= '0';
+		end if;
+		--8
+		if ( edge_rise = 164 ) then
+			data_valid 	<= '1';
+			pix <= B"001001011000";--600
+		end if;
+		if ( edge_rise = 165 ) then
+			data_valid 	<= '0';
+		end if;
+		--9
+ 		if ( edge_rise = 166 ) then
+			data_valid 	<= '1';
+			pix <= B"110110101100";--3500
+		end if;
+		if ( edge_rise = 167 ) then
+			data_valid 	<= '0';
+		end if;
+		--10
+ 		if ( edge_rise = 168 ) then
+			data_valid 	<= '1';
+			pix <= B"000111110100";--500
+		end if;
+		if ( edge_rise = 169 ) then
+			data_valid 	<= '0';
+		end if;
+		-------------Line 4
+		--1
+		if ( edge_rise = 170 ) then
+			data_valid 	<= '1';
+			pix <= B"000110010000";--400
+		end if;
+		if ( edge_rise = 171 ) then
+			data_valid 	<= '0';
+		end if;
+		--2
+ 		if ( edge_rise = 172 ) then
+			data_valid 	<= '1';
+			pix <= B"100000110100";--2100
+		end if;
+		if ( edge_rise = 173 ) then
+			data_valid 	<= '0';
+		end if;
+		--3
+ 		if ( edge_rise = 174 ) then
+			data_valid 	<= '1';
+			pix <= B"000111110100";--500
+		end if;
+		if ( edge_rise = 175 ) then
+			data_valid 	<= '0';
+		end if;
+		--4
+		if ( edge_rise = 176 ) then
+			data_valid 	<= '1';
+			pix <= B"100011111100";--2300
+		end if;
+		if ( edge_rise = 177 ) then
+			data_valid 	<= '0';
+		end if;
+		--5
+		if ( edge_rise = 178 ) then
+			data_valid 	<= '1';
+			pix <= B"000100101100";--300
+		end if;
+		if ( edge_rise = 179 ) then
+			data_valid 	<= '0';
+		end if;
+		--6
+		if ( edge_rise = 180 ) then
+			data_valid 	<= '1';
+			pix <= B"100111000100";--2500
+		end if;
+		if ( edge_rise = 181 ) then
+			data_valid 	<= '0';
+		end if;
+		--7
+		if ( edge_rise = 182 ) then
+			data_valid 	<= '1';
+			pix <= B"000110010000";--400
+		end if;
+		if ( edge_rise = 183 ) then
+			data_valid 	<= '0';
+		end if;
+		--8
+ 		if ( edge_rise = 184 ) then
+			data_valid 	<= '1';
+			pix <= B"100000110100";--2100
+		end if;
+		if ( edge_rise = 185 ) then
+			data_valid 	<= '0';
+		end if;
+		--9
+ 		if ( edge_rise = 186 ) then
+			data_valid 	<= '1';
+			pix <= B"000111110100";--500
+		end if;
+		if ( edge_rise = 187 ) then
+			data_valid 	<= '0';
+		end if;
+		--10
+		if ( edge_rise = 188 ) then
+			data_valid 	<= '1';
+			pix <= B"100011111100";--2300
+		end if;
+		if ( edge_rise = 189 ) then
+			data_valid 	<= '0';
+		end if;
 	end process stimuli;
 END raw2rgb_arch;

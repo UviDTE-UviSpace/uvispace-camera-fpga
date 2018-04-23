@@ -32,11 +32,7 @@ entity raw2rgb is
 	generic (
 		-- Basic configuration of the component:
 		-- Size of each pixel (R, G1, G2 or B)
-		PIX_SIZE	:	integer	:=	12;
-		--Size of the kernel moving along the image (3x3 by default)
-		KERN_SIZE	:	integer	:=	3;
-		--Default resolution is 640x480 so max width is 640.
-		MAX_IMG_WIDTH	:	integer	:=	640
+		PIX_SIZE	:	integer	:=	12
 	);
 	port (
 		pix 				:	IN STD_LOGIC_VECTOR (11 DOWNTO 0); --iDATA, pixel input
@@ -58,10 +54,9 @@ architecture arch of raw2rgb is
 			-- Basic configuration of the component:
 			-- Size of each pixel (R, G1, G2 or B)
 			PIX_SIZE	:	integer	:=	12;
+
 			--Size of the kernel moving along the image (3x3 by default)
-			KERN_SIZE	:	integer	:=	3;
-			--Default resolution is 640x480 so max width is 640.
-			MAX_IMG_WIDTH	:	integer	:=	640
+			KERN_SIZE	:	integer	:=	3
 		);
 		port(
 			-- Clock and reset.
@@ -83,6 +78,9 @@ architecture arch of raw2rgb is
 			data_valid_out	: out STD_LOGIC
 		);
 	end component;
+	--Size of the kernel moving along the image (3x3 by default)
+	constant KERN_SIZE	:	integer	:=	3;
+
 	--signal declarations (example: signal enable_data_valid    : STD_LOGIC;)
 	--Module internal signals:
 	SIGNAL mf_moving_window2 : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE - 1) downto 0);
@@ -103,8 +101,7 @@ begin
 	-- Instanciate signals declarations:
 	MF_component : morphological_fifo
 	generic map ( PIX_SIZE  		=> PIX_SIZE,
-								KERN_SIZE 		=> KERN_SIZE,
-								MAX_IMG_WIDTH => MAX_IMG_WIDTH)
+								KERN_SIZE 		=> KERN_SIZE)
 
 	port map    ( clk 						=> clk,
 								reset_n 				=> reset_n,
@@ -158,29 +155,45 @@ end process;
 raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 					if mf_window_valid(1)(0) = '0' then -- (image's pixel in the) first column
 						if mf_window_valid(0)(1) = '0' then -- first column & first row
-							sum_R <= mf_moving_window(1)(2);
-							sum_G <= mf_moving_window(1)(1) + mf_moving_window(2)(2);
-							sum_B <= mf_moving_window(2)(1);
+							-- sum_R <= mf_moving_window(1)(2);
+							-- sum_G <= mf_moving_window(1)(1) + mf_moving_window(2)(2);
+							-- sum_B <= mf_moving_window(2)(1);
+							-- pix_R <= sum_R;
+							-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+							-- pix_B <= sum_B;
+							--
+							--B pixel:
+							sum_R <= mf_moving_window(2)(2);
+							sum_G <= mf_moving_window(2)(1) + mf_moving_window(1)(2);
+							sum_B <= mf_moving_window(1)(1);
 							pix_R <= sum_R;
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 							pix_B <= sum_B;
 						elsif mf_window_valid(2)(1) = '0' then -- first column & last row
-							sum_R <= mf_moving_window(0)(2);
-							sum_G <= mf_moving_window(0)(1) + mf_moving_window(1)(2);
-							sum_B <= mf_moving_window(1)(1);
+							-- sum_R <= mf_moving_window(0)(2);
+							-- sum_G <= mf_moving_window(0)(1) + mf_moving_window(1)(2);
+							-- sum_B <= mf_moving_window(1)(1);
+							-- pix_R <= sum_R;
+							-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+							-- pix_B <= sum_B;
+							--
+							--G1 pixel
+							sum_R <= mf_moving_window(1)(2);
+							sum_G <= mf_moving_window(1)(1) + mf_moving_window(0)(2);
+							sum_B <= mf_moving_window(0)(1);
 							pix_R <= sum_R;
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 							pix_B <= sum_B;
 						else -- first column & no corner
 							if (iY_Cont(0) = '0') then --if (iX_Cont(0) = '0') then
-								--G1 pixel
-								sum_R <= mf_moving_window(1)(2);
-								sum_G <= mf_moving_window(0)(2) + mf_moving_window(2)(2);
-								sum_B <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
-								pix_R <= sum_R;
-								pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
-								pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
-							else
+								-- --G1 pixel
+								-- sum_R <= mf_moving_window(1)(2);
+								-- sum_G <= mf_moving_window(0)(2) + mf_moving_window(2)(2);
+								-- sum_B <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
+								-- pix_R <= sum_R;
+								-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+								-- pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+								--
 								--B pixel
 								sum_R <= mf_moving_window(0)(2) + mf_moving_window(2)(2);
 								sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1); -- + mf_moving_window(1)(2)
@@ -188,33 +201,65 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 								pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
 								pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 								pix_B <= sum_B;
+							else
+								-- --B pixel
+								-- sum_R <= mf_moving_window(0)(2) + mf_moving_window(2)(2);
+								-- sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1); -- + mf_moving_window(1)(2)
+								-- sum_B <= mf_moving_window(1)(1);
+								-- pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
+								-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+								-- pix_B <= sum_B;
+								--
+								--G1 pixel
+								sum_R <= mf_moving_window(1)(2);
+								sum_G <= mf_moving_window(0)(2) + mf_moving_window(2)(2);
+								sum_B <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
+								pix_R <= sum_R;
+								pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+								pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 							end if;
 						end if;
 					elsif mf_window_valid(1)(2) = '0' then -- last column
 						if mf_window_valid(0)(1) = '0' then -- last column & first row
-							sum_R <= mf_moving_window(1)(1);
-							sum_G <= mf_moving_window(1)(0) + mf_moving_window(2)(1);
-							sum_B <= mf_moving_window(2)(0);
+							-- sum_R <= mf_moving_window(1)(1);
+							-- sum_G <= mf_moving_window(1)(0) + mf_moving_window(2)(1);
+							-- sum_B <= mf_moving_window(2)(0);
+							-- pix_R <= sum_R;
+							-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+							-- pix_B <= sum_B;
+							--
+							--G2 pixel
+							sum_R <= mf_moving_window(2)(1);
+							sum_G <= mf_moving_window(1)(1) + mf_moving_window(2)(0);
+							sum_B <= mf_moving_window(1)(0);
 							pix_R <= sum_R;
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 							pix_B <= sum_B;
 						elsif mf_window_valid(2)(1) = '0' then -- last column & last row
-							sum_R <= mf_moving_window(0)(1);
-							sum_G <= mf_moving_window(1)(1) + mf_moving_window(0)(0);
-							sum_B <= mf_moving_window(0)(1);
+							-- sum_R <= mf_moving_window(0)(1);
+							-- sum_G <= mf_moving_window(1)(1) + mf_moving_window(0)(0);
+							-- sum_B <= mf_moving_window(0)(1);
+							-- pix_R <= sum_R;
+							-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+							-- pix_B <= sum_B;
+							--
+							--R pixels
+							sum_R <= mf_moving_window(1)(1);
+							sum_G <= mf_moving_window(0)(1) + mf_moving_window(1)(0);
+							sum_B <= mf_moving_window(0)(0);
 							pix_R <= sum_R;
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 							pix_B <= sum_B;
 						else -- last column & no corner
 							if (iY_Cont(0) = '0') then --if (iX_Cont(0) = '0') then
-								--R pixel
-								sum_R <= mf_moving_window(1)(1);
-								sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1);-- + mf_moving_window(0)(1)
-								sum_B <= mf_moving_window(0)(0) + mf_moving_window(2)(0);
-								pix_R <= sum_R;
-								pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
-								pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
-							else
+								-- --R pixel
+								-- sum_R <= mf_moving_window(1)(1);
+								-- sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1);-- + mf_moving_window(0)(1)
+								-- sum_B <= mf_moving_window(0)(0) + mf_moving_window(2)(0);
+								-- pix_R <= sum_R;
+								-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+								-- pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+								--
 								--G2 pixel
 								sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
 								sum_G <= mf_moving_window(0)(0) + mf_moving_window(2)(0);
@@ -222,55 +267,103 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 								pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
 								pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 								pix_B <= sum_B;
+							else
+								-- --G2 pixel
+								-- sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
+								-- sum_G <= mf_moving_window(0)(0) + mf_moving_window(2)(0);
+								-- sum_B <= mf_moving_window(1)(0);
+								-- pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
+								-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+								-- pix_B <= sum_B;
+								--
+								--R pixel
+								sum_R <= mf_moving_window(1)(1);
+								sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1);-- + mf_moving_window(0)(1)
+								sum_B <= mf_moving_window(0)(0) + mf_moving_window(2)(0);
+								pix_R <= sum_R;
+								pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+								pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 							end if;
 						end if;
 					elsif mf_window_valid(0)(1) = '0' then -- first row & no corner
 						if (iX_Cont(0) = '0') then
-							--G1 pixel
-							sum_R <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
-							sum_G <= mf_moving_window(2)(0) + mf_moving_window(2)(2);
-							sum_B <= mf_moving_window(2)(1);
+							-- --G1 pixel
+							-- sum_R <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							-- sum_G <= mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- sum_B <= mf_moving_window(2)(1);
+							-- pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
+							-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+							-- pix_B <= sum_B;
+							--
+							--B pixel
+							sum_R <= mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							sum_B <= mf_moving_window(1)(1);
 							pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 							pix_B <= sum_B;
 						else
-							--R pixel
-							sum_R <= mf_moving_window(1)(1);
-							sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2); -- + mf_moving_window(2)(1);
-							sum_B <= mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- --R pixel
+							-- sum_R <= mf_moving_window(1)(1);
+							-- sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2); -- + mf_moving_window(2)(1);
+							-- sum_B <= mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- pix_R <= sum_R;
+							-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+							-- pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+							--
+							--G2 pixel
+							sum_R <= mf_moving_window(2)(1);
+							sum_G <= mf_moving_window(2)(0) + mf_moving_window(2)(2); -- + mf_moving_window(2)(1);
+							sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
 							pix_R <= sum_R;
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 							pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 						end if;
 					elsif mf_window_valid(2)(1) = '0' then -- last row & no corner
 						if (iX_Cont(0) = '0') then
-							--B pixel
-							sum_R <= mf_moving_window(0)(0) + mf_moving_window(0)(2);
-							sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2); -- + mf_moving_window(0)(1);
-							sum_B <= mf_moving_window(1)(1);
+							-- --B pixel
+							-- sum_R <= mf_moving_window(0)(0) + mf_moving_window(0)(2);
+							-- sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2); -- + mf_moving_window(0)(1);
+							-- sum_B <= mf_moving_window(1)(1);
+							-- pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
+							-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+							-- pix_B <= sum_B;
+							--
+							--G1 pixel
+							sum_R <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2); -- + mf_moving_window(0)(1);
+							sum_B <= mf_moving_window(0)(1);
 							pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 							pix_B <= sum_B;
 						else
-							--G2 pixel
-							sum_R <= mf_moving_window(0)(1);
-							sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2);
-							sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);-- + mf_moving_window(1)(1);
+							-- --G2 pixel
+							-- sum_R <= mf_moving_window(0)(1);
+							-- sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2);
+							-- sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);-- + mf_moving_window(1)(1);
+							-- pix_R <= sum_R;
+							-- pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+							-- pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+							--
+							--R pixel
+							sum_R <= mf_moving_window(1)(1);
+							sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							sum_B <= mf_moving_window(0)(0) + mf_moving_window(0)(2);-- + mf_moving_window(1)(1);
 							pix_R <= sum_R;
 							pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
 							pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 						end if;
 					else -- image's internal area
 						if (iX_Cont(0) = '1' and iY_Cont(0) = '1') then --even row % even column
-							-- G1 pixel (Red Green row)
-							sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
-							sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
-							sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
-							pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
-							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
-							pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+							-- -- G1 pixel (Red Green row)
+							-- sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							-- sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							-- pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
+							-- pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							-- pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 							--we do not add the central green pixel to divide between 4 and not 5
-						elsif (iX_Cont(0) = '1' and iY_Cont(0) = '0') then --even row % odd col.
+							--
 							-- R pixel
 							sum_R <= mf_moving_window(1)(1);
 							sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1) + mf_moving_window(1)(0) + mf_moving_window(1)(2);
@@ -278,15 +371,29 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 							pix_R <= sum_R;
 							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
 							pix_B <= '0' & '0' & sum_B((PIX_SIZE + 1) downto 2);
-						elsif (iX_Cont(0) = '0' and iY_Cont(0) = '1') then --odd row % even col.
-							-- B pixel
-							sum_R <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
-							sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2) + mf_moving_window(0)(1) + mf_moving_window(2)(1);
-							sum_B <= mf_moving_window(1)(1);
-							pix_R <= '0' & '0' & sum_R((PIX_SIZE + 1) downto 2);
-							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
-							pix_B <= sum_B;
-						else --odd row & odd column
+							-- -- B pixel
+							-- sum_R <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2) + mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							-- sum_B <= mf_moving_window(1)(1);
+							-- pix_R <= '0' & '0' & sum_R((PIX_SIZE + 1) downto 2);
+							-- pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							-- pix_B <= sum_B;
+						elsif (iX_Cont(0) = '1' and iY_Cont(0) = '0') then --even row % odd col.
+							-- -- R pixel
+							-- sum_R <= mf_moving_window(1)(1);
+							-- sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1) + mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							-- sum_B <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- pix_R <= sum_R;
+							-- pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							-- pix_B <= '0' & '0' & sum_B((PIX_SIZE + 1) downto 2);
+							-- -- G1 pixel (Red Green row)
+							-- sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							-- sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							-- pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
+							-- pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							-- pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+							--
 							-- G2 pixel (Blue Green row)
 							sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
 							sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
@@ -294,7 +401,53 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 							pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
 							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
 							pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+						elsif (iX_Cont(0) = '0' and iY_Cont(0) = '1') then --odd row % even col.
+							-- -- B pixel
+							-- sum_R <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2) + mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							-- sum_B <= mf_moving_window(1)(1);
+							-- pix_R <= '0' & '0' & sum_R((PIX_SIZE + 1) downto 2);
+							-- pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							-- pix_B <= sum_B;
+							-- -- G2 pixel (Blue Green row)
+							-- sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							-- sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							-- pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
+							-- pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							-- pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+							--
+							-- G1 pixel (Red Green row)
+							sum_R <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							sum_B <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
+							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+						else --odd row & odd column
+							-- -- G2 pixel (Blue Green row)
+							-- sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							-- sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							-- pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
+							-- pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							-- pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
+							--
+							-- B pixel
+							sum_R <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2) + mf_moving_window(0)(1) + mf_moving_window(2)(1);
+							sum_B <= mf_moving_window(1)(1);
+							pix_R <= '0' & '0' & sum_R((PIX_SIZE + 1) downto 2);
+							pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							pix_B <= sum_B;
 							--we do not add the central green pixel to divide between 4 and not 5
+							-- -- R pixel
+							-- sum_R <= mf_moving_window(1)(1);
+							-- sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1) + mf_moving_window(1)(0) + mf_moving_window(1)(2);
+							-- sum_B <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
+							-- pix_R <= sum_R;
+							-- pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
+							-- pix_B <= '0' & '0' & sum_B((PIX_SIZE + 1) downto 2);
 						end if;
 					end if;
 	end process;

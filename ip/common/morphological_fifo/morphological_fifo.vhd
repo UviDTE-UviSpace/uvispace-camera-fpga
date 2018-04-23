@@ -32,11 +32,7 @@ entity morphological_fifo is
 		    -- Size of each pixel (binary image by default)
         PIX_SIZE  : integer := 8;
 		    --Size of the kernel moving along the image (3x3 by default)
-			 	KERN_SIZE : integer := 3;
-		  	--Advanced features
-		    --Maximum line img_width
-			 	--Default resolution is 640x480 so max width is 640.
-		    MAX_IMG_WIDTH : integer := 640
+			 	KERN_SIZE : integer := 3
     );
     port (
       -- Clock and reset.
@@ -175,7 +171,7 @@ begin
 		end generate Pix_buffer_generate;
 
 		--Last line of the buffer only stores KERN_SIZE PIXELS
-		Last_Line_generate: for PIX_I in 0 to (MAX_IMG_WIDTH-1) generate
+		Last_Line_generate: for PIX_I in 0 to (KERN_SIZE-1) generate
 
 			Regular_pixels: if PIX_I<(KERN_SIZE-1) generate
 				Update_pix_proc: process(clk) begin

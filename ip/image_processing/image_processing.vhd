@@ -142,8 +142,7 @@ architecture arch of image_processing is
 			 KERN_SIZE : integer := 3;
 			 KERNEL : array2D_of_int(2 downto 0)(2 downto 0) := ((0,1,0),
 												                          (1,1,1),
-												                          (0,1,0));
-		    MAX_IMG_WIDTH : integer := 640
+												                          (0,1,0))
     );
     port (
         clk            : in STD_LOGIC;
@@ -163,8 +162,7 @@ architecture arch of image_processing is
 			 KERN_SIZE : integer := 3;
 			 KERNEL : array2D_of_int(2 downto 0)(2 downto 0) := ((0,1,0),
 												                          (1,1,1),
-												                          (0,1,0));
-		    MAX_IMG_WIDTH : integer := 640
+												                          (0,1,0))
     );
     port (
         clk            : in STD_LOGIC;
@@ -268,8 +266,7 @@ architecture arch of image_processing is
 		     KERN_SIZE => 3,
 			  KERNEL => ((0,1,0),
                       (1,1,1),
-                      (0,1,0)),
-			  MAX_IMG_WIDTH => 640)
+                      (0,1,0)))
 
 		  port map(
 			  -- Clock and reset.
@@ -291,8 +288,7 @@ architecture arch of image_processing is
 		     KERN_SIZE => 3,
 			  KERNEL => ((0,1,0),
                       (1,1,1),
-                      (0,1,0)),
-			  MAX_IMG_WIDTH => 640)
+                      (0,1,0)))
 
 		  port map(
 			  -- Clock and reset.

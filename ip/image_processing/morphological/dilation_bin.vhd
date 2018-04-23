@@ -27,11 +27,7 @@ entity dilation_bin is
 			  --Kernel applied
 			 KERNEL : array2D_of_int(2 downto 0)(2 downto 0) := ((0,1,0),
 												                          (1,1,1),
-												                          (0,1,0));
-		  --Advanced features
-		    --Maximum line img_width
-			 --Default resolution is 640x480 so max width is 640.
-		    MAX_IMG_WIDTH : integer := 640
+												                          (0,1,0))
     );
     port (
         -- Clock and reset.
@@ -62,11 +58,7 @@ architecture arch of dilation_bin is
 		    -- Size of each pixel (binary image by default)
           PIX_SIZE  : integer := 8;
 		    --Size of the kernel moving along the image (3x3 by default)
-			 KERN_SIZE : integer := 3;
-		  --Advanced features
-		    --Maximum line img_width
-			 --Default resolution is 640x480 so max width is 640.
-		    MAX_IMG_WIDTH : integer := 640
+			 KERN_SIZE : integer := 3
     );
     port (
         -- Clock and reset.
@@ -98,8 +90,7 @@ begin
 	--Instantiate morphological_fifo
 	MF : morphological_fifo
 	generic map ( PIX_SIZE  => 1,
-	              KERN_SIZE => KERN_SIZE,
-					  MAX_IMG_WIDTH => MAX_IMG_WIDTH)
+	              KERN_SIZE => KERN_SIZE)
 	port map    ( clk => clk,
 	              reset_n => reset_n,
 					  img_width => img_width,
