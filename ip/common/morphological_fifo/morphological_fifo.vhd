@@ -32,7 +32,11 @@ entity morphological_fifo is
 		    -- Size of each pixel (binary image by default)
         PIX_SIZE  : integer := 8;
 		    --Size of the kernel moving along the image (3x3 by default)
-			 	KERN_SIZE : integer := 3
+			 	KERN_SIZE : integer := 3;
+		  	--Advanced features
+		    --Maximum line img_width
+			 	--Default resolution is 640x480 so max width is 640.
+		    MAX_IMG_WIDTH : integer := 640
     );
     port (
       -- Clock and reset.
@@ -47,6 +51,10 @@ entity morphological_fifo is
       pix		        : in STD_LOGIC_VECTOR((PIX_SIZE - 1) downto 0);--one pixel
 	  	data_valid    : in STD_LOGIC; --there is a valid pixel in pix
 
+			-- Output signal is the row and the column of the current pixel:
+			pix_row				: out STD_LOGIC_VECTOR(12 downto 0);
+			pix_col				: out STD_LOGIC_VECTOR(12 downto 0);
+
       -- Output signal is the moving window to do the morphological operation
 	  	moving_window  : out array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
 	  	window_valid   : out array2D_of_std_logic((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0);
@@ -55,22 +63,6 @@ entity morphological_fifo is
 end morphological_fifo;
 
 architecture arch of morphological_fifo is
-
-	COMPONENT shift_reg_ram is
-		GENERIC(
-			DATA_SIZE	:	integer	:=	8
-		);
-		PORT(
-			clk             :	IN STD_LOGIC;
-			reset_n			    :	IN STD_LOGIC;
-			depth           : IN STD_LOGIC_VECTOR (15 downto 0);
-			data_in         :	IN STD_LOGIC_VECTOR ((DATA_SIZE-1) DOWNTO 0);
-			data_out        :	OUT STD_LOGIC_VECTOR ((DATA_SIZE-1) DOWNTO 0);
-			data_valid      : IN STD_LOGIC;
-			data_valid_out  : OUT STD_LOGIC
-		);
-		END COMPONENT;
-
 	 --Enables propagation of data_valid input to data_valid_out output
 	 --When doing morphological operations there is always a delay of
 	 --(KERN_SIZE-1) lines and (KERN_SIZE-1) pixels between the moment
@@ -85,14 +77,10 @@ architecture arch of morphological_fifo is
 	 signal line_counter         : STD_LOGIC_VECTOR(23 downto 0);
 
 	 --Variables to save pixels needed to show the moving window
-	 --output of the shift_reg_rams
-	 SIGNAL shift_reg_output:array_of_std_logic_vector((KERN_SIZE-2) downto 0)((PIX_SIZE-1) downto 0);
 	 --pix_buff stores (KERN_SIZE-1) previous lines
-	 SIGNAL pix_buff :array2D_of_std_logic_vector((KERN_SIZE-2) downto 0)((KERN_SIZE-1) downto 0)((PIX_SIZE-1) downto 0);
+	 SIGNAL pix_buff :array2D_of_std_logic_vector((KERN_SIZE-2) downto 0)((MAX_IMG_WIDTH-1) downto 0)((PIX_SIZE-1) downto 0);
 	 --pix_buff_last stores last values and needs to be only KERN_SIZE depth
 	 SIGNAL pix_buff_last:array_of_std_logic_vector((KERN_SIZE-1) downto 0)((PIX_SIZE-1) downto 0);
-
-
 
 begin
 ------------ Evaluation and update pix_counter and line counter-------------
@@ -116,62 +104,95 @@ begin
 						pix_counter <= pix_counter + 1;
 					end if;
 				end if;
+				--pix_col <= pix_counter(12 downto 0);
+				--pix_row <= line_counter(12 downto 0);
 			end if;
     end process;
+		pix_col <= pix_counter(12 downto 0);
+		pix_row <= line_counter(12 downto 0);
 
 ---------------------------SAVE DATA IN MEMORY------------------
-		--Implement the shif_reg_rams
-		shift_reg_ram_generate: for LINE_I in 0 to (KERN_SIZE-2) generate
-			Regular_lines: if LINE_I < (KERN_SIZE-2) generate
-				shift_reg : shift_reg_ram
-					generic map ( DATA_SIZE => PIX_SIZE)
-					port map (
-						clk => clk,
-						data_in => pix_buff(LINE_I+1)(0),
-						data_out => shift_reg_output(LINE_I),
-						data_valid => data_valid,
-						data_valid_out => open,
-						depth => (img_width-KERN_SIZE),
-						reset_n => reset_n
-					);
-			end generate Regular_lines;
-			last_line: if  LINE_I = (KERN_SIZE-2) generate
-				shift_reg : shift_reg_ram
-					generic map ( DATA_SIZE => PIX_SIZE)
-					port map (
-						clk => clk,
-						data_in => pix_buff_last(0),
-						data_out => shift_reg_output(LINE_I),
-						data_valid => data_valid,
-						data_valid_out => open,
-						depth => (img_width-KERN_SIZE),
-						reset_n => reset_n
-					);
-			end generate last_line;
-	  end generate shift_reg_ram_generate;
-
 		--Save the previous (KERN_SIZE) lines in memory
 		--Full image width lines. They are (KERN_SIZE-1) lines
 		Pix_buffer_generate: for LINE_I in 0 to (KERN_SIZE-2) generate
-			Line_generate: for PIX_I in 0 to (KERN_SIZE-1) generate
-				Update_pix_proc: process(clk) begin
-				if rising_edge(clk) then
-					if reset_n = '0' then
-						pix_buff(LINE_I)(PIX_I) <= (others => '0');
-					elsif (data_valid = '1') then
-						if PIX_I<(KERN_SIZE-1) then
-							pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
-						else --	if PIX_I=(KERN_SIZE-1)
-							pix_buff(LINE_I)(PIX_I) <= shift_reg_output(LINE_I);
+			Line_generate: for PIX_I in 0 to (MAX_IMG_WIDTH-1) generate
+				Regular_lines: if LINE_I < (KERN_SIZE-2) generate
+					Reg_line_regular_pixels: if PIX_I<(MAX_IMG_WIDTH-1) generate
+						Update_pix_proc: process(clk) begin
+						if rising_edge(clk) then
+							if reset_n = '0' then
+								pix_buff(LINE_I)(PIX_I) <= (others => '0');
+							elsif (data_valid = '1') then
+								if (PIX_I<(img_width-1)) then --regular pixels
+									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
+								elsif (PIX_I=(img_width-1)) then --last pixel used in line
+									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I+1)(0);
+								else --not used pixel
+									pix_buff(LINE_I)(PIX_I) <= (others => '0');
+								end if;
+							end if;
 						end if;
-					end if;
-				end if;
-				end process;
+						end process;
+					end generate Reg_line_regular_pixels;
+
+					Reg_line_last_pixel: if PIX_I=(MAX_IMG_WIDTH-1)  generate
+						Update_pix_proc: process(clk) begin
+						if rising_edge(clk) then
+							if reset_n = '0' then
+								pix_buff(LINE_I)(PIX_I) <= (others => '0');
+							elsif (data_valid = '1') then
+								if (PIX_I=(img_width-1)) then --last pixel used in line
+									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I+1)(0);
+								else --not used
+									pix_buff(LINE_I)(PIX_I) <= (others => '0');
+								end if;
+							end if;
+						end if;
+						end process;
+					end generate Reg_line_last_pixel;
+				end generate Regular_lines;
+
+				Last_line: if LINE_I = (KERN_SIZE-2) generate
+					Last_line_regular_pixels: if PIX_I<(MAX_IMG_WIDTH-1) generate
+						Update_pix_proc: process(clk) begin
+						if rising_edge(clk) then
+							if reset_n = '0' then
+								pix_buff(LINE_I)(PIX_I) <= (others => '0');
+							elsif (data_valid = '1') then
+								if (PIX_I<(img_width-1)) then --regular pixels
+									pix_buff(LINE_I)(PIX_I) <= pix_buff(LINE_I)(PIX_I+1);
+								elsif (PIX_I=(img_width-1)) then --last pixel used in line
+									pix_buff(LINE_I)(PIX_I) <= pix_buff_last(0);
+								else
+									pix_buff(LINE_I)(PIX_I) <= (others => '0');
+								end if;
+							end if;
+						end if;
+						end process;
+					end generate Last_line_regular_pixels;
+
+					Last_line_last_pixel: if PIX_I=(MAX_IMG_WIDTH-1) generate
+						Update_pix_proc: process(clk) begin
+						if rising_edge(clk) then
+							if reset_n = '0' then
+								pix_buff(LINE_I)(PIX_I) <= (others => '0');
+							elsif (data_valid = '1') then
+								if (PIX_I=(img_width-1)) then --last pixel used in line
+									pix_buff(LINE_I)(PIX_I) <= pix_buff_last(0);
+								else
+									pix_buff(LINE_I)(PIX_I) <= (others => '0');
+								end if;
+							end if;
+						end if;
+						end process;
+					end generate Last_line_last_pixel;
+				end generate Last_line;
+
 			end generate Line_generate;
 		end generate Pix_buffer_generate;
 
 		--Last line of the buffer only stores KERN_SIZE PIXELS
-		Last_Line_generate: for PIX_I in 0 to (KERN_SIZE-1) generate
+		Last_Line_generate: for PIX_I in 0 to (MAX_IMG_WIDTH-1) generate
 
 			Regular_pixels: if PIX_I<(KERN_SIZE-1) generate
 				Update_pix_proc: process(clk) begin

@@ -3,5 +3,3 @@ set_global_assignment -name IP_TOOL_VERSION "16.0"
 set_global_assignment -name IP_GENERATED_DEVICE_FAMILY "{Cyclone V}"
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "array_package.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "morphological_fifo/morphological_fifo.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "shift_reg_ram/shift_reg_ram.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "double_port_ram/double_port_ram.vhd"]
