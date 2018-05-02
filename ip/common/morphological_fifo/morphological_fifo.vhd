@@ -36,7 +36,7 @@ entity morphological_fifo is
 		  	--Advanced features
 		    --Maximum line img_width
 			 	--Default resolution is 640x480 so max width is 640.
-		    MAX_IMG_WIDTH : integer := 640
+		    MAX_IMG_WIDTH : integer := 2048
     );
     port (
       -- Clock and reset.
