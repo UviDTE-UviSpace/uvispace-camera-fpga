@@ -513,6 +513,7 @@ image_processing img_proc(
   // Seconds counter. The output will be 1 during one pulse after 1 second.
   reg   [31:0] count;
   reg   [31:0] rate;
+  reg   [11:0] rate_bcd;
   reg   [31:0] _Frame_Cont;
   reg          pulse;
   always @(posedge CLOCK_50) begin
@@ -529,6 +530,18 @@ image_processing img_proc(
     end
   end
   assign pulse_led = pulse;
+  //--------Convert rate to bcd to show in 7-segmends-------//
+  binary_to_bcd #(
+    .bits(10),  
+    .digits(3)  
+  ) bit_to_bcd1 (
+    .clk(ccd_pixel_clk),
+    .reset_n(hps2fpga_reset_n & video_stream_reset_n),
+    .ena(1'b1),
+    .binary(rate[9:0]),
+    .bcd(rate_bcd)
+  );
+  
 
 //---------Export signals to show images through VGA--------//
   assign export_sync_rgb_red = sync_rgb_red;
@@ -547,6 +560,6 @@ image_processing img_proc(
   assign export_clk_25 = clk_25;
   assign export_hps2fpga_reset_n = hps2fpga_reset_n;
   assign export_video_stream_reset_n= video_stream_reset_n;
-  assign export_rate = rate;
+  assign export_rate = {22'b0, rate_bcd};
 
 endmodule

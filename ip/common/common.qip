@@ -5,3 +5,5 @@ set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "array_pac
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "morphological_fifo/morphological_fifo.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "shift_reg_ram/shift_reg_ram.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "double_port_ram/double_port_ram.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "bin2bcd/binary_to_bcd.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "bin2bcd/binary_to_bcd_digit.vhd"]
