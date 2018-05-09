@@ -17,7 +17,7 @@ library IEEE;
 entity frame_sync is
     generic (
 		  --number of frames to skip after a reset
-        N : integer := 20
+        N : integer := 2
     );
     port (
         -- Clock and reset.
@@ -126,7 +126,7 @@ begin
     end process;
 	 
 	 -- Propagate signals only after N complete frames have passed
-	 output_process: process (fval_reg,in_data_valid,in_pix)
+	 output_process: process (fval_reg,dval_reg,pix_reg, clk)
 	 begin
 		if (current_state = 2) then
 			out_pix <= pix_reg;

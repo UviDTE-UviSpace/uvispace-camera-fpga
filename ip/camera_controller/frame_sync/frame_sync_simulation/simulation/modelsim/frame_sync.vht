@@ -34,30 +34,22 @@ ARCHITECTURE frame_sync_arch OF frame_sync_vhd_tst IS
 -- constants                                                 
 -- signals                                                   
 SIGNAL clk : STD_LOGIC;
-SIGNAL in_BLUE : STD_LOGIC_VECTOR(11 DOWNTO 0);
 SIGNAL in_data_valid : STD_LOGIC;
 SIGNAL in_frame_valid : STD_LOGIC;
-SIGNAL in_GREEN : STD_LOGIC_VECTOR(11 DOWNTO 0);
-SIGNAL in_RED : STD_LOGIC_VECTOR(11 DOWNTO 0);
-SIGNAL out_BLUE : STD_LOGIC_VECTOR(11 DOWNTO 0);
+SIGNAL in_pix : STD_LOGIC_VECTOR(11 DOWNTO 0);
 SIGNAL out_data_valid : STD_LOGIC;
 SIGNAL out_frame_valid : STD_LOGIC;
-SIGNAL out_GREEN : STD_LOGIC_VECTOR(11 DOWNTO 0);
-SIGNAL out_RED : STD_LOGIC_VECTOR(11 DOWNTO 0);
+SIGNAL out_pix : STD_LOGIC_VECTOR(11 DOWNTO 0);
 SIGNAL reset_n : STD_LOGIC;
 COMPONENT frame_sync
 	PORT (
 	clk : IN STD_LOGIC;
-	in_BLUE : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
 	in_data_valid : IN STD_LOGIC;
 	in_frame_valid : IN STD_LOGIC;
-	in_GREEN : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
-	in_RED : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
-	out_BLUE : OUT STD_LOGIC_VECTOR(11 DOWNTO 0);
+	in_pix : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
 	out_data_valid : OUT STD_LOGIC;
 	out_frame_valid : OUT STD_LOGIC;
-	out_GREEN : OUT STD_LOGIC_VECTOR(11 DOWNTO 0);
-	out_RED : OUT STD_LOGIC_VECTOR(11 DOWNTO 0);
+	out_pix : OUT STD_LOGIC_VECTOR(11 DOWNTO 0);
 	reset_n : IN STD_LOGIC
 	);
 END COMPONENT;
@@ -77,16 +69,12 @@ BEGIN
 	PORT MAP (
 -- list connections between master ports and signals
 	clk => clk,
-	in_BLUE => in_BLUE,
 	in_data_valid => in_data_valid,
 	in_frame_valid => in_frame_valid,
-	in_GREEN => in_GREEN,
-	in_RED => in_RED,
-	out_BLUE => out_BLUE,
+	in_pix => in_pix,
 	out_data_valid => out_data_valid,
 	out_frame_valid => out_frame_valid,
-	out_GREEN => out_GREEN,
-	out_RED => out_RED,
+	out_pix => out_pix,
 	reset_n => reset_n
 	);
 	
@@ -126,9 +114,7 @@ BEGIN
 	begin
 		
 		if ( edge_rise = 0 ) then
-			in_RED <= (others => '0');
-			in_GREEN <= (others => '0');
-			in_BLUE <= (others => '0');
+			in_pix <= (others => '0');
 			in_frame_valid <= '0';
 			in_data_valid <= '0';
 			sim_reset 	<= '0';	-- reset
@@ -144,27 +130,19 @@ BEGIN
 		
 		if ( edge_rise = 7 ) then
 			in_data_valid <= '1';
-			in_RED <= "000011111111";
-			in_GREEN <= "000011111111";
-			in_BLUE <= "000011111111";
+			in_pix <= "000011111111";
 		end if;
 		if ( edge_rise = 8 ) then
 			in_data_valid <= '0';
-			in_RED <= (others => '0');
-			in_GREEN <= (others => '0');
-			in_BLUE <= (others => '0');
+			in_pix <= (others => '0');
 		end if;
 		if ( edge_rise = 9 ) then
 			in_data_valid <= '1';
-			in_RED <= "000011111111";
-			in_GREEN <= "000011111111";
-			in_BLUE <= "000011111111";
+			in_pix <= "000011111111";
 		end if;
 		if ( edge_rise = 10 ) then
 			in_data_valid <= '0';
-			in_RED <= (others => '0');
-			in_GREEN <= (others => '0');
-			in_BLUE <= (others => '0');
+			in_pix <= (others => '0');
 		end if;
 		if ( edge_rise = 12 ) then
 			in_frame_valid <= '0';
@@ -177,27 +155,19 @@ BEGIN
 		
 		if ( edge_rise = 17 ) then
 			in_data_valid <= '1';
-			in_RED <= "000011111111";
-			in_GREEN <= "000011111111";
-			in_BLUE <= "000011111111";
+			in_pix <= "000011111111";
 		end if;
 		if ( edge_rise = 18 ) then
 			in_data_valid <= '0';
-			in_RED <= (others => '0');
-			in_GREEN <= (others => '0');
-			in_BLUE <= (others => '0');
+			in_pix <= (others => '0');
 		end if;
 		if ( edge_rise = 19 ) then
 			in_data_valid <= '1';
-			in_RED <= "000011111111";
-			in_GREEN <= "000011111111";
-			in_BLUE <= "000011111111";
+			in_pix <= "000011111111";
 		end if;
 		if ( edge_rise = 20 ) then
 			in_data_valid <= '0';
-			in_RED <= (others => '0');
-			in_GREEN <= (others => '0');
-			in_BLUE <= (others => '0');
+			in_pix <= (others => '0');
 		end if;
 		if ( edge_rise = 22 ) then
 			in_frame_valid <= '0';
@@ -211,27 +181,19 @@ BEGIN
 		
 		if ( edge_rise = 27 ) then
 			in_data_valid <= '1';
-			in_RED <= "000011111111";
-			in_GREEN <= "000011111111";
-			in_BLUE <= "000011111111";
+			in_pix <= "000011111111";
 		end if;
 		if ( edge_rise = 28 ) then
 			in_data_valid <= '0';
-			in_RED <= (others => '0');
-			in_GREEN <= (others => '0');
-			in_BLUE <= (others => '0');
+			in_pix <= (others => '0');
 		end if;
 		if ( edge_rise = 29 ) then
 			in_data_valid <= '1';
-			in_RED <= "000011111111";
-			in_GREEN <= "000011111111";
-			in_BLUE <= "000011111111";
+			in_pix <= "000011111111";
 		end if;
 		if ( edge_rise = 30 ) then
 			in_data_valid <= '0';
-			in_RED <= (others => '0');
-			in_GREEN <= (others => '0');
-			in_BLUE <= (others => '0');
+			in_pix <= (others => '0');
 		end if;
 		if ( edge_rise = 32 ) then
 			in_frame_valid <= '0';
@@ -244,27 +206,19 @@ BEGIN
 		
 		if ( edge_rise = 37 ) then
 			in_data_valid <= '1';
-			in_RED <= "000011111111";
-			in_GREEN <= "000011111111";
-			in_BLUE <= "000011111111";
+			in_pix <= "000011111111";
 		end if;
 		if ( edge_rise = 38 ) then
 			in_data_valid <= '0';
-			in_RED <= (others => '0');
-			in_GREEN <= (others => '0');
-			in_BLUE <= (others => '0');
+			in_pix <= (others => '0');
 		end if;
 		if ( edge_rise = 39 ) then
 			in_data_valid <= '1';
-			in_RED <= "000011111111";
-			in_GREEN <= "000011111111";
-			in_BLUE <= "000011111111";
+			in_pix <= "000011111111";
 		end if;
 		if ( edge_rise = 40 ) then
 			in_data_valid <= '0';
-			in_RED <= (others => '0');
-			in_GREEN <= (others => '0');
-			in_BLUE <= (others => '0');
+			in_pix <= (others => '0');
 		end if;
 		if ( edge_rise = 42 ) then
 			in_frame_valid <= '0';
