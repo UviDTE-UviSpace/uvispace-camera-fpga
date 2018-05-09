@@ -16,9 +16,9 @@
 -- to start a continuous aquisition to memory. The component goes saving
 -- all images into memory so the processor does not have to wait for 
 -- sinchronization and for the image to be captured. Therefore the CPU 
--- has the last image in memory and can process it inmediately. The 
+-- has the last image in memory and can process it inmediately. With the 
 -- cont_double_buff register the user can choose if using 1 or 2
--- registers. When using 1 the component will save all images in the 
+-- buffers. When using 1 the component will save all images in the 
 -- buffer pointed by buff_select. Otherwise it will alternate and save
 -- images 0, 2, 4... in buff0 and images 1, 3, 5 to buff1. The register
 -- last_buff indicates the buffer containing the last image. CPU should
@@ -66,6 +66,10 @@ entity avalon_image_writer is
         -- Clock and reset.
         clk             : in STD_LOGIC;
         reset_n         : in STD_LOGIC;
+		  --stream reset only sets to 0 the pic and line counters 
+		  --to synchronize with the stream in case it is reset 
+		  --and save the configuration written by the processor. 
+		  stream_reset_n  : in STD_LOGIC;
 		  
 		  -- Image size
 		  img_width			: in STD_LOGIC_VECTOR(15 downto 0);
@@ -95,6 +99,8 @@ entity avalon_image_writer is
                                                downto 0);
         M_waitrequest     : in STD_LOGIC;
         M_burstcount      : out STD_LOGIC_VECTOR(6 downto 0)
+		  
+		  	   
     );
 end avalon_image_writer;
 
@@ -255,7 +261,7 @@ begin
     fsm_mem: process (clk)
     begin
         if rising_edge(clk) then
-            if reset_n = '0' then 
+            if (reset_n = '0' or stream_reset_n = '0') then 
                 current_state <= 0;
             else
                 current_state <= next_state;
@@ -294,7 +300,7 @@ begin
     state_condition(0) <= '1';
     state_condition(1) <= start_capture;
 	 
-    --Evaluation and update pix_counter and line counter
+    --Evaluation and update pix_counter and line_counter
     pix_counter_proc:process (clk)
 	   variable end_of_image : std_ulogic;
 		variable end_of_line : std_ulogic;
@@ -409,7 +415,7 @@ begin
 	start_capture_proc:process (clk)
     begin
         if rising_edge(clk) then
-            if reset_n = '0' then
+            if (reset_n = '0') then
 					start_capture <= '0';
 				elsif mode = SINGLE_SHOT then
 					if start_capture = '1' then 
@@ -485,7 +491,7 @@ begin
     buff_proc:process (clk)
     begin
         if rising_edge(clk) then
-            if reset_n = '0' then 
+            if (reset_n = '0' or stream_reset_n = '0') then 
 					write_buff <= (others => '0');
 					last_buffer <= '0';
 				elsif current_state = 1 then

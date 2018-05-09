@@ -238,6 +238,11 @@
    type="conduit"
    dir="end" />
  <interface
+   name="binary_stream_reset_n"
+   internal="avalon_img_writer_binary.stream_reset_sink"
+   type="reset"
+   dir="end" />
+ <interface
    name="ccd_pixel_clock_bridge"
    internal="ccd_pixel_clock_bridge.in_clk"
    type="clock"
@@ -251,6 +256,11 @@
    name="gray_img"
    internal="avalon_img_writer_gray.conduit_end"
    type="conduit"
+   dir="end" />
+ <interface
+   name="gray_stream_reset_n"
+   internal="avalon_img_writer_gray.stream_reset_sink"
+   type="reset"
    dir="end" />
  <interface
    name="h2f_reset"
@@ -283,6 +293,11 @@
    name="rgbgray_img"
    internal="avalon_img_writer_rgbgray.conduit_end"
    type="conduit"
+   dir="end" />
+ <interface
+   name="rgbgray_stream_reset_n"
+   internal="avalon_img_writer_rgbgray.stream_reset_sink"
+   type="reset"
    dir="end" />
  <module name="avalon_camera_0" kind="avalon_camera" version="1.0" enabled="1">
   <parameter name="BLUE_GAIN" value="154" />
