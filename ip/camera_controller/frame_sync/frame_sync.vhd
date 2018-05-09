@@ -25,16 +25,12 @@ entity frame_sync is
         reset_n         : in STD_LOGIC;
 		  
         -- Input image and sync signals
-        in_RED		       : in STD_LOGIC_VECTOR(11 downto 0);
-		  in_GREEN		    : in STD_LOGIC_VECTOR(11 downto 0);
-		  in_BLUE		    : in STD_LOGIC_VECTOR(11 downto 0);
+        in_pix	       : in STD_LOGIC_VECTOR(11 downto 0);
 		  in_data_valid    : in STD_LOGIC; 
 		  in_frame_valid   : in STD_LOGIC;
 		 
 		  -- Output image and sync signals
-        out_RED		    : out STD_LOGIC_VECTOR(11 downto 0);
-		  out_GREEN		    : out STD_LOGIC_VECTOR(11 downto 0);
-		  out_BLUE		    : out STD_LOGIC_VECTOR(11 downto 0);
+        out_pix		    : out STD_LOGIC_VECTOR(11 downto 0);
 		  out_data_valid   : out STD_LOGIC; 
 		  out_frame_valid  : out STD_LOGIC
     );
@@ -52,7 +48,20 @@ architecture arch of frame_sync is
                                     downto 0);
     signal frame_counter         : STD_LOGIC_VECTOR(9 downto 0);
 	 signal frame_count_reached 	: STD_LOGIC;
+	 --Registers to reduce combinational path at the input of frame_sync
+	 signal pix_reg: STD_LOGIC_VECTOR(11 downto 0);
+	 signal dval_reg : STD_LOGIC;
+	 signal fval_reg : STD_LOGIC;
 begin
+---------------------------Save inputs in registers----------------------
+	input_regs_proc: process (clk)
+	begin
+		if rising_edge(clk) then
+			pix_reg <= in_pix;
+			dval_reg <= in_data_valid;
+			fval_reg <= in_frame_valid;
+		end if;
+	end process;
 
 --------------------------Implement a State machine----------------------
 --Implement a State machine that permits the synchronization of the
@@ -100,12 +109,12 @@ begin
     state_condition(1) <= frame_count_reached;
 	 
 	 -- Evaluation and update frame_counter.
-    frame_counter_proc:process (reset_n, in_frame_valid, clk)
+    frame_counter_proc:process (reset_n, fval_reg, clk)
     begin
 		  if (reset_n = '0') then
             -- reset the pixel counter
             frame_counter <= (others => '0');
-        elsif (reset_n = '1') and (current_state = 1) and falling_edge(in_frame_valid) then
+        elsif (reset_n = '1') and (current_state = 1) and falling_edge(fval_reg) then
             -- Increment the pixel counter
             frame_counter <= frame_counter + 1;
         end if;
@@ -117,18 +126,14 @@ begin
     end process;
 	 
 	 -- Propagate signals only after N complete frames have passed
-	 output_process: process (in_frame_valid,in_data_valid,in_RED,in_GREEN,in_BLUE)
+	 output_process: process (fval_reg,in_data_valid,in_pix)
 	 begin
 		if (current_state = 2) then
-			out_RED <= in_RED;
-			out_GREEN <= in_GREEN;
-			out_BLUE <= in_BLUE;
-			out_data_valid <= in_data_valid;
-			out_frame_valid <= in_frame_valid;
+			out_pix <= pix_reg;
+			out_data_valid <= dval_reg;
+			out_frame_valid <= fval_reg;
 		else
-			out_RED <= (others => '0');
-			out_GREEN <= (others => '0');
-			out_BLUE <= (others => '0');
+			out_pix <= (others => '0');
 			out_data_valid <= '0';
 			out_frame_valid <= '0';
 		end if;

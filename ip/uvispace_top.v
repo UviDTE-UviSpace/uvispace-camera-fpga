@@ -383,6 +383,28 @@ camera_capture u3(
 
 //---------------Raw 2 RGB and Frame syncronization --------------//
 
+/*Stops the frames comming from the camera after some of them
+have passed and ensures that its output always provides
+synchronized frames (starting from first pixel). This is
+crucial for image processing.
+*/
+frame_sync frame_sync1(
+  .clk					(ccd_pixel_clk),
+  .reset_n				(hps2fpga_reset_n & video_stream_reset_n),
+  //Input image and sync signals
+  .in_pix				(ccd_data_captured),
+  .in_data_valid 		(ccd_dval),
+  .in_frame_valid		(ccd_fval_raw),
+  //Output image and sync signals
+  .out_pix				(sync_ccd_data_captured),
+  .out_data_valid 	(sync_ccd_dval),
+  .out_frame_valid	(sync_ccd_fval)
+   );
+  wire    [11:0] sync_ccd_data_captured;
+  wire           sync_ccd_dval;
+  wire           sync_ccd_fval;
+
+
 /* This component converts 'raw' data obtained in the CCD to RGB data. The
 output width  and height are half of the input ones, as, each pixel consists
 in 4 components(RGBG): The number of rows and columns are reduced to the half.
@@ -395,12 +417,12 @@ raw2rgb  #(
   .clk         (ccd_pixel_clk),
   // Negative logic reset
   .reset_n      (hps2fpga_reset_n & video_stream_reset_n),
-  .pix          (ccd_data_captured),  // Component input data
-  .data_valid   (ccd_dval),           // Data valid signal
-  .oRed         (rgb_red),        // Output red component
-  .oGreen       (rgb_green),      // Output green component
-  .oBlue        (rgb_blue),       // Output blue component
-  .oDVAL        (rgb_dval),       // Pixel value available
+  .pix          (sync_ccd_data_captured),  // Component input data
+  .data_valid   (sync_ccd_dval),           // Data valid signal
+  .oRed         (sync_rgb_red),        // Output red component
+  .oGreen       (sync_rgb_green),      // Output green component
+  .oBlue        (sync_rgb_blue),       // Output blue component
+  .oDVAL        (sync_rgb_dval),       // Pixel value available
   .img_width    (img_width),
   .img_height   (img_height)
   );
@@ -409,41 +431,13 @@ raw2rgb  #(
   assign X_Cont = {4'd0, X_Cont_raw};
   assign Y_Cont = {4'd0, Y_Cont_raw};
   //RAW2RGB signals
-  wire    [11:0] rgb_red;
-  wire    [11:0] rgb_green;
-  wire    [11:0] rgb_blue;
-  wire           rgb_dval; //data valid
-
-/*Stops the frames comming from the camera after some of them
-have passed and ensures that its output always provides
-synchronized frames (starting from first pixel). This is
-crucial for image processing.
-*/
-frame_sync frame_sync1(
-  .clk					(ccd_pixel_clk),
-  .reset_n				(hps2fpga_reset_n & video_stream_reset_n),
-  //Input image and sync signals
-  .in_RED				(rgb_red),
-  .in_GREEN				(rgb_green),
-  .in_BLUE				(rgb_blue),
-  .in_data_valid 		(rgb_dval),
-  .in_frame_valid		(ccd_fval_raw),
-  //Output image and sync signals
-  .out_RED				(sync_rgb_red),
-  .out_GREEN		   (sync_rgb_green),
-  .out_BLUE				(sync_rgb_blue),
-  .out_data_valid 	(sync_rgb_dval),
-  .out_frame_valid	(sync_rgb_fval)
-   );
   wire    [11:0] sync_rgb_red;
   wire    [11:0] sync_rgb_green;
   wire    [11:0] sync_rgb_blue;
-  wire           sync_rgb_dval;
-  wire           sync_rgb_fval;
+  wire           sync_rgb_dval; //data valid
 
 
 //--------------------Image processing -----------------//
-
 /*Contains the specific image processing for this application.
 In this case transforms RGB to gray for vilualization of the scene
 and RGB to Binary in 2 steps (RGB 2 HSV and HSV to Binary using
