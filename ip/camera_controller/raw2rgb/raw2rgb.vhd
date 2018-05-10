@@ -142,7 +142,7 @@ end process;
 
 ------------ Evaluation and update pix_counter and line counter-------------
 raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
-		if mf_window_valid(1)(0) = '0' then -- (image's pixel in the) first column
+	if mf_window_valid(1)(0) = '0' then -- (image's pixel in the) first column
 			if mf_window_valid(0)(1) = '0' then -- first column & first row
 				--G2 pixel:
 				sum_R <= mf_moving_window(2)(1);
@@ -259,7 +259,7 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 				pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
 				pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
 				pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
-			elsif (iX_Cont(0) = '1' and iY_Cont(0) = '0') then --even row % odd col.
+			elsif (iX_Cont(0) = '0' and iY_Cont(0) = '1') then --even row % odd col.
 				-- R pixel
 				sum_R <= mf_moving_window(1)(1);
 				sum_G <= mf_moving_window(0)(1) + mf_moving_window(2)(1) + mf_moving_window(1)(0) + mf_moving_window(1)(2);
@@ -267,7 +267,7 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 				pix_R <= sum_R;
 				pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
 				pix_B <= '0' & '0' & sum_B((PIX_SIZE + 1) downto 2);
-			elsif (iX_Cont(0) = '0' and iY_Cont(0) = '1') then --odd row % even col.
+			elsif (iX_Cont(0) = '1' and iY_Cont(0) = '0') then --odd row % even col.
 				-- B pixel
 				sum_R <= mf_moving_window(0)(0) + mf_moving_window(0)(2) + mf_moving_window(2)(0) + mf_moving_window(2)(2);
 				sum_G <= mf_moving_window(1)(0) + mf_moving_window(1)(2) + mf_moving_window(0)(1) + mf_moving_window(2)(1);
@@ -284,11 +284,11 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 				pix_G <= '0' & '0' & sum_G((PIX_SIZE + 1) downto 2);
 				pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 			end if;
-			-- ** In the cases that the kernel area includes 3 or 5 pixels of a
-			-- 		color the system only considers 2 or 4 in order to simplify
-			--		division operation (using multiple of 2 numbers).
+						-- ** In the cases that the kernel area includes 3 or 5 pixels of a
+						-- 		color the system only considers 2 or 4 in order to simplify
+						--		division operation (using multiple of 2 numbers).
 		end if;
-	end process;
+end process;
 outputs_proc: process(clk) begin
 		if rising_edge(clk) then
 					oRed		<= pix_R(11 downto 0);
