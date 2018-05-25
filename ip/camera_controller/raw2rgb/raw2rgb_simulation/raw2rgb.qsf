@@ -65,6 +65,6 @@ set_global_assignment -name EDA_TEST_BENCH_NAME raw2rgb_vhd_tst -section_id eda_
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME i1 -section_id raw2rgb_vhd_tst
 set_global_assignment -name EDA_TEST_BENCH_RUN_SIM_FOR "100 ns" -section_id raw2rgb_vhd_tst
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME raw2rgb_vhd_tst -section_id raw2rgb_vhd_tst
-set_global_assignment -name EDA_TEST_BENCH_FILE simulation/modelsim/raw2rgb.vht -section_id raw2rgb_vhd_tst
 set_global_assignment -name QIP_FILE double_port_ram.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name EDA_TEST_BENCH_FILE simulation/modelsim/raw2rgb.vht -section_id raw2rgb_vhd_tst

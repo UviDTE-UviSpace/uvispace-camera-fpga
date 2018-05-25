@@ -35,16 +35,16 @@ entity raw2rgb is
 		PIX_SIZE	:	integer	:=	12
 	);
 	port (
-		pix 				:	IN STD_LOGIC_VECTOR (11 DOWNTO 0); --iDATA, pixel input
-		data_valid	:	IN STD_LOGIC;--iDVAL, data valid input
-		clk					:	IN STD_LOGIC; --iCLK
-		reset_n			:	IN STD_LOGIC; --iRST
-		img_width		:	IN STD_LOGIC_VECTOR(15 downto 0);
-		img_height	:	IN STD_LOGIC_VECTOR(15 downto 0);
-		oRed				:	OUT STD_LOGIC_VECTOR (11 DOWNTO 0);
-		oGreen			:	OUT STD_LOGIC_VECTOR (11 DOWNTO 0);
-		oBlue				:	OUT STD_LOGIC_VECTOR (11 DOWNTO 0);
-		oDVAL				:	OUT STD_LOGIC
+		pix          :  IN STD_LOGIC_VECTOR (11 DOWNTO 0); --iDATA, pixel input
+		data_valid   :  IN STD_LOGIC;--iDVAL, data valid input
+		clk          :  IN STD_LOGIC; --iCLK
+		reset_n      :  IN STD_LOGIC; --iRST
+		img_width    :  IN STD_LOGIC_VECTOR(15 downto 0);
+		img_height   :  IN STD_LOGIC_VECTOR(15 downto 0);
+		oRed         :  OUT STD_LOGIC_VECTOR (11 DOWNTO 0);
+		oGreen       :  OUT STD_LOGIC_VECTOR (11 DOWNTO 0);
+		oBlue        :  OUT STD_LOGIC_VECTOR (11 DOWNTO 0);
+		oDVAL        :  OUT STD_LOGIC
 	);
 end raw2rgb;
 
@@ -53,62 +53,60 @@ architecture arch of raw2rgb is
 		generic (
 			-- Basic configuration of the component:
 			-- Size of each pixel (R, G1, G2 or B)
-			PIX_SIZE	:	integer	:=	12;
+			PIX_SIZE  :  integer	:=	12;
 			--Size of the kernel moving along the image (3x3 by default)
-			KERN_SIZE	:	integer	:=	3
+			KERN_SIZE  :  integer	:=	3
 		);
 		port(
 			-- Clock and reset.
-			clk				: in STD_LOGIC;
-			reset_n		: in STD_LOGIC;
+			clk       :  in STD_LOGIC;
+			reset_n   :  in STD_LOGIC;
 			-- Configuration.
-			img_width		:in STD_LOGIC_VECTOR(15 downto 0);
-			img_height	:in STD_LOGIC_VECTOR(15 downto 0);
+			img_width   :in STD_LOGIC_VECTOR(15 downto 0);
+			img_height  :in STD_LOGIC_VECTOR(15 downto 0);
 			-- Input image and sync signals
-			pix					: in STD_LOGIC_VECTOR((PIX_SIZE - 1) downto 0);--one pixel
-			data_valid	: in STD_LOGIC; --there is a valid pixel in pix
+			pix         : in STD_LOGIC_VECTOR((PIX_SIZE - 1) downto 0);--one pixel
+			data_valid  : in STD_LOGIC; --there is a valid pixel in pix
 			-- Output signal is the moving window to do the morphological operation
-			moving_window		: out array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
-			window_valid		: out array2D_of_std_logic((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0);
-			data_valid_out	: out STD_LOGIC
+			moving_window   : out array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE-1) downto 0);
+			window_valid    : out array2D_of_std_logic((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0);
+			data_valid_out  : out STD_LOGIC
 		);
 	end component;
 	--Size of the kernel moving along the image (3x3 by default)
-	constant KERN_SIZE	:	integer	:=	3;
+	constant KERN_SIZE  : integer	:=	3;
 
 	--signal declarations (example: signal enable_data_valid    : STD_LOGIC;)
 	--Module internal signals:
 	SIGNAL mf_moving_window2 : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE - 1) downto 0);
-	SIGNAL mf_moving_window : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE + 1) downto 0);
-	SIGNAL mf_window_valid  : array2D_of_std_logic((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0);
-	SIGNAL mf_data_valid    : STD_LOGIC;
-	SIGNAL sum_R		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL sum_G		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL sum_B		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL pix_R		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL pix_G		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL pix_B		: STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
-	SIGNAL iX_Cont 	: STD_LOGIC_VECTOR (12 DOWNTO 0);
-	SIGNAL iY_Cont	: STD_LOGIC_VECTOR (12 DOWNTO 0);
+	SIGNAL mf_moving_window  : array2D_of_std_logic_vector((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0)((PIX_SIZE + 1) downto 0);
+	SIGNAL mf_window_valid   : array2D_of_std_logic((KERN_SIZE-1) downto 0)((KERN_SIZE-1)  downto 0);
+	SIGNAL mf_data_valid     : STD_LOGIC;
+	SIGNAL sum_R             : STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL sum_G             : STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL sum_B             : STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL pix_R             : STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL pix_G             : STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL pix_B             : STD_LOGIC_VECTOR ((PIX_SIZE + 1) DOWNTO 0);
+	SIGNAL iX_Cont           : STD_LOGIC_VECTOR (12 DOWNTO 0);
+	SIGNAL iY_Cont           : STD_LOGIC_VECTOR (12 DOWNTO 0);
 
 
 begin
 	-- Instanciate signals declarations:
 	MF_component : morphological_fifo
-	generic map ( PIX_SIZE  		=> PIX_SIZE,
-								KERN_SIZE 		=> KERN_SIZE)
+	generic map ( PIX_SIZE      => PIX_SIZE,
+								KERN_SIZE     => KERN_SIZE)
 
-	port map    ( clk 						=> clk,
-								reset_n 				=> reset_n,
-								img_width 			=> img_width,
-								img_height 			=> img_height,
-								pix 						=> pix,
-								data_valid 			=> data_valid,
-								moving_window 	=> mf_moving_window2,
-								window_valid 		=> mf_window_valid,
-								data_valid_out 	=> mf_data_valid--,
-								--pix_col					=> iX_Cont,
-								--pix_row					=> iY_Cont
+	port map    ( clk             => clk,
+								reset_n         => reset_n,
+								img_width       => img_width,
+								img_height      => img_height,
+								pix             => pix,
+								data_valid      => data_valid,
+								moving_window   => mf_moving_window2,
+								window_valid    => mf_window_valid,
+								data_valid_out  => mf_data_valid
 								);
 
 window_move:for i in 0 to (KERN_SIZE-1) generate
@@ -163,10 +161,10 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 				if (iY_Cont(0) = '0') then --if (iX_Cont(0) = '0') then
 					--G2 pixel
 					sum_R <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
-					sum_G <= mf_moving_window(0)(2) + mf_moving_window(2)(2);
+					sum_G <= mf_moving_window(1)(1);
 					sum_B <= mf_moving_window(1)(2);
 					pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
-					pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+					pix_G <= sum_G;
 					pix_B <= sum_B;
 				else
 					--R pixel
@@ -207,10 +205,10 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 				else
 					--G1 pixel
 					sum_R <= mf_moving_window(1)(0);
-					sum_G <= mf_moving_window(0)(0) + mf_moving_window(2)(0);
+					sum_G <= mf_moving_window(1)(1);
 					sum_B <= mf_moving_window(0)(1) + mf_moving_window(2)(1);
 					pix_R <= sum_R;
-					pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+					pix_G <= sum_G;
 					pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 				end if;
 			end if;
@@ -218,10 +216,10 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 			if (iX_Cont(0) = '0') then
 				--G2 pixel
 				sum_R <= mf_moving_window(2)(1);
-				sum_G <= mf_moving_window(2)(0) + mf_moving_window(2)(2);
+				sum_G <= mf_moving_window(1)(1);
 				sum_B <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
 				pix_R <= sum_R;
-				pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+				pix_G <= sum_G;
 				pix_B <= '0' & sum_B((PIX_SIZE + 1) downto 1);
 			else
 				--B pixel
@@ -244,10 +242,10 @@ raw2rgb_proc: process(mf_moving_window,sum_R,sum_G,sum_B) begin
 			else
 				--G1 pixel
 				sum_R <= mf_moving_window(1)(0) + mf_moving_window(1)(2);
-				sum_G <= mf_moving_window(0)(0) + mf_moving_window(0)(2);
+				sum_G <= mf_moving_window(1)(1);
 				sum_B <= mf_moving_window(0)(1);
 				pix_R <= '0' & sum_R((PIX_SIZE + 1) downto 1);
-				pix_G <= '0' & sum_G((PIX_SIZE + 1) downto 1);
+				pix_G <= sum_G;
 				pix_B <= sum_B;
 			end if;
 		else -- image's internal area
