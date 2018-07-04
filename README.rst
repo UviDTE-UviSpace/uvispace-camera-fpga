@@ -18,6 +18,8 @@ Repository contents
 * ip: ip cores common to all boards.
 * 5mpix-camera-calculator: excel sheet summarizing the rules in the user manual of the TRDB-D5M camera.
 
+Each folder contains a README.rst file that explains the organization of its content
+
 ========================
 Compilation instructions
 ========================
